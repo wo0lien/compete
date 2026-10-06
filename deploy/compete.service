@@ -1,0 +1,16 @@
+[Unit]
+Description=compete
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/compete -addr 127.0.0.1:8080 -db /var/lib/compete/compete.db -trust-proxy
+DynamicUser=yes
+StateDirectory=compete
+Restart=on-failure
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

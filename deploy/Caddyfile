@@ -1,0 +1,4 @@
+compete.example.org {
+	# No `log` directive on purpose: compete keeps no IPs, the proxy shouldn't either.
+	reverse_proxy 127.0.0.1:8080
+}
