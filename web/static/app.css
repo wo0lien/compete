@@ -1,0 +1,85 @@
+@font-face { font-family: "Lilita One"; src: url(/static/fonts/lilita-one.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "Nunito"; src: url(/static/fonts/nunito.woff2) format("woff2"); font-weight: 200 1000; font-display: swap; }
+
+:root {
+  --sky: #62C6F2; --sky-dark: #2B8EC2; --sky-pale: #E6F6FD; --line: #D6EEF9;
+  --ink: #10264A; --sun: #FFD54A; --sun-dark: #C9A22F;
+  --coral: #FF6B5B; --coral-dark: #C94A3D; --grass: #5ED67E; --grass-dark: #36A456;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; color: var(--ink);
+  background-color: var(--sky);
+  background-image: radial-gradient(rgba(255, 255, 255, .35) 2px, transparent 2px);
+  background-size: 22px 22px;
+  font: 600 16px/1.4 Nunito, system-ui, sans-serif;
+}
+a { color: var(--ink); }
+h1, h2, .logo, .btn, .space, .hidden-tile { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; }
+h1, h2 { margin: 0; } h1 { font-size: 30px; } h2 { font-size: 18px; }
+p { margin: 0; }
+.top, main { max-width: 34rem; margin: 0 auto; }
+.top { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; }
+main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
+.logo { font-size: 32px; color: #fff; text-decoration: none; -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); }
+.me { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-decoration: none; font-weight: 800; }
+.pawn { width: 26px; height: 26px; flex: none; }
+.pawn path { stroke: var(--ink); stroke-width: 1.5; }
+
+.panel { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--sky-dark); }
+.panel.flush { gap: 0; padding: 0; overflow: hidden; }
+.panel-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--sun); }
+.panel-head .chip { margin-left: auto; }
+.chip { padding: 0 8px; border-radius: 999px; background: #fff; font-size: 12px; font-weight: 800; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: 0 5px 0 var(--sky-dark); font-size: 20px; text-decoration: none; cursor: pointer; }
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--sky-dark); }
+.btn.go, .btn.danger { background: var(--coral); color: #fff; box-shadow: 0 5px 0 var(--coral-dark); }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+input, textarea { width: 100%; padding: 10px 12px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: inset 0 3px 0 var(--line), 0 0 0 2px var(--line); font: inherit; resize: vertical; }
+input[type=color] { width: 64px; height: 44px; padding: 4px; }
+label { display: block; font-weight: 800; }
+.paste, .inline-form { display: flex; gap: 8px; align-items: stretch; }
+.paste textarea, .inline-form input { flex: 1; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+
+.tabs { display: flex; gap: 8px; }
+.tabs a { flex: 1; padding: 10px 0; border-radius: 12px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-align: center; text-decoration: none; font-weight: 800; }
+.tabs a[aria-current="page"] { background: var(--sun); box-shadow: 0 4px 0 var(--sun-dark); }
+
+.row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-top: 2px dashed var(--line); }
+.row.out { opacity: .5; }
+.row .grow { flex: 1; min-width: 0; }
+.line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.space { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--sky-pale); box-shadow: 0 3px 0 var(--ink); font-size: 15px; }
+.space.first { background: var(--sun); }
+.tile { margin-left: auto; padding: 1px 8px; border-radius: 6px; background: var(--sun); box-shadow: 0 2px 0 rgba(16, 38, 74, .35); font-weight: 800; }
+.tile.fail { background: #FFB4AB; }
+.grid { margin: 4px 0 0; font: inherit; font-size: 12px; line-height: 1.1; letter-spacing: 1px; white-space: pre-line; }
+.hint { padding: 10px 14px 0; font-size: 14px; }
+.waiting { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; padding: 12px 14px 16px; }
+.waiting > div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 800; font-size: 14px; }
+.hidden-tile, .start-tile { min-width: 52px; padding: 4px 6px; border-radius: 8px; text-align: center; font-size: 14px; }
+.hidden-tile { background: var(--ink); color: #fff; }
+.start-tile { border: 2px dashed var(--sky-dark); color: var(--sky-dark); font-family: inherit; }
+.waiting .me .start-tile { border: 2px solid var(--coral-dark); background: var(--coral); color: #fff; }
+
+.track { display: flex; gap: 3px; align-items: flex-end; }
+.track > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.track .pawns { display: flex; flex-direction: column-reverse; align-items: center; min-height: 54px; }
+.track .pawns .pawn { width: 18px; height: 18px; }
+.track .cell { width: 100%; height: 22px; display: grid; place-items: center; border-radius: 6px; background: var(--sky-pale); box-shadow: 0 2px 0 var(--sky-dark); font-size: 11px; font-weight: 800; }
+.track .cell.start { background: var(--grass); }
+.track .cell.goal { background: var(--sun); }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; font-weight: 800; }
+.legend span { display: flex; align-items: center; gap: 4px; }
+.legend .pawn { width: 16px; height: 16px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 6px 4px; border-bottom: 2px dashed var(--line); text-align: left; }
+.groups { margin: 0; padding-left: 18px; }
+.error { color: var(--coral-dark); font-weight: 800; }
+.muted { opacity: .7; }
+.foot { text-align: center; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

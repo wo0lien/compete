@@ -1,0 +1,23 @@
+{{define "base"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>compete</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#62C6F2">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+<script src="/static/htmx.min.js" defer></script>
+</head>
+<body hx-boost:inherited="true">
+<header class="top">
+  <a href="/" class="logo">compete</a>
+  {{with .User}}<a href="/account" class="me">{{template "pawn" .Pawn}}{{.Username}}</a>{{end}}
+</header>
+<main>
+{{template "content" .}}
+</main>
+</body>
+</html>{{end}}

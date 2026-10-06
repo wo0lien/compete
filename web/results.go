@@ -1,0 +1,72 @@
+package web
+
+import (
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/wo0lien/compete/games"
+	"github.com/wo0lien/compete/store"
+)
+
+func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User) {
+	g, ok := s.groupFor(w, r, u)
+	if !ok {
+		return
+	}
+	boards, err := s.store.CurrentBoards(g.ID, u.ID)
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	race, err := s.raceData(g.ID, nil)
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Boards": boards, "Race": race})
+}
+
+// submit parses a pasted share text and stores its results for the current user.
+// Unrecognized text is never stored.
+func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
+	text, back := r.FormValue("text"), safeNext(r.FormValue("back"))
+	data := map[string]any{"Text": text, "Back": back}
+	rs := games.Parse(text)
+	if rs == nil {
+		data["Error"], data["Unsupported"] = "This game or format isn't supported yet.", true
+		s.render(w, r, http.StatusUnprocessableEntity, "submit.html", data)
+		return
+	}
+	_, err := s.store.AddResults(u.ID, games.Normalize(text), rs)
+	if errors.Is(err, store.ErrDuplicate) {
+		g, _ := games.ByID(rs[0].Game)
+		data["Error"] = strings.TrimSpace(fmt.Sprintf("Already submitted %s #%d %s", g.Name, rs[0].PuzzleID, rs[0].Variant))
+		s.render(w, r, http.StatusConflict, "submit.html", data)
+		return
+	}
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	http.Redirect(w, r, back, http.StatusSeeOther)
+}
+
+// shareText joins what a share target received. Apps spread the payload over
+// text, title and url; text goes first so the anchored parsers still match.
+func shareText(q url.Values) string {
+	var parts []string
+	for _, k := range []string{"text", "title", "url"} {
+		if v := strings.TrimSpace(q.Get(k)); v != "" {
+			parts = append(parts, v)
+		}
+	}
+	return strings.Join(parts, "\n")
+}
+
+// share is the PWA share target: it only pre-fills the submit form.
+func (s *Server) share(w http.ResponseWriter, r *http.Request, _ store.User) {
+	s.render(w, r, http.StatusOK, "submit.html", map[string]any{"Text": shareText(r.URL.Query()), "Back": "/"})
+}

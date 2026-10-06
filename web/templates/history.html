@@ -1,0 +1,10 @@
+{{define "content"}}
+<h1>{{gameName .Game}}{{with .Variant}} · {{.}}{{end}}</h1>
+<p><a href="/g/{{.Group.ID}}">Back to {{.Group.Name}}</a></p>
+<section class="panel">
+  <ul class="groups">
+    {{$g := .Group}}{{$game := .Game}}{{$variant := .Variant}}
+    {{range .Puzzles}}<li><a href="/g/{{$g.ID}}/board?game={{$game}}&amp;variant={{$variant}}&amp;puzzle={{.}}">#{{.}}</a></li>{{else}}<li>No puzzles yet.</li>{{end}}
+  </ul>
+</section>
+{{end}}

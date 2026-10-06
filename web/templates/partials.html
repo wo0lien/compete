@@ -1,0 +1,53 @@
+{{define "pawn"}}<svg class="pawn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3.2 3.2 0 0 1 3.2 3.2c0 1.1-.5 2-1.3 2.6 2.5.4 7.1 1.5 7.1 3.4 0 1.2-1.7 1.6-3.7 1.4l2.6 8.6c.2.6-.2 1.2-.9 1.2h-4.3L12 17.6 9.3 22.4H5c-.6 0-1.1-.6-.9-1.2l2.6-8.6c-2 .2-3.7-.2-3.7-1.4 0-1.9 4.6-3 7.1-3.4-.8-.6-1.3-1.5-1.3-2.6A3.2 3.2 0 0 1 12 2z" fill="{{.}}"></path></svg>{{end}}
+{{define "board"}}
+<section class="panel flush">
+  <div class="panel-head">
+    <h2>{{gameName .Game}} #{{.PuzzleID}}{{with .Variant}} · {{.}}{{end}}</h2>
+    <span class="chip">{{gameLang .Game}}</span>
+  </div>
+  {{if .Revealed}}
+    {{$game := .Game}}
+    {{range $i, $e := .Entries}}
+    <div class="row{{if not $e.Played}} out{{end}}">
+      <span class="space{{if eq $i 0}} first{{end}}">{{if $e.Played}}{{inc $i}}{{else}}-{{end}}</span>
+      {{template "pawn" $e.Pawn}}
+      <div class="grow">
+        <div class="line">
+          <b>{{$e.Username}}</b>
+          {{if $e.Played}}
+          <span class="tile{{if not $e.Score}} fail{{end}}">{{scoreText $game $e.Score}}</span>
+          {{with tiebreakText $game $e.Tiebreak}}<span>{{.}}</span>{{end}}
+          {{else}}<span class="muted">not played</span>{{end}}
+        </div>
+        {{with $e.Grid}}<pre class="grid">{{.}}</pre>{{end}}
+      </div>
+    </div>
+    {{end}}
+  {{else}}
+    <p class="hint">Your move! Scores stay hidden until you play.</p>
+    <div class="waiting">
+      {{range .Entries}}
+      <div{{if .Me}} class="me"{{end}}>
+        {{template "pawn" .Pawn}}
+        {{if .Played}}<span class="hidden-tile">?</span>{{else if .Me}}<span class="start-tile">your move</span>{{else}}<span class="start-tile">start</span>{{end}}
+        <span>{{.Username}}</span>
+      </div>
+      {{end}}
+    </div>
+  {{end}}
+</section>
+{{end}}
+{{define "race"}}
+<section class="panel">
+  <h2>The race</h2>
+  <div class="track">
+    {{range .Track}}
+    <div>
+      <div class="pawns">{{range .Pawns}}{{template "pawn" .}}{{end}}</div>
+      <span class="cell {{.Class}}">{{.Label}}</span>
+    </div>
+    {{end}}
+  </div>
+  <div class="legend">{{range .Racers}}<span>{{template "pawn" .Pawn}}{{.Username}} {{.Wins}}</span>{{end}}</div>
+</section>
+{{end}}

@@ -1,0 +1,25 @@
+{{define "content"}}
+<h1>{{.User.Username}}</h1>
+{{with .Error}}<p class="error">{{.}}</p>{{end}}
+<section class="panel">
+  <h2>Your pawn</h2>
+  <form method="post" action="/account/pawn" class="inline-form">
+    {{template "pawn" .User.Pawn}}
+    <label for="pawn" class="visually-hidden">Pawn color</label>
+    <input id="pawn" type="color" name="pawn" value="{{.User.Pawn}}">
+    <button class="btn">Save</button>
+  </form>
+</section>
+<section class="panel">
+  <form method="post" action="/logout"><button class="btn">Log out</button></form>
+</section>
+<section class="panel">
+  <h2>Delete account</h2>
+  <p>Removes your results, your memberships and the groups you own. This can't be undone.</p>
+  <form method="post" action="/account/delete" class="stack">
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" required autocomplete="current-password">
+    <button class="btn danger">Delete my account</button>
+  </form>
+</section>
+{{end}}

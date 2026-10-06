@@ -1,0 +1,27 @@
+{{define "content"}}
+<h1>{{.Group.Name}}</h1>
+<nav class="tabs">
+  <a href="/g/{{.Group.ID}}">Today</a>
+  <a href="/g/{{.Group.ID}}/leaderboard" aria-current="page">Leaderboard</a>
+  <a href="/g/{{.Group.ID}}/settings">Settings</a>
+</nav>
+<nav class="actions" aria-label="Filter by tag">
+  <a class="chip" href="/g/{{.Group.ID}}/leaderboard"{{if not .Tag}} aria-current="page"{{end}}>all games</a>
+  {{$g := .Group}}{{$tag := .Tag}}
+  {{range .Tags}}<a class="chip" href="/g/{{$g.ID}}/leaderboard?tag={{.}}"{{if eq . $tag}} aria-current="page"{{end}}>{{.}}</a>{{end}}
+</nav>
+{{template "race" .Race}}
+{{range .Stats}}
+<section class="panel">
+  <h2>{{gameName .Game}}{{with .Variant}} · {{.}}{{end}}</h2>
+  <table>
+    <tr><th>Player</th><th>Plays</th><th>Wins</th><th>Win %</th><th>Avg</th><th>Fails</th></tr>
+    {{range .Stats}}
+    <tr><td>{{.Username}}</td><td>{{.Plays}}</td><td>{{.Wins}}</td><td>{{.WinRate}}%</td><td>{{if .AvgScore.Valid}}{{printf "%.1f" .AvgScore.Float64}}{{else}}-{{end}}</td><td>{{.Fails}}</td></tr>
+    {{end}}
+  </table>
+</section>
+{{else}}
+<section class="panel"><p>Stats appear once a puzzle is finished (when the next one starts).</p></section>
+{{end}}
+{{end}}

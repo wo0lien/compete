@@ -1,0 +1,21 @@
+{{define "content"}}
+<h1>{{.Group.Name}}</h1>
+<nav class="tabs">
+  <a href="/g/{{.Group.ID}}" aria-current="page">Today</a>
+  <a href="/g/{{.Group.ID}}/leaderboard">Leaderboard</a>
+  <a href="/g/{{.Group.ID}}/settings">Settings</a>
+</nav>
+{{template "race" .Race}}
+<form method="post" action="/results" class="paste">
+  <label for="text" class="visually-hidden">Paste a share text</label>
+  <textarea id="text" name="text" rows="2" required placeholder="Paste your share text…"></textarea>
+  <input type="hidden" name="back" value="/g/{{.Group.ID}}">
+  <button class="btn go">Go!</button>
+</form>
+{{range .Boards}}
+  {{template "board" .}}
+  <p class="foot"><a href="/g/{{$.Group.ID}}/history?game={{.Game}}&amp;variant={{.Variant}}">Older {{gameName .Game}}{{with .Variant}} · {{.}}{{end}} puzzles</a></p>
+{{else}}
+<section class="panel"><p>No results yet. Paste one above and invite your friends from Settings.</p></section>
+{{end}}
+{{end}}
