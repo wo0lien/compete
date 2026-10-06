@@ -13,6 +13,9 @@ import (
 	"github.com/wo0lien/compete/web"
 )
 
+// version is set by release builds: -ldflags "-X main.version=vX.Y.Z".
+var version = "dev"
+
 func env(key, def string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
@@ -25,7 +28,12 @@ func main() {
 	db := flag.String("db", env("COMPETE_DB", "compete.db"), "SQLite database path")
 	dev := flag.Bool("dev", false, "allow session cookies over plain http (local development only)")
 	proxy := flag.Bool("trust-proxy", false, "take the client IP from the last X-Forwarded-For entry")
+	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 
 	st, err := store.Open(*db)
 	if err != nil {

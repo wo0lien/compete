@@ -21,6 +21,9 @@ Docker (behind Caddy or another TLS proxy: session cookies are HTTPS-only):
 Just trying it on your machine over plain http? Add `-dev` instead of `-trust-proxy`
 and open http://localhost:8080.
 
+Prebuilt Linux binaries (amd64, arm64) and SHA-256 checksums are attached to each
+[GitHub release](https://github.com/wo0lien/compete/releases); `compete -version` prints the release tag.
+
 Bare metal: copy the binary to `/usr/local/bin/compete`, install `deploy/compete.service`,
 and put Caddy in front with `deploy/Caddyfile` (TLS is automatic). Run with `-trust-proxy`
 behind a proxy so rate limiting sees real client IPs.
