@@ -101,3 +101,16 @@ func TestLimiter(t *testing.T) {
 		t.Fatal("other IPs have their own budget")
 	}
 }
+
+func TestRateLimitPageKeepsShell(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	var resp *http.Response
+	var body string
+	for range 21 {
+		resp, body = post(t, c, ts.URL+"/login", url.Values{"username": {"x"}, "password": {"y"}})
+	}
+	if resp.StatusCode != http.StatusTooManyRequests || !strings.Contains(body, `class="logo"`) || !strings.Contains(body, "Slow down") {
+		t.Fatalf("21st login = %d, want a 429 page with the app header:\n%s", resp.StatusCode, body)
+	}
+}

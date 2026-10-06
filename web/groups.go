@@ -24,7 +24,7 @@ func (s *Server) groupFor(w http.ResponseWriter, r *http.Request, u store.User) 
 			return g, true
 		}
 		if !errors.Is(err, store.ErrNotFound) {
-			fail(w, err)
+			s.oops(w, r, err)
 			return store.Group{}, false
 		}
 	}
@@ -51,7 +51,7 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request, u store.Use
 		return
 	}
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/g/%d", g.ID), http.StatusSeeOther)
@@ -65,7 +65,7 @@ func (s *Server) joinForm(w http.ResponseWriter, r *http.Request, u store.User) 
 		return
 	}
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	s.render(w, r, http.StatusOK, "join.html", map[string]any{"Group": g, "Code": r.PathValue("code")})
@@ -79,7 +79,7 @@ func (s *Server) join(w http.ResponseWriter, r *http.Request, u store.User) {
 	case errors.Is(err, store.ErrTooManyGroups):
 		s.message(w, r, http.StatusUnprocessableEntity, "Too many groups", err.Error())
 	case err != nil:
-		fail(w, err)
+		s.oops(w, r, err)
 	default:
 		http.Redirect(w, r, fmt.Sprintf("/g/%d", g.ID), http.StatusSeeOther)
 	}
@@ -92,7 +92,7 @@ func (s *Server) settings(w http.ResponseWriter, r *http.Request, u store.User) 
 	}
 	members, err := s.store.Members(g.ID)
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	scheme := "https"
@@ -116,7 +116,7 @@ func (s *Server) rename(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, settingsURL(g), http.StatusSeeOther)
@@ -128,7 +128,7 @@ func (s *Server) newCode(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	if _, err := s.store.RegenerateCode(g.ID); err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, settingsURL(g), http.StatusSeeOther)
@@ -139,13 +139,17 @@ func (s *Server) kick(w http.ResponseWriter, r *http.Request, u store.User) {
 	if !ok {
 		return
 	}
+	if r.FormValue("confirm") != "yes" {
+		s.message(w, r, http.StatusUnprocessableEntity, "Not kicked", "Confirm the kick to remove this player.")
+		return
+	}
 	uid, err := strconv.ParseInt(r.PathValue("uid"), 10, 64)
 	if err != nil {
 		s.message(w, r, http.StatusNotFound, "Not found", "No such member.")
 		return
 	}
 	if err := s.store.RemoveMember(g.ID, uid); err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, settingsURL(g), http.StatusSeeOther)
@@ -161,7 +165,7 @@ func (s *Server) leave(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	if err := s.store.RemoveMember(g.ID, u.ID); err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -178,7 +182,7 @@ func (s *Server) deleteGroup(w http.ResponseWriter, r *http.Request, u store.Use
 		return
 	}
 	if err := s.store.DeleteGroup(g.ID); err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)

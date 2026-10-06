@@ -142,7 +142,14 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, page
 	buf.WriteTo(w)
 }
 
-// fail logs an unexpected error and answers 500 without details.
+// oops logs an unexpected error and answers a 500 page that keeps the app shell.
+func (s *Server) oops(w http.ResponseWriter, r *http.Request, err error) {
+	log.Print(err)
+	s.message(w, r, http.StatusInternalServerError, "Something went wrong", "Please try again in a moment.")
+}
+
+// fail logs an unexpected error and answers a plain 500; render and static
+// files use it, where rendering a page could fail again.
 func fail(w http.ResponseWriter, err error) {
 	log.Print(err)
 	http.Error(w, "Something went wrong.", http.StatusInternalServerError)
@@ -156,7 +163,7 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 	}
 	groups, err := s.store.GroupsOf(u.ID)
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups})

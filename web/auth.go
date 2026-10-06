@@ -66,7 +66,7 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 		err = s.setSession(w, u)
 	}
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, safeNext(next), http.StatusSeeOther)
@@ -87,7 +87,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		err = s.setSession(w, u)
 	}
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, safeNext(next), http.StatusSeeOther)

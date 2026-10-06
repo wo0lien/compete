@@ -61,12 +61,12 @@ func (s *Server) leaderboard(w http.ResponseWriter, r *http.Request, u store.Use
 	}
 	race, err := s.raceData(g.ID, ids)
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	stats, err := s.store.Leaderboard(g.ID)
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	if ids != nil {
@@ -85,7 +85,7 @@ func (s *Server) history(w http.ResponseWriter, r *http.Request, u store.User) {
 	q := r.URL.Query()
 	ids, err := s.store.Puzzles(g.ID, q.Get("game"), q.Get("variant"))
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	s.render(w, r, http.StatusOK, "history.html", map[string]any{
@@ -106,7 +106,7 @@ func (s *Server) onePuzzle(w http.ResponseWriter, r *http.Request, u store.User)
 	}
 	b, err := s.store.Board(g.ID, u.ID, q.Get("game"), q.Get("variant"), puzzle)
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	s.render(w, r, http.StatusOK, "board.html", map[string]any{"Group": g, "Board": b})

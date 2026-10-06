@@ -19,7 +19,13 @@
     {{template "pawn" .Pawn}}
     <div class="grow line"><b>{{.Username}}</b>{{if eq .Role "owner"}}<span class="chip">owner</span>{{end}}</div>
     {{if and (eq $g.Role "owner") (ne .UserID $me)}}
-    <form method="post" action="/g/{{$g.ID}}/kick/{{.UserID}}"><button class="btn danger">Kick</button></form>
+    <details class="confirm">
+      <summary class="btn danger">Kick</summary>
+      <form method="post" action="/g/{{$g.ID}}/kick/{{.UserID}}">
+        <input type="hidden" name="confirm" value="yes">
+        <button class="btn danger">Kick {{.Username}}</button>
+      </form>
+    </details>
     {{end}}
   </div>
   {{end}}

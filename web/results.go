@@ -18,12 +18,12 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 	}
 	boards, err := s.store.CurrentBoards(g.ID, u.ID)
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	race, err := s.raceData(g.ID, nil)
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Boards": boards, "Race": race})
@@ -48,7 +48,7 @@ func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, back, http.StatusSeeOther)

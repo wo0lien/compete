@@ -59,3 +59,11 @@ func TestLeaderboardHistoryBoardPages(t *testing.T) {
 		}
 	}
 }
+
+func TestTagFilterMarksSelection(t *testing.T) {
+	ts, _, bob := twoPlayers(t)
+	_, body := get(t, bob, ts.URL+"/g/1/leaderboard?tag=music")
+	if !strings.Contains(body, `class="filters"`) || !strings.Contains(body, `aria-current="page">music</a>`) {
+		t.Fatalf("tag filter should be a .filters nav with music selected:\n%s", body)
+	}
+}

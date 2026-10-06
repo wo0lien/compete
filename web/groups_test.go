@@ -32,7 +32,13 @@ func TestCreateJoinKick(t *testing.T) {
 	if _, body := get(t, bob, ts.URL+"/g/1/settings"); !strings.Contains(body, "alice") {
 		t.Fatal("settings does not list members")
 	}
-	if resp, _ := post(t, alice, ts.URL+"/g/1/kick/2", nil); resp.StatusCode != http.StatusSeeOther {
+	if resp, _ := post(t, alice, ts.URL+"/g/1/kick/2", nil); resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("kick without confirm = %d, want 422", resp.StatusCode)
+	}
+	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, "<details") {
+		t.Fatal("kick button should sit behind a <details> confirmation")
+	}
+	if resp, _ := post(t, alice, ts.URL+"/g/1/kick/2", url.Values{"confirm": {"yes"}}); resp.StatusCode != http.StatusSeeOther {
 		t.Fatalf("kick = %d", resp.StatusCode)
 	}
 	if resp, _ := get(t, bob, ts.URL+"/g/1/settings"); resp.StatusCode != http.StatusNotFound {

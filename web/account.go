@@ -18,7 +18,7 @@ func (s *Server) setPawn(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	if err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	http.Redirect(w, r, "/account", http.StatusSeeOther)
@@ -31,7 +31,7 @@ func (s *Server) deleteAccount(w http.ResponseWriter, r *http.Request, u store.U
 		return
 	}
 	if err := s.store.DeleteUser(u.ID); err != nil {
-		fail(w, err)
+		s.oops(w, r, err)
 		return
 	}
 	s.clearSession(w)
@@ -51,7 +51,7 @@ func (s *Server) reset(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, store.ErrWeakPassword):
 		s.render(w, r, http.StatusUnprocessableEntity, "reset.html", map[string]any{"Token": tok, "Error": err.Error()})
 	case err != nil:
-		fail(w, err)
+		s.oops(w, r, err)
 	default:
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 	}
