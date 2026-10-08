@@ -4,6 +4,7 @@ on:
     tags: ['v*']
 permissions:
   contents: write
+  packages: write
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -28,6 +29,32 @@ jobs:
           cd "$(mktemp -d)"
           test "$("$RUNNER_TEMP/compete" -version)" = "$GITHUB_REF_NAME"
           test ! -e compete.db
-      - run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes
+      - name: plain release or pre-release
+        id: kind
+        run: |
+          # Only vX.Y.Z is a release: it moves "latest" (image and GitHub). Anything else is a pre-release.
+          if echo "$GITHUB_REF_NAME" | grep -Eqx 'v[0-9]+\.[0-9]+\.[0-9]+'; then
+            echo "tags=ghcr.io/wo0lien/compete:$GITHUB_REF_NAME,ghcr.io/wo0lien/compete:latest" >>"$GITHUB_OUTPUT"
+            echo "flag=" >>"$GITHUB_OUTPUT"
+          else
+            echo "tags=ghcr.io/wo0lien/compete:$GITHUB_REF_NAME" >>"$GITHUB_OUTPUT"
+            echo "flag=--prerelease" >>"$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: VERSION=${{ github.ref_name }}
+          tags: ${{ steps.kind.outputs.tags }}
+      - name: check the pushed image
+        run: test "$(docker run --rm "ghcr.io/wo0lien/compete:$GITHUB_REF_NAME" -version)" = "$GITHUB_REF_NAME"
+      - run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes ${{ steps.kind.outputs.flag }}
         env:
           GH_TOKEN: ${{ github.token }}
