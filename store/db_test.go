@@ -25,8 +25,8 @@ func TestOpenMigratesOnceAndEnablesForeignKeys(t *testing.T) {
 		var version, fk int
 		s.db.QueryRow("PRAGMA user_version").Scan(&version)
 		s.db.QueryRow("PRAGMA foreign_keys").Scan(&fk)
-		if version != 2 || fk != 1 {
-			t.Fatalf("user_version=%d foreign_keys=%d, want 2 1", version, fk)
+		if version != 3 || fk != 1 {
+			t.Fatalf("user_version=%d foreign_keys=%d, want 3 1", version, fk)
 		}
 		s.Close()
 	}

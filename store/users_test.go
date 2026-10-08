@@ -130,3 +130,24 @@ func TestPawn(t *testing.T) {
 		}
 	}
 }
+
+func TestLang(t *testing.T) {
+	s := newStore(t)
+	u := mustUser(t, s, "alice")
+	if u.Lang != "" {
+		t.Fatalf("new user lang = %q, want empty (follow browser)", u.Lang)
+	}
+	if err := s.SetLang(u.ID, "fr"); err != nil {
+		t.Fatal(err)
+	}
+	tok, err := s.CreateSession(u.ID, time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err := s.UserBySession(tok); err != nil || got.Lang != "fr" {
+		t.Fatalf("UserBySession lang = %q, %v; want fr", got.Lang, err)
+	}
+	if got, err := s.Authenticate("alice", "correct horse"); err != nil || got.Lang != "fr" {
+		t.Fatalf("Authenticate lang = %q, %v; want fr", got.Lang, err)
+	}
+}

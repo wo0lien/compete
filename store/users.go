@@ -44,6 +44,13 @@ type User struct {
 	ID       int64
 	Username string
 	Pawn     string // #rrggbb
+	Lang     string // "fr", "en", or "" to follow the browser
+}
+
+// SetLang saves the user's UI language; the web layer validates it.
+func (s *Store) SetLang(userID int64, lang string) error {
+	_, err := s.db.Exec("UPDATE users SET lang = ? WHERE id = ?", lang, userID)
+	return err
 }
 
 func validPassword(pw string) error {
@@ -76,8 +83,8 @@ func (s *Store) CreateUser(username, password string) (User, error) {
 func (s *Store) Authenticate(username, password string) (User, error) {
 	var u User
 	var hash string
-	err := s.db.QueryRow("SELECT id, username, pawn, pass_hash FROM users WHERE username = ?", username).
-		Scan(&u.ID, &u.Username, &u.Pawn, &hash)
+	err := s.db.QueryRow("SELECT id, username, pawn, lang, pass_hash FROM users WHERE username = ?", username).
+		Scan(&u.ID, &u.Username, &u.Pawn, &u.Lang, &hash)
 	if errors.Is(err, sql.ErrNoRows) || (err == nil && !checkPassword(hash, password)) {
 		return User{}, ErrBadLogin
 	}
@@ -99,8 +106,8 @@ func (s *Store) CreateSession(userID int64, ttl time.Duration) (string, error) {
 func (s *Store) UserBySession(token string) (User, error) {
 	var u User
 	err := s.db.QueryRow(`
-		SELECT u.id, u.username, u.pawn FROM sessions s JOIN users u ON u.id = s.user_id
-		WHERE s.token_hash = ? AND s.expires_at > unixepoch()`, tokenHash(token)).Scan(&u.ID, &u.Username, &u.Pawn)
+		SELECT u.id, u.username, u.pawn, u.lang FROM sessions s JOIN users u ON u.id = s.user_id
+		WHERE s.token_hash = ? AND s.expires_at > unixepoch()`, tokenHash(token)).Scan(&u.ID, &u.Username, &u.Pawn, &u.Lang)
 	if errors.Is(err, sql.ErrNoRows) {
 		return User{}, ErrNotFound
 	}
