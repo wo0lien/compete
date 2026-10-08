@@ -53,7 +53,7 @@ func (s *Server) clientIP(r *http.Request) string {
 func (s *Server) limited(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !s.limit.allow(s.clientIP(r)) {
-			s.message(w, r, http.StatusTooManyRequests, "Slow down", "Too many requests. Try again in a minute.")
+			s.message(w, r, http.StatusTooManyRequests, "msg.slow_down", "msg.slow_down_text")
 			return
 		}
 		h(w, r)

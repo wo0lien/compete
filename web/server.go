@@ -17,7 +17,7 @@ import (
 	"github.com/wo0lien/compete/store"
 )
 
-//go:embed templates static
+//go:embed templates static locales
 var assets embed.FS
 
 // maxBody caps request bodies: share texts and forms are tiny.
@@ -39,10 +39,16 @@ var funcs = template.FuncMap{
 		}
 		return id
 	},
-	"gameLang":     func(id string) string { g, _ := games.ByID(id); return g.Lang },
-	"scoreText":    func(id string, score *int) string { g, _ := games.ByID(id); return g.ShowScore(score) },
-	"tiebreakText": func(id string, t *int) string { g, _ := games.ByID(id); return g.ShowTiebreak(t) },
-	"inc":          func(i int) int { return i + 1 },
+	"gameLang": func(id string) string { g, _ := games.ByID(id); return g.Lang },
+	"inc":      func(i int) int { return i + 1 },
+	// Per-request functions: stubs for parsing, bound to the request's
+	// language in render.
+	"t":            func(string, ...any) string { return "" },
+	"scoreText":    func(string, *int) string { return "" },
+	"tiebreakText": func(string, *int) string { return "" },
+	"num":          func(float64) string { return "" },
+	"lang":         func() string { return "" },
+	"here":         func() string { return "" },
 }
 
 func New(st *store.Store, secure, trustProxy bool) *Server {
@@ -62,7 +68,7 @@ func New(st *store.Store, secure, trustProxy bool) *Server {
 	}
 	mux := http.NewServeMux()
 	s.routes(mux)
-	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(mux))
+	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(withLang(mux)))
 	return s
 }
 
@@ -103,6 +109,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /manifest.webmanifest", serveAsset("manifest.webmanifest", "application/manifest+json"))
 	mux.HandleFunc("GET /sw.js", serveAsset("sw.js", "text/javascript; charset=utf-8"))
 	mux.HandleFunc("GET /games", s.gamesPage)
+	mux.HandleFunc("POST /lang", s.setLang)
 }
 
 type ctxKey struct{}
@@ -132,8 +139,24 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, page
 	if u, ok := userFrom(r); ok {
 		data["User"] = u
 	}
+	// html/template refuses Funcs once executed, so the stored pages are never
+	// executed: each request runs a clone bound to its language.
+	t, err := s.pages[page].Clone()
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	lang, here := langFrom(r), r.URL.RequestURI()
+	t.Funcs(template.FuncMap{
+		"t":            func(id string, args ...any) string { return tr(lang, id, args...) },
+		"scoreText":    func(id string, score *int) string { return scoreText(lang, id, score) },
+		"tiebreakText": func(id string, tb *int) string { return tiebreakText(lang, id, tb) },
+		"num":          func(f float64) string { return num(lang, f) },
+		"lang":         func() string { return lang },
+		"here":         func() string { return here },
+	})
 	var buf bytes.Buffer
-	if err := s.pages[page].ExecuteTemplate(&buf, "base", data); err != nil {
+	if err := t.ExecuteTemplate(&buf, "base", data); err != nil {
 		fail(w, err)
 		return
 	}
@@ -145,7 +168,7 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, page
 // oops logs an unexpected error and answers a 500 page that keeps the app shell.
 func (s *Server) oops(w http.ResponseWriter, r *http.Request, err error) {
 	log.Print(err)
-	s.message(w, r, http.StatusInternalServerError, "Something went wrong", "Please try again in a moment.")
+	s.message(w, r, http.StatusInternalServerError, "msg.oops", "msg.oops_text")
 }
 
 // fail logs an unexpected error and answers a plain 500; render and static

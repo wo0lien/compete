@@ -1,0 +1,157 @@
+# Messages de l'interface. Mêmes IDs que en.toml ; texte écrit en français,
+# pas traduit mot à mot. Tutoiement, ton simple.
+
+[nav]
+switch_to = "en"
+switch_label = "EN"
+
+[common]
+today = "Aujourd'hui"
+leaderboard = "Classement"
+settings = "Réglages"
+go = "C'est parti !"
+save = "Enregistrer"
+password = "Mot de passe"
+pseudonym = "Pseudo"
+signup = "Créer un compte"
+login = "Se connecter"
+home = "Accueil"
+back_to = "Retour à {{.Name}}"
+paste_label = "Colle un texte de partage"
+paste_placeholder = "Colle ton résultat ici…"
+supported_games = "Jeux pris en charge"
+
+[home]
+title = "Qui a gagné aujourd'hui ?"
+pitch = "Colle tes résultats Tusmo, Songless ou Travle et compare-toi à tes amis. Pas d'e-mail, pas de pistage : juste un pseudo."
+your_groups = "Tes groupes"
+no_group = "Aucun groupe pour l'instant. Crée-en un ou ouvre un lien d'invitation."
+new_group = "Nom du nouveau groupe"
+create = "Créer"
+
+[signup]
+title = "Rejoins la partie"
+pitch = "Choisis un pseudo. Pas d'e-mail, rien d'autre. Mot de passe oublié ? L'admin de ton instance peut t'envoyer un lien de réinitialisation."
+already = "Déjà inscrit ?"
+
+[login]
+title = "Content de te revoir"
+new_here = "Pas encore de compte ?"
+
+[reset]
+title = "Nouveau mot de passe"
+
+[account]
+pawn = "Ton pion"
+pawn_color = "Couleur du pion"
+logout = "Se déconnecter"
+delete_title = "Supprimer le compte"
+delete_text = "Supprime tes résultats, tes participations et les groupes que tu as créés. C'est définitif."
+delete_button = "Supprimer mon compte"
+
+[games]
+missing = "Il manque un jeu ?"
+ask = "Demande-le"
+ask_after = "avec un texte de partage gagnant et un perdant."
+
+[group]
+older = "Grilles précédentes de {{.Game}}"
+empty = "Aucun résultat pour l'instant. Colle le tien au-dessus et invite tes amis depuis les Réglages."
+
+[history]
+empty = "Aucune grille pour l'instant."
+
+[join]
+title = "Rejoindre {{.Name}} ?"
+text = "Tes résultats apparaîtront dans ce groupe, et tu verras les grilles des autres joueurs."
+button = "Rejoindre la partie"
+not_now = "Pas maintenant"
+
+[leaderboard]
+filter = "Filtrer par thème"
+all = "tous les jeux"
+player = "Joueur"
+plays = "Parties"
+wins = "Victoires"
+win_rate = "% victoires"
+avg = "Moy."
+fails = "Échecs"
+empty = "Les stats apparaissent quand une grille est terminée (au lancement de la suivante)."
+
+[board]
+not_played = "pas joué"
+hint = "À toi de jouer ! Les scores restent cachés tant que tu n'as pas joué."
+your_move = "à toi"
+start = "départ"
+
+[race]
+title = "La course"
+start = "Départ"
+
+[settings]
+invite = "Lien d'invitation"
+invite_text = "Toute personne qui a ce lien peut rejoindre le groupe."
+new_link = "Nouveau lien (l'ancien ne marchera plus)"
+players = "Joueurs"
+owner = "créateur"
+kick = "Exclure"
+kick_name = "Exclure {{.Name}}"
+owner_tools = "Gestion du groupe"
+group_name = "Nom du groupe"
+rename = "Renommer"
+delete_confirm = "Supprimer ce groupe et ses grilles pour tout le monde"
+delete = "Supprimer le groupe"
+leave = "Quitter le groupe"
+
+[submit]
+title = "Envoyer un résultat"
+ask = "Demander ce jeu"
+share_text = "Texte de partage"
+
+[tag]
+english = "anglais"
+french = "français"
+geography = "géographie"
+music = "musique"
+words = "mots"
+
+[msg]
+not_found = "Introuvable"
+group_not_found = "Ce groupe n'existe pas, ou tu n'en fais pas partie."
+owner_only = "Réservé au créateur"
+owner_only_text = "Seul le créateur du groupe peut faire ça."
+cant_create = "Impossible de créer le groupe"
+too_many_groups = "Trop de groupes"
+cant_rename = "Impossible de renommer"
+invite_expired = "Invitation expirée"
+invite_expired_text = "Ce lien d'invitation n'est pas valide ou a été remplacé. Demandes-en un nouveau."
+not_kicked = "Exclusion annulée"
+not_kicked_text = "Confirme l'exclusion pour retirer ce joueur."
+no_member = "Ce joueur n'est pas dans le groupe."
+you_own = "C'est ton groupe"
+you_own_text = "Le créateur ne peut pas quitter le groupe ; supprime-le à la place."
+not_deleted = "Suppression annulée"
+not_deleted_text = "Coche la case de confirmation pour supprimer le groupe pour tout le monde."
+oops = "Un problème est survenu"
+oops_text = "Réessaie dans un instant."
+slow_down = "Doucement"
+slow_down_text = "Trop de requêtes. Réessaie dans une minute."
+no_puzzle = "Cette grille n'existe pas."
+link_expired = "Lien expiré"
+link_expired_text = "Ce lien de réinitialisation a déjà servi ou a expiré. Demandes-en un nouveau à ton admin."
+
+[err]
+username_taken = "Ce pseudo est déjà pris."
+bad_username = "Le pseudo doit faire 3 à 24 caractères : lettres, chiffres, _ ou -."
+weak_password = "Le mot de passe doit faire au moins 10 caractères."
+bad_login = "Pseudo ou mot de passe incorrect."
+bad_pawn = "La couleur doit être au format #1a2b3c."
+bad_group_name = "Le nom du groupe doit faire 1 à 50 caractères."
+too_many_groups = "Tu peux être dans {{.N}} groupes au maximum."
+wrong_password_kept = "Mot de passe incorrect, compte conservé."
+unsupported = "Ce jeu ou ce format n'est pas encore pris en charge."
+already_submitted = "Déjà envoyé : {{.Board}}"
+
+[score]
+fail = "raté"
+away = "à {{.N}} pays"

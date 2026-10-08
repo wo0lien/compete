@@ -1,29 +1,29 @@
 {{define "content"}}
 <h1>{{.Group.Name}}</h1>
 <nav class="tabs">
-  <a href="/g/{{.Group.ID}}">Today</a>
-  <a href="/g/{{.Group.ID}}/leaderboard">Leaderboard</a>
-  <a href="/g/{{.Group.ID}}/settings" aria-current="page">Settings</a>
+  <a href="/g/{{.Group.ID}}">{{t "common.today"}}</a>
+  <a href="/g/{{.Group.ID}}/leaderboard">{{t "common.leaderboard"}}</a>
+  <a href="/g/{{.Group.ID}}/settings" aria-current="page">{{t "common.settings"}}</a>
 </nav>
 <section class="panel">
-  <h2>Invite link</h2>
-  <p>Anyone with this link can join.</p>
-  <input readonly value="{{.InviteURL}}" aria-label="Invite link">
-  {{if eq .Group.Role "owner"}}<form method="post" action="/g/{{.Group.ID}}/code"><button class="btn">New link (old one stops working)</button></form>{{end}}
+  <h2>{{t "settings.invite"}}</h2>
+  <p>{{t "settings.invite_text"}}</p>
+  <input readonly value="{{.InviteURL}}" aria-label="{{t "settings.invite"}}">
+  {{if eq .Group.Role "owner"}}<form method="post" action="/g/{{.Group.ID}}/code"><button class="btn">{{t "settings.new_link"}}</button></form>{{end}}
 </section>
 <section class="panel flush">
-  <div class="panel-head"><h2>Players</h2></div>
+  <div class="panel-head"><h2>{{t "settings.players"}}</h2></div>
   {{$g := .Group}}{{$me := .Me}}
   {{range .Members}}
   <div class="row">
     {{template "pawn" .Pawn}}
-    <div class="grow line"><b>{{.Username}}</b>{{if eq .Role "owner"}}<span class="chip">owner</span>{{end}}</div>
+    <div class="grow line"><b>{{.Username}}</b>{{if eq .Role "owner"}}<span class="chip">{{t "settings.owner"}}</span>{{end}}</div>
     {{if and (eq $g.Role "owner") (ne .UserID $me)}}
     <details class="confirm">
-      <summary class="btn danger">Kick</summary>
+      <summary class="btn danger">{{t "settings.kick"}}</summary>
       <form method="post" action="/g/{{$g.ID}}/kick/{{.UserID}}">
         <input type="hidden" name="confirm" value="yes">
-        <button class="btn danger">Kick {{.Username}}</button>
+        <button class="btn danger">{{t "settings.kick_name" "Name" .Username}}</button>
       </form>
     </details>
     {{end}}
@@ -32,18 +32,18 @@
 </section>
 {{if eq .Group.Role "owner"}}
 <section class="panel">
-  <h2>Owner tools</h2>
+  <h2>{{t "settings.owner_tools"}}</h2>
   <form method="post" action="/g/{{.Group.ID}}/rename" class="inline-form">
-    <label for="name" class="visually-hidden">Group name</label>
+    <label for="name" class="visually-hidden">{{t "settings.group_name"}}</label>
     <input id="name" name="name" value="{{.Group.Name}}" maxlength="50" required>
-    <button class="btn">Rename</button>
+    <button class="btn">{{t "settings.rename"}}</button>
   </form>
   <form method="post" action="/g/{{.Group.ID}}/delete" class="stack">
-    <label><input type="checkbox" name="confirm" value="yes" required style="width: auto"> Delete this group and its boards for everyone</label>
-    <button class="btn danger">Delete group</button>
+    <label><input type="checkbox" name="confirm" value="yes" required style="width: auto"> {{t "settings.delete_confirm"}}</label>
+    <button class="btn danger">{{t "settings.delete"}}</button>
   </form>
 </section>
 {{else}}
-<form method="post" action="/g/{{.Group.ID}}/leave"><button class="btn danger">Leave group</button></form>
+<form method="post" action="/g/{{.Group.ID}}/leave"><button class="btn danger">{{t "settings.leave"}}</button></form>
 {{end}}
 {{end}}

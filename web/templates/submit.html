@@ -1,13 +1,13 @@
 {{define "content"}}
 <section class="panel">
-  <h1>Submit a result</h1>
+  <h1>{{t "submit.title"}}</h1>
   {{with .Error}}<p class="error">{{.}}</p>{{end}}
-  {{if .Unsupported}}<p>See the <a href="/games">supported games</a>, or <a href="https://github.com/wo0lien/compete/issues/new?template=request-game.md">ask for this one</a>.</p>{{end}}
+  {{if .Unsupported}}<p><a href="/games">{{t "common.supported_games"}}</a> · <a href="https://github.com/wo0lien/compete/issues/new?template=request-game.md">{{t "submit.ask"}}</a></p>{{end}}
   <form method="post" action="/results" class="stack">
-    <label for="text">Share text</label>
+    <label for="text">{{t "submit.share_text"}}</label>
     <textarea id="text" name="text" rows="6" required>{{.Text}}</textarea>
     <input type="hidden" name="back" value="{{.Back}}">
-    <button class="btn go">Go!</button>
+    <button class="btn go">{{t "common.go"}}</button>
   </form>
 </section>
 {{end}}

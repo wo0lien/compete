@@ -1,12 +1,12 @@
 {{define "content"}}
-<h1>Supported games</h1>
+<h1>{{t "common.supported_games"}}</h1>
 {{range .Games}}
 <section class="panel">
   <h2><a href="{{.URL}}">{{.Name}}</a></h2>
-  <p class="line"><span class="chip">{{.Lang}}</span>{{range .Tags}}<span class="chip">{{.}}</span>{{end}}</p>
+  <p class="line"><span class="chip">{{.Lang}}</span>{{range .Tags}}<span class="chip">{{t (print "tag." .)}}</span>{{end}}</p>
 </section>
 {{end}}
 <section class="panel">
-  <p>Missing a game? <a href="https://github.com/wo0lien/compete/issues/new?template=request-game.md">Ask for it</a> with a winning and a losing share text.</p>
+  <p>{{t "games.missing"}} <a href="https://github.com/wo0lien/compete/issues/new?template=request-game.md">{{t "games.ask"}}</a> {{t "games.ask_after"}}</p>
 </section>
 {{end}}

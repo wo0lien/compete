@@ -9,9 +9,16 @@ import (
 	"github.com/wo0lien/compete/store"
 )
 
-// message renders a small page with a title and a sentence (errors, confirmations).
-func (s *Server) message(w http.ResponseWriter, r *http.Request, status int, title, text string) {
-	s.render(w, r, status, "message.html", map[string]any{"Title": title, "Text": text})
+// message renders a small page with a title and a sentence (errors,
+// confirmations), both given as message IDs.
+func (s *Server) message(w http.ResponseWriter, r *http.Request, status int, titleID, textID string) {
+	lang := langFrom(r)
+	s.render(w, r, status, "message.html", map[string]any{"Title": tr(lang, titleID), "Text": tr(lang, textID)})
+}
+
+// messageErr is message with the text taken from a store validation error.
+func (s *Server) messageErr(w http.ResponseWriter, r *http.Request, status int, titleID string, err error) {
+	s.render(w, r, status, "message.html", map[string]any{"Title": tr(langFrom(r), titleID), "Text": errText(r, err)})
 }
 
 // groupFor loads group {id} if u is a member. Anyone else gets 404, so
@@ -28,7 +35,7 @@ func (s *Server) groupFor(w http.ResponseWriter, r *http.Request, u store.User) 
 			return store.Group{}, false
 		}
 	}
-	s.message(w, r, http.StatusNotFound, "Not found", "This group doesn't exist or you're not in it.")
+	s.message(w, r, http.StatusNotFound, "msg.not_found", "msg.group_not_found")
 	return store.Group{}, false
 }
 
@@ -36,7 +43,7 @@ func (s *Server) groupFor(w http.ResponseWriter, r *http.Request, u store.User) 
 func (s *Server) ownerFor(w http.ResponseWriter, r *http.Request, u store.User) (store.Group, bool) {
 	g, ok := s.groupFor(w, r, u)
 	if ok && g.Role != "owner" {
-		s.message(w, r, http.StatusForbidden, "Owner only", "Only the group owner can do that.")
+		s.message(w, r, http.StatusForbidden, "msg.owner_only", "msg.owner_only_text")
 		return g, false
 	}
 	return g, ok
@@ -47,7 +54,7 @@ func settingsURL(g store.Group) string { return fmt.Sprintf("/g/%d/settings", g.
 func (s *Server) createGroup(w http.ResponseWriter, r *http.Request, u store.User) {
 	g, err := s.store.CreateGroup(u.ID, r.FormValue("name"))
 	if errors.Is(err, store.ErrBadGroupName) || errors.Is(err, store.ErrTooManyGroups) {
-		s.message(w, r, http.StatusUnprocessableEntity, "Can't create group", err.Error())
+		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.cant_create", err)
 		return
 	}
 	if err != nil {
@@ -61,7 +68,7 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request, u store.Use
 func (s *Server) joinForm(w http.ResponseWriter, r *http.Request, u store.User) {
 	g, err := s.store.GroupByCode(r.PathValue("code"))
 	if errors.Is(err, store.ErrNotFound) {
-		s.message(w, r, http.StatusNotFound, "Invite expired", "This invite link is invalid or was replaced. Ask for a new one.")
+		s.message(w, r, http.StatusNotFound, "msg.invite_expired", "msg.invite_expired_text")
 		return
 	}
 	if err != nil {
@@ -75,9 +82,9 @@ func (s *Server) join(w http.ResponseWriter, r *http.Request, u store.User) {
 	g, err := s.store.JoinByCode(u.ID, r.PathValue("code"))
 	switch {
 	case errors.Is(err, store.ErrNotFound):
-		s.message(w, r, http.StatusNotFound, "Invite expired", "This invite link is invalid or was replaced. Ask for a new one.")
+		s.message(w, r, http.StatusNotFound, "msg.invite_expired", "msg.invite_expired_text")
 	case errors.Is(err, store.ErrTooManyGroups):
-		s.message(w, r, http.StatusUnprocessableEntity, "Too many groups", err.Error())
+		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.too_many_groups", err)
 	case err != nil:
 		s.oops(w, r, err)
 	default:
@@ -112,7 +119,7 @@ func (s *Server) rename(w http.ResponseWriter, r *http.Request, u store.User) {
 	}
 	err := s.store.RenameGroup(g.ID, r.FormValue("name"))
 	if errors.Is(err, store.ErrBadGroupName) {
-		s.message(w, r, http.StatusUnprocessableEntity, "Can't rename", err.Error())
+		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.cant_rename", err)
 		return
 	}
 	if err != nil {
@@ -140,12 +147,12 @@ func (s *Server) kick(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	if r.FormValue("confirm") != "yes" {
-		s.message(w, r, http.StatusUnprocessableEntity, "Not kicked", "Confirm the kick to remove this player.")
+		s.message(w, r, http.StatusUnprocessableEntity, "msg.not_kicked", "msg.not_kicked_text")
 		return
 	}
 	uid, err := strconv.ParseInt(r.PathValue("uid"), 10, 64)
 	if err != nil {
-		s.message(w, r, http.StatusNotFound, "Not found", "No such member.")
+		s.message(w, r, http.StatusNotFound, "msg.not_found", "msg.no_member")
 		return
 	}
 	if err := s.store.RemoveMember(g.ID, uid); err != nil {
@@ -161,7 +168,7 @@ func (s *Server) leave(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	if g.Role == "owner" {
-		s.message(w, r, http.StatusUnprocessableEntity, "You own this group", "Owners can't leave; delete the group instead.")
+		s.message(w, r, http.StatusUnprocessableEntity, "msg.you_own", "msg.you_own_text")
 		return
 	}
 	if err := s.store.RemoveMember(g.ID, u.ID); err != nil {
@@ -178,7 +185,7 @@ func (s *Server) deleteGroup(w http.ResponseWriter, r *http.Request, u store.Use
 	}
 	// Deleting removes everyone's group: require the confirm box (works without JS).
 	if r.FormValue("confirm") != "yes" {
-		s.message(w, r, http.StatusUnprocessableEntity, "Not deleted", "Tick the confirmation box to delete the group for everyone.")
+		s.message(w, r, http.StatusUnprocessableEntity, "msg.not_deleted", "msg.not_deleted_text")
 		return
 	}
 	if err := s.store.DeleteGroup(g.ID); err != nil {

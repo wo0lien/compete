@@ -1,16 +1,16 @@
 {{define "content"}}
 <section class="panel">
-  <h1>Join the game</h1>
-  <p>Pick a pseudonym. No email, nothing else. Forgot your password later? Your instance admin can send you a reset link.</p>
+  <h1>{{t "signup.title"}}</h1>
+  <p>{{t "signup.pitch"}}</p>
   {{with .Error}}<p class="error">{{.}}</p>{{end}}
   <form method="post" action="/signup" class="stack">
     <input type="hidden" name="next" value="{{.Next}}">
-    <label for="username">Pseudonym</label>
+    <label for="username">{{t "common.pseudonym"}}</label>
     <input id="username" name="username" value="{{.Username}}" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_\-]+" autocomplete="username">
-    <label for="password">Password</label>
+    <label for="password">{{t "common.password"}}</label>
     <input id="password" type="password" name="password" required minlength="10" autocomplete="new-password">
-    <button class="btn go">Sign up</button>
+    <button class="btn go">{{t "common.signup"}}</button>
   </form>
-  <p>Already playing? <a href="/login?next={{.Next}}">Log in</a></p>
+  <p>{{t "signup.already"}} <a href="/login?next={{.Next}}">{{t "common.login"}}</a></p>
 </section>
 {{end}}

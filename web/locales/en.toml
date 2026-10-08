@@ -1,0 +1,157 @@
+# UI messages. IDs are grouped by page; {{.Name}} placeholders are filled by
+# the template or handler. fr.toml must have exactly the same IDs.
+
+[nav]
+switch_to = "fr"
+switch_label = "FR"
+
+[common]
+today = "Today"
+leaderboard = "Leaderboard"
+settings = "Settings"
+go = "Go!"
+save = "Save"
+password = "Password"
+pseudonym = "Pseudonym"
+signup = "Sign up"
+login = "Log in"
+home = "Home"
+back_to = "Back to {{.Name}}"
+paste_label = "Paste a share text"
+paste_placeholder = "Paste your share text…"
+supported_games = "Supported games"
+
+[home]
+title = "Who won today?"
+pitch = "Paste your Tusmo, Songless or Travle results and race your friends. No email, no tracking: just a pseudonym."
+your_groups = "Your groups"
+no_group = "No group yet. Create one or open an invite link."
+new_group = "New group name"
+create = "Create"
+
+[signup]
+title = "Join the game"
+pitch = "Pick a pseudonym. No email, nothing else. Forgot your password later? Your instance admin can send you a reset link."
+already = "Already playing?"
+
+[login]
+title = "Welcome back"
+new_here = "New here?"
+
+[reset]
+title = "New password"
+
+[account]
+pawn = "Your pawn"
+pawn_color = "Pawn color"
+logout = "Log out"
+delete_title = "Delete account"
+delete_text = "Removes your results, your memberships and the groups you own. This can't be undone."
+delete_button = "Delete my account"
+
+[games]
+missing = "Missing a game?"
+ask = "Ask for it"
+ask_after = "with a winning and a losing share text."
+
+[group]
+older = "Older {{.Game}} puzzles"
+empty = "No results yet. Paste one above and invite your friends from Settings."
+
+[history]
+empty = "No puzzles yet."
+
+[join]
+title = "Join {{.Name}}?"
+text = "Your results will show up in this group, and you'll see the other players' boards."
+button = "Join the game"
+not_now = "Not now"
+
+[leaderboard]
+filter = "Filter by tag"
+all = "all games"
+player = "Player"
+plays = "Plays"
+wins = "Wins"
+win_rate = "Win %"
+avg = "Avg"
+fails = "Fails"
+empty = "Stats appear once a puzzle is finished (when the next one starts)."
+
+[board]
+not_played = "not played"
+hint = "Your move! Scores stay hidden until you play."
+your_move = "your move"
+start = "start"
+
+[race]
+title = "The race"
+start = "GO"
+
+[settings]
+invite = "Invite link"
+invite_text = "Anyone with this link can join."
+new_link = "New link (old one stops working)"
+players = "Players"
+owner = "owner"
+kick = "Kick"
+kick_name = "Kick {{.Name}}"
+owner_tools = "Owner tools"
+group_name = "Group name"
+rename = "Rename"
+delete_confirm = "Delete this group and its boards for everyone"
+delete = "Delete group"
+leave = "Leave group"
+
+[submit]
+title = "Submit a result"
+ask = "Ask for this game"
+share_text = "Share text"
+
+[tag]
+english = "english"
+french = "french"
+geography = "geography"
+music = "music"
+words = "words"
+
+[msg]
+not_found = "Not found"
+group_not_found = "This group doesn't exist or you're not in it."
+owner_only = "Owner only"
+owner_only_text = "Only the group owner can do that."
+cant_create = "Can't create group"
+too_many_groups = "Too many groups"
+cant_rename = "Can't rename"
+invite_expired = "Invite expired"
+invite_expired_text = "This invite link is invalid or was replaced. Ask for a new one."
+not_kicked = "Not kicked"
+not_kicked_text = "Confirm the kick to remove this player."
+no_member = "No such member."
+you_own = "You own this group"
+you_own_text = "Owners can't leave; delete the group instead."
+not_deleted = "Not deleted"
+not_deleted_text = "Tick the confirmation box to delete the group for everyone."
+oops = "Something went wrong"
+oops_text = "Please try again in a moment."
+slow_down = "Slow down"
+slow_down_text = "Too many requests. Try again in a minute."
+no_puzzle = "No such puzzle."
+link_expired = "Link expired"
+link_expired_text = "This reset link was already used or has expired. Ask your admin for a new one."
+
+[err]
+username_taken = "username already taken"
+bad_username = "username must be 3-24 letters, digits, _ or -"
+weak_password = "password must be at least 10 characters"
+bad_login = "wrong username or password"
+bad_pawn = "pawn color must look like #1a2b3c"
+bad_group_name = "group name must be 1-50 characters"
+too_many_groups = "you can be in at most {{.N}} groups"
+wrong_password_kept = "Wrong password, account kept."
+unsupported = "This game or format isn't supported yet."
+already_submitted = "Already submitted {{.Board}}"
+
+[score]
+fail = "fail"
+away = "{{.N}} away"

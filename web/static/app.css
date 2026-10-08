@@ -22,6 +22,9 @@ p { margin: 0; }
 .top { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; }
 main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 .logo { font-size: 32px; color: #fff; text-decoration: none; -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); }
+.nav { display: flex; align-items: center; gap: 10px; }
+.nav form { margin: 0; }
+.lang { padding: 6px 10px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .5); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 .me { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-decoration: none; font-weight: 800; }
 .pawn { width: 26px; height: 26px; flex: none; }
 .pawn path { stroke: var(--ink); stroke-width: 1.5; }

@@ -1,15 +1,15 @@
 {{define "content"}}
 <section class="panel">
-  <h1>Welcome back</h1>
+  <h1>{{t "login.title"}}</h1>
   {{with .Error}}<p class="error">{{.}}</p>{{end}}
   <form method="post" action="/login" class="stack">
     <input type="hidden" name="next" value="{{.Next}}">
-    <label for="username">Pseudonym</label>
+    <label for="username">{{t "common.pseudonym"}}</label>
     <input id="username" name="username" value="{{.Username}}" required autocomplete="username">
-    <label for="password">Password</label>
+    <label for="password">{{t "common.password"}}</label>
     <input id="password" type="password" name="password" required autocomplete="current-password">
-    <button class="btn go">Log in</button>
+    <button class="btn go">{{t "common.login"}}</button>
   </form>
-  <p>New here? <a href="/signup?next={{.Next}}">Sign up</a></p>
+  <p>{{t "login.new_here"}} <a href="/signup?next={{.Next}}">{{t "common.signup"}}</a></p>
 </section>
 {{end}}

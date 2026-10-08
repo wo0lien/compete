@@ -17,19 +17,19 @@
           {{if $e.Played}}
           <span class="tile{{if not $e.Score}} fail{{end}}">{{scoreText $game $e.Score}}</span>
           {{with tiebreakText $game $e.Tiebreak}}<span>{{.}}</span>{{end}}
-          {{else}}<span class="muted">not played</span>{{end}}
+          {{else}}<span class="muted">{{t "board.not_played"}}</span>{{end}}
         </div>
         {{with $e.Grid}}<pre class="grid">{{.}}</pre>{{end}}
       </div>
     </div>
     {{end}}
   {{else}}
-    <p class="hint">Your move! Scores stay hidden until you play.</p>
+    <p class="hint">{{t "board.hint"}}</p>
     <div class="waiting">
       {{range .Entries}}
       <div{{if .Me}} class="me"{{end}}>
         {{template "pawn" .Pawn}}
-        {{if .Played}}<span class="hidden-tile">?</span>{{else if .Me}}<span class="start-tile">your move</span>{{else}}<span class="start-tile">start</span>{{end}}
+        {{if .Played}}<span class="hidden-tile">?</span>{{else if .Me}}<span class="start-tile">{{t "board.your_move"}}</span>{{else}}<span class="start-tile">{{t "board.start"}}</span>{{end}}
         <span>{{.Username}}</span>
       </div>
       {{end}}
@@ -39,12 +39,12 @@
 {{end}}
 {{define "race"}}
 <section class="panel">
-  <h2>The race</h2>
+  <h2>{{t "race.title"}}</h2>
   <div class="track">
     {{range .Track}}
     <div>
       <div class="pawns">{{range .Pawns}}{{template "pawn" .}}{{end}}</div>
-      <span class="cell {{.Class}}">{{.Label}}</span>
+      <span class="cell {{.Class}}">{{if eq .Class "start"}}{{t "race.start"}}{{else}}{{.Label}}{{end}}</span>
     </div>
     {{end}}
   </div>

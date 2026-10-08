@@ -101,7 +101,7 @@ func (s *Server) onePuzzle(w http.ResponseWriter, r *http.Request, u store.User)
 	q := r.URL.Query()
 	puzzle, err := strconv.Atoi(q.Get("puzzle"))
 	if err != nil {
-		s.message(w, r, http.StatusNotFound, "Not found", "No such puzzle.")
+		s.message(w, r, http.StatusNotFound, "msg.not_found", "msg.no_puzzle")
 		return
 	}
 	b, err := s.store.Board(g.ID, u.ID, q.Get("game"), q.Get("variant"), puzzle)

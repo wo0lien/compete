@@ -1,28 +1,28 @@
 {{define "content"}}
 {{if .User}}
 <form method="post" action="/results" class="paste">
-  <label for="text" class="visually-hidden">Paste a share text</label>
-  <textarea id="text" name="text" rows="2" required placeholder="Paste your share text…"></textarea>
+  <label for="text" class="visually-hidden">{{t "common.paste_label"}}</label>
+  <textarea id="text" name="text" rows="2" required placeholder="{{t "common.paste_placeholder"}}"></textarea>
   <input type="hidden" name="back" value="/">
-  <button class="btn go">Go!</button>
+  <button class="btn go">{{t "common.go"}}</button>
 </form>
 <section class="panel">
-  <h2>Your groups</h2>
+  <h2>{{t "home.your_groups"}}</h2>
   <ul class="groups">
-    {{range .Groups}}<li><a href="/g/{{.ID}}">{{.Name}}</a></li>{{else}}<li class="muted">No group yet. Create one or open an invite link.</li>{{end}}
+    {{range .Groups}}<li><a href="/g/{{.ID}}">{{.Name}}</a></li>{{else}}<li class="muted">{{t "home.no_group"}}</li>{{end}}
   </ul>
   <form method="post" action="/groups" class="inline-form">
-    <label for="name" class="visually-hidden">New group name</label>
-    <input id="name" name="name" required maxlength="50" placeholder="New group name">
-    <button class="btn">Create</button>
+    <label for="name" class="visually-hidden">{{t "home.new_group"}}</label>
+    <input id="name" name="name" required maxlength="50" placeholder="{{t "home.new_group"}}">
+    <button class="btn">{{t "home.create"}}</button>
   </form>
 </section>
 {{else}}
 <section class="panel">
-  <h1>Who won today?</h1>
-  <p>Paste your Tusmo, Songless or Travle results and race your friends. No email, no tracking: just a pseudonym.</p>
-  <p class="actions"><a class="btn go" href="/signup">Sign up</a> <a class="btn" href="/login">Log in</a></p>
+  <h1>{{t "home.title"}}</h1>
+  <p>{{t "home.pitch"}}</p>
+  <p class="actions"><a class="btn go" href="/signup">{{t "common.signup"}}</a> <a class="btn" href="/login">{{t "common.login"}}</a></p>
 </section>
 {{end}}
-<p class="foot"><a href="/games">Supported games</a></p>
+<p class="foot"><a href="/games">{{t "common.supported_games"}}</a></p>
 {{end}}

@@ -1,10 +1,10 @@
 {{define "content"}}
 <section class="panel">
-  <h1>Join {{.Group.Name}}?</h1>
-  <p>Your results will show up in this group, and you'll see the other players' boards.</p>
+  <h1>{{t "join.title" "Name" .Group.Name}}</h1>
+  <p>{{t "join.text"}}</p>
   <form method="post" action="/join/{{.Code}}" class="actions">
-    <button class="btn go">Join the game</button>
-    <a class="btn" href="/">Not now</a>
+    <button class="btn go">{{t "join.button"}}</button>
+    <a class="btn" href="/">{{t "join.not_now"}}</a>
   </form>
 </section>
 {{end}}

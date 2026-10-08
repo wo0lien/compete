@@ -1,11 +1,11 @@
 {{define "content"}}
 <section class="panel">
-  <h1>New password</h1>
+  <h1>{{t "reset.title"}}</h1>
   {{with .Error}}<p class="error">{{.}}</p>{{end}}
   <form method="post" action="/reset/{{.Token}}" class="stack">
-    <label for="password">Password</label>
+    <label for="password">{{t "common.password"}}</label>
     <input id="password" type="password" name="password" required minlength="10" autocomplete="new-password">
-    <button class="btn go">Save</button>
+    <button class="btn go">{{t "common.save"}}</button>
   </form>
 </section>
 {{end}}

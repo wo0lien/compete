@@ -36,14 +36,15 @@ func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 	data := map[string]any{"Text": text, "Back": back}
 	rs := games.Parse(text)
 	if rs == nil {
-		data["Error"], data["Unsupported"] = "This game or format isn't supported yet.", true
+		data["Error"], data["Unsupported"] = tr(langFrom(r), "err.unsupported"), true
 		s.render(w, r, http.StatusUnprocessableEntity, "submit.html", data)
 		return
 	}
 	_, err := s.store.AddResults(u.ID, games.Normalize(text), rs)
 	if errors.Is(err, store.ErrDuplicate) {
 		g, _ := games.ByID(rs[0].Game)
-		data["Error"] = strings.TrimSpace(fmt.Sprintf("Already submitted %s #%d %s", g.Name, rs[0].PuzzleID, rs[0].Variant))
+		board := strings.TrimSpace(fmt.Sprintf("%s #%d %s", g.Name, rs[0].PuzzleID, rs[0].Variant))
+		data["Error"] = tr(langFrom(r), "err.already_submitted", "Board", board)
 		s.render(w, r, http.StatusConflict, "submit.html", data)
 		return
 	}

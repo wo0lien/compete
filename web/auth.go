@@ -59,8 +59,11 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 	name, next := r.FormValue("username"), r.FormValue("next")
 	u, err := s.store.CreateUser(name, r.FormValue("password"))
 	if errors.Is(err, store.ErrBadUsername) || errors.Is(err, store.ErrWeakPassword) || errors.Is(err, store.ErrUsernameTaken) {
-		s.render(w, r, http.StatusUnprocessableEntity, "signup.html", map[string]any{"Next": next, "Username": name, "Error": err.Error()})
+		s.render(w, r, http.StatusUnprocessableEntity, "signup.html", map[string]any{"Next": next, "Username": name, "Error": errText(r, err)})
 		return
+	}
+	if err == nil { // keep the language the account was created in
+		err = s.store.SetLang(u.ID, langFrom(r))
 	}
 	if err == nil {
 		err = s.setSession(w, u)
@@ -80,7 +83,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	name, next := r.FormValue("username"), r.FormValue("next")
 	u, err := s.store.Authenticate(name, r.FormValue("password"))
 	if errors.Is(err, store.ErrBadLogin) {
-		s.render(w, r, http.StatusUnauthorized, "login.html", map[string]any{"Next": next, "Username": name, "Error": err.Error()})
+		s.render(w, r, http.StatusUnauthorized, "login.html", map[string]any{"Next": next, "Username": name, "Error": errText(r, err)})
 		return
 	}
 	if err == nil {

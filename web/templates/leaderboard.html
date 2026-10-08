@@ -1,27 +1,27 @@
 {{define "content"}}
 <h1>{{.Group.Name}}</h1>
 <nav class="tabs">
-  <a href="/g/{{.Group.ID}}">Today</a>
-  <a href="/g/{{.Group.ID}}/leaderboard" aria-current="page">Leaderboard</a>
-  <a href="/g/{{.Group.ID}}/settings">Settings</a>
+  <a href="/g/{{.Group.ID}}">{{t "common.today"}}</a>
+  <a href="/g/{{.Group.ID}}/leaderboard" aria-current="page">{{t "common.leaderboard"}}</a>
+  <a href="/g/{{.Group.ID}}/settings">{{t "common.settings"}}</a>
 </nav>
-<nav class="filters" aria-label="Filter by tag">
-  <a href="/g/{{.Group.ID}}/leaderboard"{{if not .Tag}} aria-current="page"{{end}}>all games</a>
+<nav class="filters" aria-label="{{t "leaderboard.filter"}}">
+  <a href="/g/{{.Group.ID}}/leaderboard"{{if not .Tag}} aria-current="page"{{end}}>{{t "leaderboard.all"}}</a>
   {{$g := .Group}}{{$tag := .Tag}}
-  {{range .Tags}}<a href="/g/{{$g.ID}}/leaderboard?tag={{.}}"{{if eq . $tag}} aria-current="page"{{end}}>{{.}}</a>{{end}}
+  {{range .Tags}}<a href="/g/{{$g.ID}}/leaderboard?tag={{.}}"{{if eq . $tag}} aria-current="page"{{end}}>{{t (print "tag." .)}}</a>{{end}}
 </nav>
 {{template "race" .Race}}
 {{range .Stats}}
 <section class="panel">
   <h2>{{gameName .Game}}{{with .Variant}} · {{.}}{{end}}</h2>
   <table>
-    <tr><th>Player</th><th>Plays</th><th>Wins</th><th>Win %</th><th>Avg</th><th>Fails</th></tr>
+    <tr><th>{{t "leaderboard.player"}}</th><th>{{t "leaderboard.plays"}}</th><th>{{t "leaderboard.wins"}}</th><th>{{t "leaderboard.win_rate"}}</th><th>{{t "leaderboard.avg"}}</th><th>{{t "leaderboard.fails"}}</th></tr>
     {{range .Stats}}
-    <tr><td>{{.Username}}</td><td>{{.Plays}}</td><td>{{.Wins}}</td><td>{{.WinRate}}%</td><td>{{if .AvgScore.Valid}}{{printf "%.1f" .AvgScore.Float64}}{{else}}-{{end}}</td><td>{{.Fails}}</td></tr>
+    <tr><td>{{.Username}}</td><td>{{.Plays}}</td><td>{{.Wins}}</td><td>{{.WinRate}}%</td><td>{{if .AvgScore.Valid}}{{num .AvgScore.Float64}}{{else}}-{{end}}</td><td>{{.Fails}}</td></tr>
     {{end}}
   </table>
 </section>
 {{else}}
-<section class="panel"><p>Stats appear once a puzzle is finished (when the next one starts).</p></section>
+<section class="panel"><p>{{t "leaderboard.empty"}}</p></section>
 {{end}}
 {{end}}

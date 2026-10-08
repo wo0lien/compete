@@ -1,5 +1,5 @@
 {{define "base"}}<!doctype html>
-<html lang="en">
+<html lang="{{lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,11 @@
 <body hx-boost:inherited="true">
 <header class="top">
   <a href="/" class="logo">compete</a>
-  {{with .User}}<a href="/account" class="me">{{template "pawn" .Pawn}}{{.Username}}</a>{{end}}
+  <div class="nav">
+    {{/* full reload, not hx-boost: the swap would keep the old <html lang> */}}
+    <form method="post" action="/lang" hx-boost="false"><input type="hidden" name="back" value="{{here}}"><button class="lang" name="lang" value="{{t "nav.switch_to"}}" lang="{{t "nav.switch_to"}}">{{t "nav.switch_label"}}</button></form>
+    {{with .User}}<a href="/account" class="me">{{template "pawn" .Pawn}}{{.Username}}</a>{{end}}
+  </div>
 </header>
 <main>
 {{template "content" .}}
