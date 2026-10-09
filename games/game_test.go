@@ -41,3 +41,20 @@ func checkFixture(t *testing.T, file string, want []Result) {
 		t.Errorf("%s:\n got  %s\n want %s", file, g, w)
 	}
 }
+
+// Pasted text can carry a BOM, NBSPs or a line of the member's own before the
+// share header: the header is still found.
+func TestParseLeadingNoise(t *testing.T) {
+	for _, text := range []string{
+		"\uFEFFTUSMO #70 3/6 - 0:35",
+		"\u00a0TUSMO #70 3/6 - 0:35",
+		"TUSMO\u00a0#70 3/6 - 0:35",
+		"\u200bTUSMO #70 3/6 - 0:35",
+		"Trop facile aujourd'hui\n\nTUSMO #70 3/6 - 0:35",
+	} {
+		rs := Parse(text)
+		if len(rs) != 1 || rs[0].Game != "tusmo" || rs[0].PuzzleID != 70 {
+			t.Errorf("Parse(%q) = %v, want Tusmo #70", text, rs)
+		}
+	}
+}

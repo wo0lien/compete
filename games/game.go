@@ -83,23 +83,33 @@ func WithTag(tag string) []string {
 // All lists the supported games, in matching order.
 var All = []Game{tusmo, songless, travle}
 
-// Normalize cleans share text pasted from any platform before parsing:
-// some keyboards append U+FE0F to ⬛/⬜, Windows/iOS paste CRLF.
+// normalizer cleans share text pasted from any platform: some keyboards append
+// U+FE0F to ⬛/⬜, Windows/iOS paste CRLF, copies can carry a BOM, zero-width
+// spaces or NBSPs.
+var normalizer = strings.NewReplacer("\uFE0F", "", "\uFEFF", "", "\u200B", "", "\u00A0", " ", "\r\n", "\n")
+
+// Normalize cleans share text before parsing.
 func Normalize(text string) string {
-	text = strings.ReplaceAll(text, "\uFE0F", "")
-	text = strings.ReplaceAll(text, "\r\n", "\n")
-	return strings.TrimSpace(text)
+	return strings.TrimSpace(normalizer.Replace(text))
 }
 
 // Parse returns the results of the first game that recognizes text, or nil.
+// Headers are anchored at the start, so lines the member typed above the share
+// text are skipped one at a time.
 func Parse(text string) []Result {
 	text = Normalize(text)
-	for _, g := range All {
-		if rs := g.Parse(text); rs != nil {
-			return rs
+	for {
+		for _, g := range All {
+			if rs := g.Parse(text); rs != nil {
+				return rs
+			}
 		}
+		i := strings.IndexByte(text, '\n')
+		if i < 0 {
+			return nil
+		}
+		text = strings.TrimSpace(text[i+1:])
 	}
-	return nil
 }
 
 // ByID returns the game with the given id.
