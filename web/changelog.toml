@@ -1,0 +1,80 @@
+# What changed, for members. Newest first; en and fr have the same lines.
+# release.yml refuses a vX.Y.Z tag without its entry here.
+
+[[release]]
+version = "v0.1.7"
+date = "2026-10-09"
+en = [
+  "Boards move to today's puzzle when each game resets, even before anyone has played it.",
+  "The home page lists the games you still have to play today.",
+  "Puzzles that aren't out yet are refused.",
+  "The version is shown at the bottom of every page, with this changelog.",
+]
+fr = [
+  "Les tableaux passent à la grille du jour dès que chaque jeu change, même avant que quelqu'un ait joué.",
+  "L'accueil liste les jeux qu'il te reste à jouer aujourd'hui.",
+  "Les grilles pas encore sorties sont refusées.",
+  "La version s'affiche en bas de chaque page, avec ces nouveautés.",
+]
+
+[[release]]
+version = "v0.1.6"
+date = "2026-10-09"
+en = [
+  "Pasting works even with invisible characters or your own text above the share.",
+  "A Songless paste can no longer create dozens of boards.",
+]
+fr = [
+  "Le collage marche même avec des caractères invisibles ou ton propre texte au-dessus du partage.",
+  "Un collage Songless ne peut plus créer des dizaines de tableaux.",
+]
+
+[[release]]
+version = "v0.1.5"
+date = "2026-10-09"
+en = [
+  "Paste button: one tap pastes your results and submits them.",
+  "Share or copy the group invite link in one tap.",
+  "Each board links to its game, and the games you haven't played come first with a Play button.",
+]
+fr = [
+  "Bouton Coller : un appui colle tes résultats et les envoie.",
+  "Partage ou copie le lien d'invitation du groupe en un appui.",
+  "Chaque tableau mène à son jeu, et ceux que tu n'as pas joués passent en premier avec un bouton Jouer.",
+]
+
+[[release]]
+version = "v0.1.4"
+date = "2026-10-09"
+en = [
+  "Tied players now share the same rank.",
+  "Clearer pages when something is too long or goes wrong.",
+]
+fr = [
+  "Les joueurs à égalité partagent maintenant le même rang.",
+  "Des pages plus claires quand un texte est trop long ou qu'une erreur survient.",
+]
+
+[[release]]
+version = "v0.1.3"
+date = "2026-10-09"
+en = ["If your session expired while pasting, your results are kept after you log in again."]
+fr = ["Si ta session a expiré pendant un collage, tes résultats sont gardés après la reconnexion."]
+
+[[release]]
+version = "v0.1.2"
+date = "2026-10-09"
+en = ["Pages load faster, and you always get the latest look after an update."]
+fr = ["Les pages se chargent plus vite, et tu as toujours le dernier style après une mise à jour."]
+
+[[release]]
+version = "v0.1.1"
+date = "2026-10-09"
+en = ["compete speaks French and English: switch at the top of any page."]
+fr = ["compete parle français et anglais : change en haut de n'importe quelle page."]
+
+[[release]]
+version = "v0.1.0"
+date = "2026-10-08"
+en = ["First release: groups, daily boards and the race for Tusmo, Songless and Travle."]
+fr = ["Première version : groupes, tableaux du jour et course pour Tusmo, Songless et Travle."]

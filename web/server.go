@@ -4,6 +4,7 @@ package web
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"embed"
 	"fmt"
@@ -19,7 +20,7 @@ import (
 	"github.com/wo0lien/compete/store"
 )
 
-//go:embed templates static locales
+//go:embed templates static locales changelog.toml
 var assets embed.FS
 
 // maxBody caps request bodies: share texts and forms are tiny.
@@ -35,6 +36,7 @@ type Server struct {
 	// BaseURL ("https://play.example.org") builds invite links; empty: the
 	// request's Host.
 	BaseURL string
+	Version string // shown in the footer; "" = "dev"
 }
 
 var funcs = template.FuncMap{
@@ -55,6 +57,7 @@ var funcs = template.FuncMap{
 	"num":          func(float64) string { return "" },
 	"lang":         func() string { return "" },
 	"here":         func() string { return "" },
+	"version":      func() string { return "" },
 }
 
 func New(st *store.Store, secure, trustProxy bool) *Server {
@@ -116,6 +119,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	static, _ := fs.Sub(assets, "static")
 	mux.Handle("GET /static/", cacheStatic(http.StripPrefix("/static/", http.FileServerFS(static))))
 	mux.HandleFunc("GET /{$}", s.home)
+	mux.HandleFunc("GET /changelog", s.changelogPage)
 	mux.HandleFunc("GET /signup", s.signupForm)
 	mux.HandleFunc("POST /signup", s.limited(s.signup))
 	mux.HandleFunc("GET /login", s.loginForm)
@@ -189,6 +193,7 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, page
 		"num":          func(f float64) string { return num(lang, f) },
 		"lang":         func() string { return lang },
 		"here":         func() string { return here },
+		"version":      func() string { return cmp.Or(s.Version, "dev") },
 	})
 	var buf bytes.Buffer
 	if err := t.ExecuteTemplate(&buf, "base", data); err != nil {

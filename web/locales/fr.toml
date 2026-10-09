@@ -6,6 +6,7 @@ switch_to = "en"
 switch_label = "EN"
 
 [common]
+changelog = "Nouveautés"
 play = "Jouer à {{.Game}}"
 paste = "Coller"
 today = "Aujourd'hui"

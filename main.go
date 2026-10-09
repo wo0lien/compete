@@ -98,6 +98,7 @@ func main() {
 	// No request logging on purpose: the instance keeps no IPs.
 	h := web.New(st, !*dev, *proxy)
 	h.BaseURL = strings.TrimSuffix(*baseURL, "/")
+	h.Version = version
 	srv := &http.Server{Addr: *addr, Handler: h, ReadHeaderTimeout: 10 * time.Second}
 	log.Printf("compete listening on %s", *addr)
 	log.Fatal(srv.ListenAndServe())
