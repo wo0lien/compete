@@ -10,6 +10,21 @@
     <button class="btn">{{t "common.save"}}</button>
   </form>
 </section>
+{{with .PushKey}}
+<section class="panel" data-push>
+  <h2>{{t "account.notifications"}}</h2>
+  <p data-push-install hidden>{{t "account.push_install"}}</p>
+  <p data-push-blocked hidden>{{t "account.push_blocked"}}</p>
+  <p><button type="button" class="btn go" data-push-key="{{.}}" hidden>{{t "account.push_on"}}</button></p>
+  <form method="post" action="/account/notifications" class="stack" data-push-settings hidden>
+    <label><input type="checkbox" name="digest" value="1"{{if $.Prefs.Digest}} checked{{end}} style="width: auto"> {{t "account.push_digest"}}</label>
+    <label><input type="checkbox" name="reminder" value="1"{{if $.Prefs.Reminder}} checked{{end}} style="width: auto"> {{t "account.push_reminder"}}</label>
+    <label><input type="checkbox" name="social" value="1"{{if $.Prefs.Social}} checked{{end}} style="width: auto"> {{t "account.push_social"}}</label>
+    <label><input type="checkbox" name="friends" value="1"{{if $.Prefs.Friends}} checked{{end}} style="width: auto"> {{t "account.push_friends"}}</label>
+    <p class="actions"><button class="btn">{{t "common.save"}}</button> <button type="button" class="btn" data-push-off>{{t "account.push_off"}}</button></p>
+  </form>
+</section>
+{{end}}
 <section class="panel">
   <form method="post" action="/logout"><button class="btn">{{t "account.logout"}}</button></form>
 </section>
