@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Result is one normalized outcome parsed from a share text.
@@ -21,12 +22,22 @@ type Result struct {
 // Game describes a supported game and how to parse and display its results.
 type Game struct {
 	ID, Name, URL string
-	Lang          string                     // the game's language, BCP 47 ("fr", "en")
-	Tags          []string                   // topics for filtering: "words", "music", "geography", "french"…
-	ScoreFmt      string                     // formats a score, e.g. "%d/6"
-	Fail          string                     // shown for a failed result, e.g. "X/6"
-	TiebreakKind  string                     // "time" (seconds), "away" (countries short) or ""
-	Parse         func(text string) []Result // nil = not this game
+	Lang          string                                          // the game's language, BCP 47 ("fr", "en")
+	Tags          []string                                        // topics for filtering: "words", "music", "geography", "french"…
+	ScoreFmt      string                                          // formats a score, e.g. "%d/6"
+	Fail          string                                          // shown for a failed result, e.g. "X/6"
+	TiebreakKind  string                                          // "time" (seconds), "away" (countries short) or ""
+	Parse         func(text string) []Result                      // nil = not this game
+	today         func(variant string, now time.Time) (int, bool) // nil = no known schedule
+}
+
+// Today is the number of today's puzzle for variant at now, from the game's
+// published numbering and reset time. false: no known schedule.
+func (g Game) Today(variant string, now time.Time) (int, bool) {
+	if g.today == nil {
+		return 0, false
+	}
+	return g.today(variant, now)
 }
 
 // ShowScore renders a stored score for display.
