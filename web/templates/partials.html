@@ -2,7 +2,7 @@
 {{define "board"}}
 <section class="panel flush">
   <div class="panel-head">
-    <h2>{{gameName .Game}} #{{.PuzzleID}}{{with .Variant}} · {{.}}{{end}}</h2>
+    <h2><a href="{{gameURL .Game}}" target="_blank" rel="noopener">{{gameName .Game}} #{{.PuzzleID}}{{with .Variant}} · {{.}}{{end}} ↗</a></h2>
     <span class="chip">{{gameLang .Game}}</span>
   </div>
   {{if .Revealed}}

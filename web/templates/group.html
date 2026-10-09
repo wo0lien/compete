@@ -15,6 +15,7 @@
 </form>
 {{range .Boards}}
   {{template "board" .}}
+  {{if not .Revealed}}<p class="actions"><a class="btn go play" href="{{gameURL .Game}}" target="_blank" rel="noopener">{{t "common.play" "Game" (gameName .Game)}}</a></p>{{end}}
   <p class="foot"><a href="/g/{{$.Group.ID}}/history?game={{.Game}}&amp;variant={{.Variant}}">{{$name := gameName .Game}}{{with .Variant}}{{$name = print $name " · " .}}{{end}}{{t "group.older" "Game" $name}}</a></p>
 {{else}}
 <section class="panel"><p>{{t "group.empty"}}</p></section>

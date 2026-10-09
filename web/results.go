@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/wo0lien/compete/games"
@@ -21,6 +22,8 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 		s.oops(w, r, err)
 		return
 	}
+	// Boards still to play first: after a submit, the next game is on top.
+	sort.SliceStable(boards, func(i, j int) bool { return !boards[i].Revealed && boards[j].Revealed })
 	race, err := s.raceData(g.ID, nil)
 	if err != nil {
 		s.oops(w, r, err)

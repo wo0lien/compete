@@ -6,6 +6,7 @@ switch_to = "en"
 switch_label = "EN"
 
 [common]
+play = "Jouer à {{.Game}}"
 paste = "Coller"
 today = "Aujourd'hui"
 leaderboard = "Classement"
