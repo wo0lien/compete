@@ -9,7 +9,7 @@
     {{$game := .Game}}
     {{range $i, $e := .Entries}}
     <div class="row{{if not $e.Played}} out{{end}}">
-      <span class="space{{if eq $i 0}} first{{end}}">{{if $e.Played}}{{inc $i}}{{else}}-{{end}}</span>
+      <span class="space{{if eq $e.Rank 1}} first{{end}}">{{if $e.Played}}{{$e.Rank}}{{else}}-{{end}}</span>
       {{template "pawn" $e.Pawn}}
       <div class="grow">
         <div class="line">

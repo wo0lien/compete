@@ -136,3 +136,28 @@ func TestCurrentBoardsAndPuzzles(t *testing.T) {
 		t.Fatalf("Puzzles = %v, want [71 70]", ps)
 	}
 }
+
+// Ranks follow the leaderboard's RANK(): equal score and tiebreak share a rank,
+// the next one skips (1, 1, 3); members who did not play have none.
+func TestBoardRanksTies(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), new(20)))
+	c.add(t, c.bob, res("tusmo", "", 70, new(3), new(20)))
+	c.add(t, c.alice, res("tusmo", "", 71, new(3), new(40)))
+	c.add(t, c.bob, res("tusmo", "", 71, new(3), new(20)))
+	c.add(t, c.carol, res("tusmo", "", 71, nil, new(5)))
+	for _, tc := range []struct {
+		puzzle int
+		want   map[string]int
+	}{
+		{70, map[string]int{"alice": 1, "bob": 1, "carol": 0}},
+		{71, map[string]int{"bob": 1, "alice": 2, "carol": 3}},
+	} {
+		b, _ := c.s.Board(c.g.ID, c.alice.ID, "tusmo", "", tc.puzzle)
+		for _, e := range b.Entries {
+			if e.Rank != tc.want[e.Username] {
+				t.Errorf("puzzle %d: %s rank %d, want %d", tc.puzzle, e.Username, e.Rank, tc.want[e.Username])
+			}
+		}
+	}
+}
