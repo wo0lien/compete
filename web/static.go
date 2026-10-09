@@ -40,15 +40,19 @@ func assetURL(name string) string {
 // cacheStatic serves files under /static/ with the content hash as ETag. The
 // exact URL from assetURL never changes content, so it is cached for a year;
 // any other request (fonts from the CSS, old hashes) revalidates and gets a 304.
+// Anything that is not a file, directories included, is a 404.
 func cacheStatic(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if hash, ok := assetHashes[strings.TrimPrefix(r.URL.Path, "/static/")]; ok {
-			w.Header().Set("ETag", `"`+hash+`"`)
-			if r.URL.Query().Get("v") == hash {
-				w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-			} else {
-				w.Header().Set("Cache-Control", "no-cache")
-			}
+		hash, ok := assetHashes[strings.TrimPrefix(r.URL.Path, "/static/")]
+		if !ok { // directories included: no listings
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("ETag", `"`+hash+`"`)
+		if r.URL.Query().Get("v") == hash {
+			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		} else {
+			w.Header().Set("Cache-Control", "no-cache")
 		}
 		h.ServeHTTP(w, r)
 	})

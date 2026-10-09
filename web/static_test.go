@@ -45,3 +45,12 @@ func TestStaticCaching(t *testing.T) {
 		t.Errorf("If-None-Match: status %d, want 304", resp.StatusCode)
 	}
 }
+
+func TestStaticNoDirectoryListing(t *testing.T) {
+	ts, _ := newTestServer(t)
+	for _, p := range []string{"/static/", "/static/fonts/", "/static/missing.css"} {
+		if resp, _ := get(t, newClient(t), ts.URL+p); resp.StatusCode != http.StatusNotFound {
+			t.Errorf("GET %s = %d, want 404", p, resp.StatusCode)
+		}
+	}
+}
