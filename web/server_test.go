@@ -20,6 +20,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *store.Store) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	st.Now = func() time.Time { return time.Date(2026, 10, 6, 12, 0, 0, 0, time.UTC) } // fixture day: Tusmo #70
 	ts := httptest.NewServer(New(st, false, false))
 	t.Cleanup(func() { ts.Close(); st.Close() })
 	return ts, st

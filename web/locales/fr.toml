@@ -148,6 +148,7 @@ link_expired = "Lien expiré"
 link_expired_text = "Ce lien de réinitialisation a déjà servi ou a expiré. Demandes-en un nouveau à ton admin."
 
 [err]
+future_puzzle = "{{.Board}} n'est pas encore sortie."
 username_taken = "Ce pseudo est déjà pris."
 bad_username = "Le pseudo doit faire 3 à 24 caractères : lettres, chiffres, _ ou -."
 weak_password = "Le mot de passe doit faire au moins 10 caractères."

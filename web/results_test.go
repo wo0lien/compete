@@ -114,3 +114,12 @@ func TestPlayLinks(t *testing.T) {
 		t.Fatalf("want one Play button, for Tusmo (got %d):\n%s", n, body)
 	}
 }
+
+func TestSubmitFuturePuzzle(t *testing.T) {
+	ts, alice, _ := twoPlayers(t)
+	resp := submit(t, ts, alice, "TUSMO #99 3/6 - 0:35")
+	_, body := get(t, alice, ts.URL+"/g/1") // nothing stored
+	if resp.StatusCode != http.StatusUnprocessableEntity || strings.Contains(body, "#99") {
+		t.Fatalf("future puzzle = %d, board shows #99: %v", resp.StatusCode, strings.Contains(body, "#99"))
+	}
+}

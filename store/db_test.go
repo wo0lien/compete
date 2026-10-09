@@ -3,6 +3,7 @@ package store
 import (
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func newStore(t *testing.T) *Store {
@@ -12,8 +13,12 @@ func newStore(t *testing.T) *Store {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { s.Close() })
+	s.Now = func() time.Time { return fixtureDay }
 	return s
 }
+
+// fixtureDay is when the repo's samples were shared: Tusmo #70, Songless #404, Travle #1392.
+var fixtureDay = time.Date(2026, 10, 6, 12, 0, 0, 0, time.UTC)
 
 func TestOpenMigratesOnceAndEnablesForeignKeys(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "test.db")

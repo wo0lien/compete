@@ -148,6 +148,7 @@ link_expired = "Link expired"
 link_expired_text = "This reset link was already used or has expired. Ask your admin for a new one."
 
 [err]
+future_puzzle = "{{.Board}} isn't out yet."
 username_taken = "username already taken"
 bad_username = "username must be 3-24 letters, digits, _ or -"
 weak_password = "password must be at least 10 characters"

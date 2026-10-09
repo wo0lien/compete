@@ -14,12 +14,22 @@ var ErrDuplicate = errors.New("already submitted")
 // ErrNoResults is AddResults called with nothing to store.
 var ErrNoResults = errors.New("no results")
 
+// ErrFuturePuzzle is a result for a puzzle not out yet (above today+1).
+var ErrFuturePuzzle = errors.New("puzzle not out yet")
+
 // AddResults stores parsed results for a user and returns the ones that were new.
 // Already-stored results are skipped, so re-sharing a Songless text after playing
 // one more category only adds that category. ErrDuplicate if nothing was new.
 func (s *Store) AddResults(userID int64, raw string, rs []games.Result) ([]games.Result, error) {
 	if len(rs) == 0 {
 		return nil, ErrNoResults
+	}
+	now := s.Now()
+	for _, r := range rs {
+		g, _ := games.ByID(r.Game)
+		if today, ok := g.Today(r.Variant, now); ok && r.PuzzleID > today+1 {
+			return nil, ErrFuturePuzzle
+		}
 	}
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -137,9 +147,9 @@ func eqInt(a, b *int) bool {
 }
 
 // CurrentBoards returns, for each game/variant played in the group, the board of
-// its newest puzzle. "Newest" is the highest puzzle_id among members' results,
-// which works for daily and weekly games alike.
-// ponytail: a fake far-future puzzle_id from a member becomes "current"; fine among friends.
+// today's puzzle, from the game's schedule: it shows before anyone has played it.
+// Without a schedule, "current" is the newest puzzle_id among members' results.
+// A newer id than today's (today+1, a player already past midnight) wins.
 func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	rows, err := s.db.Query(`
 		SELECT r.game, r.variant, MAX(r.puzzle_id) FROM results r
@@ -163,7 +173,12 @@ func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	}
 	// ponytail: one query per board; batch if groups ever play dozens of games.
 	boards := make([]Board, 0, len(keys))
+	now := s.Now()
 	for _, k := range keys {
+		g, _ := games.ByID(k.Game)
+		if today, ok := g.Today(k.Variant, now); ok && today > k.PuzzleID {
+			k.PuzzleID = today
+		}
 		b, err := s.Board(groupID, viewerID, k.Game, k.Variant, k.PuzzleID)
 		if err != nil {
 			return nil, err
