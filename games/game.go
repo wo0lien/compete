@@ -86,7 +86,7 @@ var All = []Game{tusmo, songless, travle}
 // Normalize cleans share text pasted from any platform before parsing:
 // some keyboards append U+FE0F to ⬛/⬜, Windows/iOS paste CRLF.
 func Normalize(text string) string {
-	text = strings.ReplaceAll(text, "️", "")
+	text = strings.ReplaceAll(text, "\uFE0F", "")
 	text = strings.ReplaceAll(text, "\r\n", "\n")
 	return strings.TrimSpace(text)
 }
