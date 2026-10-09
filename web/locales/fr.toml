@@ -46,6 +46,16 @@ new_here = "Pas encore de compte ?"
 title = "Nouveau mot de passe"
 
 [account]
+push_error = "Impossible d'activer les notifications. Réessaie."
+notifications = "Notifications"
+push_on = "Activer les notifications"
+push_off = "Désactiver sur cet appareil"
+push_digest = "Le matin : nouvelles grilles (8 h)"
+push_reminder = "Le soir : ce qu'il reste à jouer (20 h)"
+push_social = "Un ami te bat, ou tout le monde a joué"
+push_friends = "À chaque fois qu'un ami joue"
+push_blocked = "Les notifications sont bloquées pour compete dans les réglages du navigateur."
+push_install = "Sur iPhone, ajoute d'abord compete à l'écran d'accueil (Partager › Sur l'écran d'accueil)."
 pawn = "Ton pion"
 pawn_color = "Couleur du pion"
 logout = "Se déconnecter"
@@ -165,3 +175,10 @@ already_submitted = "Déjà envoyé : {{.Board}}"
 [score]
 fail = "raté"
 away = "à {{.N}} pays"
+
+[push]
+digest = "Nouvelles grilles : {{.Games}}"
+reminder = "Encore à jouer aujourd'hui : {{.Games}}"
+overtaken = "{{.Name}} t'a battu sur {{.Board}} ({{.Score}})"
+everyone = "Tout le monde dans {{.Group}} a joué {{.Board}}"
+friend = "{{.Name}} a joué {{.Board}}"

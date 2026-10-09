@@ -43,7 +43,7 @@ func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 		s.render(w, r, http.StatusUnprocessableEntity, "submit.html", data)
 		return
 	}
-	_, err := s.store.AddResults(u.ID, games.Normalize(text), rs)
+	added, err := s.store.AddResults(u.ID, games.Normalize(text), rs)
 	g, _ := games.ByID(rs[0].Game)
 	board := strings.TrimSpace(fmt.Sprintf("%s #%d %s", g.Name, rs[0].PuzzleID, rs[0].Variant))
 	if errors.Is(err, store.ErrFuturePuzzle) {
@@ -59,6 +59,9 @@ func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 	if err != nil {
 		s.oops(w, r, err)
 		return
+	}
+	if s.Push != nil {
+		go s.Push.Submitted(u.ID, added)
 	}
 	http.Redirect(w, r, back, http.StatusSeeOther)
 }

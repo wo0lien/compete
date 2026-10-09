@@ -2,6 +2,7 @@
 package main
 
 import (
+	"cmp"
 	"flag"
 	"fmt"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wo0lien/compete/push"
 	"github.com/wo0lien/compete/store"
 	"github.com/wo0lien/compete/web"
 )
@@ -99,6 +101,12 @@ func main() {
 	h := web.New(st, !*dev, *proxy)
 	h.BaseURL = strings.TrimSuffix(*baseURL, "/")
 	h.Version = version
+	n, err := push.New(st, web.Translate, cmp.Or(h.BaseURL, "https://github.com/wo0lien/compete"))
+	if err != nil {
+		log.Fatalf("push: %v", err)
+	}
+	h.Push = n
+	go n.Run()
 	srv := &http.Server{Addr: *addr, Handler: h, ReadHeaderTimeout: 10 * time.Second}
 	log.Printf("compete listening on %s", *addr)
 	log.Fatal(srv.ListenAndServe())

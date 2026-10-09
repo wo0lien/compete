@@ -46,6 +46,16 @@ new_here = "New here?"
 title = "New password"
 
 [account]
+push_error = "Couldn't turn on notifications. Try again."
+notifications = "Notifications"
+push_on = "Turn on notifications"
+push_off = "Turn off on this device"
+push_digest = "Morning: new puzzles are out (08:00)"
+push_reminder = "Evening: what's left to play (20:00)"
+push_social = "A friend beats you, or everyone has played"
+push_friends = "Each time a friend plays"
+push_blocked = "Notifications are blocked for compete in your browser settings."
+push_install = "On iPhone, add compete to your home screen first (Share › Add to Home Screen)."
 pawn = "Your pawn"
 pawn_color = "Pawn color"
 logout = "Log out"
@@ -165,3 +175,10 @@ already_submitted = "Already submitted {{.Board}}"
 [score]
 fail = "fail"
 away = "{{.N}} away"
+
+[push]
+digest = "New puzzles are out: {{.Games}}"
+reminder = "Still to play today: {{.Games}}"
+overtaken = "{{.Name}} beat you on {{.Board}} ({{.Score}})"
+everyone = "Everyone in {{.Group}} played {{.Board}}"
+friend = "{{.Name}} played {{.Board}}"

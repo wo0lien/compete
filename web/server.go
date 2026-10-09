@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/wo0lien/compete/games"
+	"github.com/wo0lien/compete/push"
 	"github.com/wo0lien/compete/store"
 )
 
@@ -36,7 +37,8 @@ type Server struct {
 	// BaseURL ("https://play.example.org") builds invite links; empty: the
 	// request's Host.
 	BaseURL string
-	Version string // shown in the footer; "" = "dev"
+	Version string         // shown in the footer; "" = "dev"
+	Push    *push.Notifier // nil: notifications off
 }
 
 var funcs = template.FuncMap{
@@ -141,6 +143,9 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /g/{id}/history", s.auth(s.history))
 	mux.HandleFunc("GET /g/{id}/board", s.auth(s.onePuzzle))
 	mux.HandleFunc("GET /account", s.auth(s.account))
+	mux.HandleFunc("POST /push/subscribe", s.auth(s.pushSubscribe))
+	mux.HandleFunc("POST /push/unsubscribe", s.auth(s.pushUnsubscribe))
+	mux.HandleFunc("POST /account/notifications", s.auth(s.setNotifications))
 	mux.HandleFunc("POST /account/pawn", s.auth(s.setPawn))
 	mux.HandleFunc("POST /account/delete", s.auth(s.deleteAccount))
 	mux.HandleFunc("GET /reset/{token}", s.resetForm)

@@ -6,6 +6,7 @@ toolchain go1.27.1
 
 require (
 	github.com/BurntSushi/toml v1.6.0
+	github.com/SherClockHolmes/webpush-go v1.4.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	golang.org/x/crypto v0.57.0
 	golang.org/x/text v0.42.0
@@ -14,6 +15,7 @@ require (
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect

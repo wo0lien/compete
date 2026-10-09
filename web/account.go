@@ -8,7 +8,16 @@ import (
 )
 
 func (s *Server) account(w http.ResponseWriter, r *http.Request, u store.User) {
-	s.render(w, r, http.StatusOK, "account.html", nil)
+	data := map[string]any{}
+	if s.Push != nil {
+		prefs, err := s.store.NotifyPrefs(u.ID)
+		if err != nil {
+			s.oops(w, r, err)
+			return
+		}
+		data["PushKey"], data["Prefs"] = s.Push.PublicKey(), prefs
+	}
+	s.render(w, r, http.StatusOK, "account.html", data)
 }
 
 func (s *Server) setPawn(w http.ResponseWriter, r *http.Request, u store.User) {
