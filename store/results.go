@@ -150,7 +150,8 @@ func eqInt(a, b *int) bool {
 // CurrentBoards returns, for each game/variant played in the group, the board of
 // today's puzzle, from the game's schedule: it shows before anyone has played it.
 // Without a schedule, "current" is the newest puzzle_id among members' results.
-// A newer id than today's (today+1, a player already past midnight) wins.
+// A newer id than today's (today+1, a player already past midnight) wins; one
+// further ahead is ignored.
 func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	rows, err := s.db.Query(`
 		SELECT r.game, r.variant, MAX(r.puzzle_id) FROM results r
@@ -177,7 +178,8 @@ func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	now := s.Now()
 	for _, k := range keys {
 		g, _ := games.ByID(k.Game)
-		if today, ok := g.Today(k.Variant, now); ok && today > k.PuzzleID {
+		// Ids beyond today+1 can only be rows stored before AddResults refused them (#4).
+		if today, ok := g.Today(k.Variant, now); ok && (today > k.PuzzleID || k.PuzzleID > today+1) {
 			k.PuzzleID = today
 		}
 		b, err := s.Board(groupID, viewerID, k.Game, k.Variant, k.PuzzleID)

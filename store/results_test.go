@@ -238,3 +238,16 @@ func TestToPlay(t *testing.T) {
 		t.Fatalf("stale games: ToPlay = %v, want none", got)
 	}
 }
+
+// An id stored before the future-puzzle guard existed (#4) must not stay current.
+func TestCurrentBoardIgnoresStoredFutureIds(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	if _, err := c.s.db.Exec(`INSERT INTO results(user_id, game, variant, puzzle_id, score, raw) VALUES (?, 'tusmo', '', 99, 1, 'raw')`, c.bob.ID); err != nil {
+		t.Fatal(err)
+	}
+	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
+	if len(bs) != 1 || bs[0].PuzzleID != 70 {
+		t.Fatalf("CurrentBoards = %+v, want today's #70, not the stored #99", bs)
+	}
+}
