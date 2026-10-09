@@ -2,7 +2,9 @@ package store
 
 import (
 	"errors"
+	"reflect"
 	"testing"
+	"time"
 
 	"github.com/wo0lien/compete/games"
 )
@@ -120,20 +122,20 @@ func TestRevealIsPerVariant(t *testing.T) { // Review Focus 4
 
 func TestCurrentBoardsAndPuzzles(t *testing.T) {
 	c := newCrew(t)
-	c.add(t, c.bob, res("tusmo", "", 70, new(3), nil))
-	c.add(t, c.carol, res("tusmo", "", 71, new(3), nil))
-	c.add(t, c.bob, res("travle", "usa", 12, new(0), nil))
-	c.add(t, c.dave, res("tusmo", "", 99, new(1), nil)) // outsider must not move "current"
+	c.add(t, c.bob, res("tusmo", "", 69, new(3), nil))
+	c.add(t, c.carol, res("tusmo", "", 70, new(3), nil))
+	c.add(t, c.bob, res("travle", "usa", 1205, new(0), nil))
+	c.add(t, c.dave, res("tusmo", "", 71, new(1), nil)) // outsider must not move "current"
 	bs, err := c.s.CurrentBoards(c.g.ID, c.alice.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(bs) != 2 || bs[0].Game != "travle" || bs[0].Variant != "usa" || bs[1].Game != "tusmo" || bs[1].PuzzleID != 71 {
+	if len(bs) != 2 || bs[0].Game != "travle" || bs[0].Variant != "usa" || bs[1].Game != "tusmo" || bs[1].PuzzleID != 70 {
 		t.Fatalf("CurrentBoards = %+v", bs)
 	}
 	ps, _ := c.s.Puzzles(c.g.ID, "tusmo", "")
-	if len(ps) != 2 || ps[0] != 71 || ps[1] != 70 {
-		t.Fatalf("Puzzles = %v, want [71 70]", ps)
+	if len(ps) != 2 || ps[0] != 70 || ps[1] != 69 {
+		t.Fatalf("Puzzles = %v, want [70 69]", ps)
 	}
 }
 
@@ -166,5 +168,86 @@ func TestAddResultsEmpty(t *testing.T) {
 	c := newCrew(t)
 	if _, err := c.s.AddResults(c.alice.ID, "raw", nil); !errors.Is(err, ErrNoResults) {
 		t.Fatalf("AddResults(nil) = %v, want ErrNoResults", err)
+	}
+}
+
+// The day after everyone played, today's puzzle is current even with no result
+// yet; an older archive share does not move it back.
+func TestCurrentBoardIsToday(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	c.s.Now = func() time.Time { return fixtureDay.Add(24 * time.Hour) } // Tusmo #71
+	c.add(t, c.bob, res("tusmo", "", 60, new(2), nil))                   // from the archive
+	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
+	if len(bs) != 1 || bs[0].PuzzleID != 71 || bs[0].Revealed {
+		t.Fatalf("CurrentBoards = %+v, want today's unrevealed Tusmo #71", bs)
+	}
+	for _, e := range bs[0].Entries {
+		if e.Played {
+			t.Fatalf("nobody played #71 yet: %+v", e)
+		}
+	}
+}
+
+// A player past midnight in their own timezone may share today+1; anything
+// beyond is refused and never becomes current.
+func TestFuturePuzzle(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 71, new(3), nil)) // today (#70) + 1
+	if _, err := c.s.AddResults(c.bob.ID, "raw", []games.Result{res("tusmo", "", 72, new(3), nil)}); !errors.Is(err, ErrFuturePuzzle) {
+		t.Fatalf("today+2 = %v, want ErrFuturePuzzle", err)
+	}
+	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
+	if len(bs) != 1 || bs[0].PuzzleID != 71 {
+		t.Fatalf("CurrentBoards = %+v, want #71", bs)
+	}
+}
+
+// A variant without a schedule keeps "newest id seen".
+func TestCurrentBoardUnscheduled(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("travle", "challenge", 139, new(0), nil))
+	c.add(t, c.bob, res("travle", "challenge", 140, new(1), nil))
+	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
+	if len(bs) != 1 || bs[0].PuzzleID != 140 {
+		t.Fatalf("CurrentBoards = %+v, want challenge #140", bs)
+	}
+}
+
+// A game stays "to play" until today's puzzle is submitted for every variant
+// the member played recently; unscheduled variants and stale games are left out.
+func TestToPlay(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 69, new(3), nil))            // yesterday
+	c.add(t, c.alice, res("travle", "challenge", 140, new(0), nil)) // no schedule
+	c.add(t, c.alice, res("songless", "Rock", 404, new(2), nil))    // today
+	c.add(t, c.alice, res("songless", "All", 403, new(2), nil))     // yesterday
+	got, err := c.s.ToPlay(c.alice.ID)
+	if err != nil || !reflect.DeepEqual(got, []string{"tusmo", "songless"}) {
+		t.Fatalf("ToPlay = %v, %v; want [tusmo songless]", got, err)
+	}
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	c.add(t, c.alice, res("songless", "All", 404, new(4), nil))
+	if got, _ := c.s.ToPlay(c.alice.ID); len(got) != 0 {
+		t.Fatalf("after playing today: ToPlay = %v, want none", got)
+	}
+	// submitted_at is the real insert time: pin it, then move the clock 15 days on.
+	c.s.db.Exec("UPDATE results SET submitted_at = ?", fixtureDay.Unix())
+	c.s.Now = func() time.Time { return fixtureDay.Add(15 * 24 * time.Hour) }
+	if got, _ := c.s.ToPlay(c.alice.ID); len(got) != 0 {
+		t.Fatalf("stale games: ToPlay = %v, want none", got)
+	}
+}
+
+// An id stored before the future-puzzle guard existed (#4) must not stay current.
+func TestCurrentBoardIgnoresStoredFutureIds(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	if _, err := c.s.db.Exec(`INSERT INTO results(user_id, game, variant, puzzle_id, score, raw) VALUES (?, 'tusmo', '', 99, 1, 'raw')`, c.bob.ID); err != nil {
+		t.Fatal(err)
+	}
+	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
+	if len(bs) != 1 || bs[0].PuzzleID != 70 {
+		t.Fatalf("CurrentBoards = %+v, want today's #70, not the stored #99", bs)
 	}
 }

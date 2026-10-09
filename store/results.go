@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/wo0lien/compete/games"
 )
@@ -14,12 +15,22 @@ var ErrDuplicate = errors.New("already submitted")
 // ErrNoResults is AddResults called with nothing to store.
 var ErrNoResults = errors.New("no results")
 
+// ErrFuturePuzzle is a result for a puzzle not out yet (above today+1).
+var ErrFuturePuzzle = errors.New("puzzle not out yet")
+
 // AddResults stores parsed results for a user and returns the ones that were new.
 // Already-stored results are skipped, so re-sharing a Songless text after playing
 // one more category only adds that category. ErrDuplicate if nothing was new.
 func (s *Store) AddResults(userID int64, raw string, rs []games.Result) ([]games.Result, error) {
 	if len(rs) == 0 {
 		return nil, ErrNoResults
+	}
+	now := s.Now()
+	for _, r := range rs {
+		g, _ := games.ByID(r.Game)
+		if today, ok := g.Today(r.Variant, now); ok && r.PuzzleID > today+1 {
+			return nil, ErrFuturePuzzle
+		}
 	}
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -137,9 +148,10 @@ func eqInt(a, b *int) bool {
 }
 
 // CurrentBoards returns, for each game/variant played in the group, the board of
-// its newest puzzle. "Newest" is the highest puzzle_id among members' results,
-// which works for daily and weekly games alike.
-// ponytail: a fake far-future puzzle_id from a member becomes "current"; fine among friends.
+// today's puzzle, from the game's schedule: it shows before anyone has played it.
+// Without a schedule, "current" is the newest puzzle_id among members' results.
+// A newer id than today's (today+1, a player already past midnight) wins; one
+// further ahead is ignored.
 func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	rows, err := s.db.Query(`
 		SELECT r.game, r.variant, MAX(r.puzzle_id) FROM results r
@@ -163,7 +175,13 @@ func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	}
 	// ponytail: one query per board; batch if groups ever play dozens of games.
 	boards := make([]Board, 0, len(keys))
+	now := s.Now()
 	for _, k := range keys {
+		g, _ := games.ByID(k.Game)
+		// Ids beyond today+1 can only be rows stored before AddResults refused them (#4).
+		if today, ok := g.Today(k.Variant, now); ok && (today > k.PuzzleID || k.PuzzleID > today+1) {
+			k.PuzzleID = today
+		}
 		b, err := s.Board(groupID, viewerID, k.Game, k.Variant, k.PuzzleID)
 		if err != nil {
 			return nil, err
@@ -193,4 +211,52 @@ func (s *Store) Puzzles(groupID int64, game, variant string) ([]int, error) {
 		ids = append(ids, id)
 	}
 	return ids, rows.Err()
+}
+
+// ToPlay lists the games (ids, in games.All order) the user submitted in the
+// last 14 days and has not yet played today for at least one of those variants.
+// Games without a known schedule are left out.
+func (s *Store) ToPlay(userID int64) ([]string, error) {
+	now := s.Now()
+	rows, err := s.db.Query(`SELECT DISTINCT game, variant FROM results WHERE user_id = ? AND submitted_at > ?`,
+		userID, now.Add(-14*24*time.Hour).Unix())
+	if err != nil {
+		return nil, err
+	}
+	type key struct{ game, variant string }
+	var keys []key
+	for rows.Next() {
+		var k key
+		if err := rows.Scan(&k.game, &k.variant); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		keys = append(keys, k)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	todo := map[string]bool{}
+	for _, k := range keys {
+		g, _ := games.ByID(k.game)
+		today, ok := g.Today(k.variant, now)
+		if !ok || todo[k.game] {
+			continue
+		}
+		var played bool // a today+1 share counts too
+		err := s.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM results WHERE user_id = ? AND game = ? AND variant = ? AND puzzle_id >= ?)`,
+			userID, k.game, k.variant, today).Scan(&played)
+		if err != nil {
+			return nil, err
+		}
+		todo[k.game] = !played
+	}
+	var out []string
+	for _, g := range games.All {
+		if todo[g.ID] {
+			out = append(out, g.ID)
+		}
+	}
+	return out, nil
 }

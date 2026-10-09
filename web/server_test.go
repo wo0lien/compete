@@ -20,6 +20,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *store.Store) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	st.Now = func() time.Time { return time.Date(2026, 10, 6, 12, 0, 0, 0, time.UTC) } // fixture day: Tusmo #70
 	ts := httptest.NewServer(New(st, false, false))
 	t.Cleanup(func() { ts.Close(); st.Close() })
 	return ts, st
@@ -127,5 +128,19 @@ func TestPanicRendersErrorPage(t *testing.T) {
 	h.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))
 	if w.Code != http.StatusInternalServerError || !strings.Contains(w.Body.String(), "Something went wrong") {
 		t.Fatalf("panic = %d, want the 500 page:\n%s", w.Code, w.Body)
+	}
+}
+
+func TestHomeToPlay(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	if _, body := get(t, c, ts.URL+"/"); strings.Contains(body, "To play today") {
+		t.Fatal("nothing played yet: no to-play panel")
+	}
+	post(t, c, ts.URL+"/results", url.Values{"text": {"TUSMO #69 3/6 - 0:35"}, "back": {"/"}})
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, "To play today") || !strings.Contains(body, `<a class="btn go play" href="https://www.tusmo.xyz" target="_blank" rel="noopener">Play Tusmo</a>`) {
+		t.Fatalf("home misses the Tusmo play button:\n%s", body)
 	}
 }

@@ -1,0 +1,9 @@
+{{define "content"}}
+<h1>{{t "common.changelog"}}</h1>
+{{range .Releases}}
+<section class="panel">
+  <h2>{{.Version}} <span class="muted">· {{.Date}}</span></h2>
+  <ul class="groups">{{range .Lines}}<li>{{.}}</li>{{end}}</ul>
+</section>
+{{end}}
+{{end}}

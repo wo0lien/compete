@@ -6,6 +6,7 @@ switch_to = "en"
 switch_label = "EN"
 
 [common]
+changelog = "Nouveautés"
 play = "Jouer à {{.Game}}"
 paste = "Coller"
 today = "Aujourd'hui"
@@ -24,6 +25,7 @@ paste_placeholder = "Colle ton résultat ici…"
 supported_games = "Jeux pris en charge"
 
 [home]
+to_play = "À jouer aujourd'hui"
 title = "Qui a gagné aujourd'hui ?"
 pitch = "Colle tes résultats Tusmo, Songless ou Travle et compare-toi à tes amis. Pas d'e-mail, pas de pistage : juste un pseudo."
 your_groups = "Tes groupes"
@@ -148,6 +150,7 @@ link_expired = "Lien expiré"
 link_expired_text = "Ce lien de réinitialisation a déjà servi ou a expiré. Demandes-en un nouveau à ton admin."
 
 [err]
+future_puzzle = "{{.Board}} n'est pas encore sortie."
 username_taken = "Ce pseudo est déjà pris."
 bad_username = "Le pseudo doit faire 3 à 24 caractères : lettres, chiffres, _ ou -."
 weak_password = "Le mot de passe doit faire au moins 10 caractères."

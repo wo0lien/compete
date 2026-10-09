@@ -44,9 +44,14 @@ func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	_, err := s.store.AddResults(u.ID, games.Normalize(text), rs)
+	g, _ := games.ByID(rs[0].Game)
+	board := strings.TrimSpace(fmt.Sprintf("%s #%d %s", g.Name, rs[0].PuzzleID, rs[0].Variant))
+	if errors.Is(err, store.ErrFuturePuzzle) {
+		data["Error"] = tr(langFrom(r), "err.future_puzzle", "Board", board)
+		s.render(w, r, http.StatusUnprocessableEntity, "submit.html", data)
+		return
+	}
 	if errors.Is(err, store.ErrDuplicate) {
-		g, _ := games.ByID(rs[0].Game)
-		board := strings.TrimSpace(fmt.Sprintf("%s #%d %s", g.Name, rs[0].PuzzleID, rs[0].Variant))
 		data["Error"] = tr(langFrom(r), "err.already_submitted", "Board", board)
 		s.render(w, r, http.StatusConflict, "submit.html", data)
 		return

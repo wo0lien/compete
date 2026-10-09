@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/fs"
 	"strings"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -20,6 +21,8 @@ var ErrNotFound = errors.New("not found")
 
 type Store struct {
 	db *sql.DB
+	// Now is the clock that decides which puzzle is today's; tests pin it.
+	Now func() time.Time
 }
 
 // Open opens (creating if needed) the database at path and applies pending migrations.
@@ -34,7 +37,7 @@ func Open(path string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
-	return &Store{db: db}, nil
+	return &Store{db: db, Now: time.Now}, nil
 }
 
 func (s *Store) Close() error { return s.db.Close() }

@@ -92,4 +92,5 @@ th, td { padding: 6px 4px; border-bottom: 2px dashed var(--line); text-align: le
 .error { color: var(--coral-dark); font-weight: 800; }
 .muted { opacity: .7; }
 .foot { text-align: center; }
+.version { padding: 0 0 20px; font-size: 13px; opacity: .7; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

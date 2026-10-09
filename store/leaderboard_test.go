@@ -1,9 +1,13 @@
 package store
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestLeaderboardCountsClosedPuzzlesOnly(t *testing.T) { // Review Focus 5
 	c := newCrew(t)
+	c.s.Now = func() time.Time { return fixtureDay.Add(48 * time.Hour) } // Tusmo #72 is today
 	c.add(t, c.alice, res("tusmo", "", 70, new(2), nil), res("tusmo", "", 71, nil, nil), res("tusmo", "", 72, new(1), nil))
 	c.add(t, c.bob, res("tusmo", "", 70, new(3), nil), res("tusmo", "", 71, new(4), nil))
 	c.add(t, c.dave, res("tusmo", "", 70, new(1), nil))         // outsider: must not steal alice's win

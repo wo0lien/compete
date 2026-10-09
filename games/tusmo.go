@@ -5,7 +5,8 @@ import "regexp"
 var tusmoRe = regexp.MustCompile(`(?i)^TUSMO #(\d+) ([1-6X])/6 - (\d+):(\d\d)(?: - top (\d+)%)?`)
 
 var tusmo = Game{ID: "tusmo", Name: "Tusmo", URL: "https://www.tusmo.xyz", Lang: "fr",
-	Tags: []string{"words", "french"}, ScoreFmt: "%d/6", Fail: "X/6", TiebreakKind: "time", Parse: parseTusmo}
+	Tags: []string{"words", "french"}, ScoreFmt: "%d/6", Fail: "X/6", TiebreakKind: "time", Parse: parseTusmo,
+	today: daily("UTC", "2026-07-29")}
 
 // parseTusmo reads the header line: attempts (X = failed), time as tiebreak,
 // optional percentile. The grid is kept for display only.

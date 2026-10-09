@@ -6,6 +6,7 @@ switch_to = "fr"
 switch_label = "FR"
 
 [common]
+changelog = "What's new"
 play = "Play {{.Game}}"
 paste = "Paste"
 today = "Today"
@@ -24,6 +25,7 @@ paste_placeholder = "Paste your share text…"
 supported_games = "Supported games"
 
 [home]
+to_play = "To play today"
 title = "Who won today?"
 pitch = "Paste your Tusmo, Songless or Travle results and race your friends. No email, no tracking: just a pseudonym."
 your_groups = "Your groups"
@@ -148,6 +150,7 @@ link_expired = "Link expired"
 link_expired_text = "This reset link was already used or has expired. Ask your admin for a new one."
 
 [err]
+future_puzzle = "{{.Board}} isn't out yet."
 username_taken = "username already taken"
 bad_username = "username must be 3-24 letters, digits, _ or -"
 weak_password = "password must be at least 10 characters"
