@@ -57,3 +57,53 @@ func TestSafeNext(t *testing.T) { // Review Focus 4
 		}
 	}
 }
+
+// A form post from an expired session cannot be replayed by the post-login
+// redirect (it would GET a POST-only route). A paste comes back as the submit
+// form pre-filled with the text; other posts return to the page they came from.
+func TestLoginAfterExpiredSubmit(t *testing.T) {
+	ts, alice, _ := twoPlayers(t)
+	post(t, alice, ts.URL+"/logout", nil)
+	resp := submit(t, ts, alice, tusmoAlice)
+	loc, err := url.Parse(resp.Header.Get("Location"))
+	if resp.StatusCode != http.StatusSeeOther || err != nil || loc.Path != "/login" {
+		t.Fatalf("anonymous submit = %d → %q", resp.StatusCode, resp.Header.Get("Location"))
+	}
+	next := loc.Query().Get("next")
+	resp, _ = post(t, alice, ts.URL+"/login", url.Values{"username": {"alice"}, "password": {"correct horse"}, "next": {next}})
+	resp, body := get(t, alice, ts.URL+resp.Header.Get("Location"))
+	if resp.StatusCode != http.StatusOK || !strings.Contains(body, tusmoAlice+"</textarea>") ||
+		!strings.Contains(body, `name="back" value="/g/1"`) {
+		t.Fatalf("after login = %d, want the submit form with the text and back=/g/1:\n%s", resp.StatusCode, body)
+	}
+	if resp := submit(t, ts, alice, tusmoAlice); resp.StatusCode != http.StatusSeeOther || resp.Header.Get("Location") != "/g/1" {
+		t.Fatalf("resubmit = %d → %q", resp.StatusCode, resp.Header.Get("Location"))
+	}
+}
+
+func TestLoginNextForOtherPosts(t *testing.T) {
+	ts, _ := newTestServer(t)
+	for _, tc := range []struct{ back, referer, want string }{
+		{"/g/1", ts.URL + "/elsewhere", "/g/1"},
+		{"", ts.URL + "/g/1/settings?x=1", "/g/1/settings?x=1"},
+		{"", "", "/"},
+	} {
+		form := url.Values{"name": {"x"}}
+		if tc.back != "" {
+			form.Set("back", tc.back)
+		}
+		req, _ := http.NewRequest("POST", ts.URL+"/g/1/rename", strings.NewReader(form.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		if tc.referer != "" {
+			req.Header.Set("Referer", tc.referer)
+		}
+		resp, err := newClient(t).Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if want := "/login?next=" + url.QueryEscape(tc.want); resp.Header.Get("Location") != want {
+			t.Errorf("back %q, referer %q → %q, want %q", tc.back, tc.referer, resp.Header.Get("Location"), want)
+		}
+	}
+}
