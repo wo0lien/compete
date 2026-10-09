@@ -98,3 +98,19 @@ func TestSubmitTooLarge(t *testing.T) {
 		t.Fatalf("oversized paste = %d, want a 413 page:\n%s", resp.StatusCode, body)
 	}
 }
+
+// Boards the viewer has not submitted come first, with a Play button to the
+// game; every board's title links to its game.
+func TestPlayLinks(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	submit(t, ts, alice, "Songless #405\n\n🟥🟨🟩⬛️⬛️ [Pop]")
+	submit(t, ts, bob, tusmoBob)
+	_, body := get(t, alice, ts.URL+"/g/1")
+	tusmo, songless := strings.Index(body, "<h2><a href=\"https://www.tusmo.xyz\""), strings.Index(body, "<h2><a href=\"https://less.gg/songless\"")
+	if tusmo < 0 || songless < 0 || tusmo > songless {
+		t.Fatalf("want linked titles with unplayed Tusmo first (tusmo at %d, songless at %d):\n%s", tusmo, songless, body)
+	}
+	if n := strings.Count(body, `class="btn go play"`); n != 1 || !strings.Contains(body, `<a class="btn go play" href="https://www.tusmo.xyz" target="_blank" rel="noopener">Play Tusmo</a>`) {
+		t.Fatalf("want one Play button, for Tusmo (got %d):\n%s", n, body)
+	}
+}

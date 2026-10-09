@@ -42,6 +42,7 @@ var funcs = template.FuncMap{
 		return id
 	},
 	"gameLang": func(id string) string { g, _ := games.ByID(id); return g.Lang },
+	"gameURL":  func(id string) string { g, _ := games.ByID(id); return g.URL },
 	"asset":    assetURL,
 	// Per-request functions: stubs for parsing, bound to the request's
 	// language in render.

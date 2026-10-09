@@ -9,6 +9,7 @@
   <h2>{{t "settings.invite"}}</h2>
   <p>{{t "settings.invite_text"}}</p>
   <input readonly value="{{.InviteURL}}" aria-label="{{t "settings.invite"}}">
+  <p><button type="button" class="btn" data-share="{{.InviteURL}}" data-copy-label="{{t "settings.copy_link"}}" data-copied="{{t "settings.copied"}}" hidden>{{t "settings.share_link"}}</button></p>
   {{if eq .Group.Role "owner"}}<form method="post" action="/g/{{.Group.ID}}/code"><button class="btn">{{t "settings.new_link"}}</button></form>{{end}}
 </section>
 <section class="panel flush">

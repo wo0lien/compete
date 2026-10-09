@@ -10,10 +10,12 @@
   <label for="text" class="visually-hidden">{{t "common.paste_label"}}</label>
   <textarea id="text" name="text" rows="2" required placeholder="{{t "common.paste_placeholder"}}"></textarea>
   <input type="hidden" name="back" value="/g/{{.Group.ID}}">
+  <button type="button" class="btn" data-paste hidden>{{t "common.paste"}}</button>
   <button class="btn go">{{t "common.go"}}</button>
 </form>
 {{range .Boards}}
   {{template "board" .}}
+  {{if not .Revealed}}<p class="actions"><a class="btn go play" href="{{gameURL .Game}}" target="_blank" rel="noopener">{{t "common.play" "Game" (gameName .Game)}}</a></p>{{end}}
   <p class="foot"><a href="/g/{{$.Group.ID}}/history?game={{.Game}}&amp;variant={{.Variant}}">{{$name := gameName .Game}}{{with .Variant}}{{$name = print $name " · " .}}{{end}}{{t "group.older" "Game" $name}}</a></p>
 {{else}}
 <section class="panel"><p>{{t "group.empty"}}</p></section>
