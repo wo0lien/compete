@@ -11,10 +11,16 @@ import (
 
 var ErrDuplicate = errors.New("already submitted")
 
+// ErrNoResults is AddResults called with nothing to store.
+var ErrNoResults = errors.New("no results")
+
 // AddResults stores parsed results for a user and returns the ones that were new.
 // Already-stored results are skipped, so re-sharing a Songless text after playing
 // one more category only adds that category. ErrDuplicate if nothing was new.
 func (s *Store) AddResults(userID int64, raw string, rs []games.Result) ([]games.Result, error) {
+	if len(rs) == 0 {
+		return nil, ErrNoResults
+	}
 	tx, err := s.db.Begin()
 	if err != nil {
 		return nil, err
