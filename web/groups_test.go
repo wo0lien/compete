@@ -112,7 +112,7 @@ func TestClipboardButtons(t *testing.T) {
 		}
 	}
 	_, body := get(t, alice, ts.URL+"/g/1/settings")
-	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" data-copy-label="Copy link" data-copied="Copied ✓" hidden>Share link</button>`).MatchString(body) {
+	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" data-copy-label="Copy link" data-copied="Copied" hidden>Share link</button>`).MatchString(body) {
 		t.Errorf("settings has no share button with the invite URL:\n%s", body)
 	}
 }

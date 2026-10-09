@@ -93,7 +93,7 @@ start = "GO"
 [settings]
 share_link = "Share link"
 copy_link = "Copy link"
-copied = "Copied ✓"
+copied = "Copied"
 invite = "Invite link"
 invite_text = "Anyone with this link can join."
 new_link = "New link (old one stops working)"
