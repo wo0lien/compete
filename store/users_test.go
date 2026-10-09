@@ -151,3 +151,15 @@ func TestLang(t *testing.T) {
 		t.Fatalf("Authenticate lang = %q, %v; want fr", got.Lang, err)
 	}
 }
+
+func TestResetTokensSwept(t *testing.T) {
+	s := newStore(t)
+	mustUser(t, s, "alice")
+	s.CreateResetToken("alice", -time.Hour) // already expired
+	s.CreateResetToken("alice", time.Hour)
+	var n int
+	s.db.QueryRow("SELECT COUNT(*) FROM password_resets").Scan(&n)
+	if n != 1 {
+		t.Fatalf("%d reset rows, want only the live one", n)
+	}
+}
