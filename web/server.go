@@ -32,6 +32,9 @@ type Server struct {
 	limit      *limiter
 	secure     bool // Secure cookies; false only for local http and tests
 	trustProxy bool // client IP from X-Forwarded-For (behind Caddy)
+	// BaseURL ("https://play.example.org") builds invite links; empty: the
+	// request's Host.
+	BaseURL string
 }
 
 var funcs = template.FuncMap{

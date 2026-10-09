@@ -1,7 +1,9 @@
 package games
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -34,5 +36,18 @@ func TestSonglessTwoSharesPastedTogether(t *testing.T) {
 	want := []Result{{Game: "songless", Variant: "All", PuzzleID: 404, Score: new(3), Detail: map[string]any{"grid": "🟨🟨🟩⬛⬛"}}}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %+v, want %+v", got, want)
+	}
+}
+
+// A pasted text cannot create unbounded junk boards: long category names are
+// ignored and at most songlessMaxRows categories are kept.
+func TestSonglessCaps(t *testing.T) {
+	text := "Songless #405\n\n🟩⬛⬛⬛⬛ [" + strings.Repeat("x", 31) + "]\n"
+	for i := range 20 {
+		text += fmt.Sprintf("🟩⬛⬛⬛⬛ [Genre %d]\n", i)
+	}
+	rs := Parse(text)
+	if len(rs) != songlessMaxRows || rs[0].Variant != "Genre 0" {
+		t.Fatalf("got %d rows starting with %q, want %d starting with Genre 0", len(rs), rs[0].Variant, songlessMaxRows)
 	}
 }

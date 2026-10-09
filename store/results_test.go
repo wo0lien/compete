@@ -161,3 +161,10 @@ func TestBoardRanksTies(t *testing.T) {
 		}
 	}
 }
+
+func TestAddResultsEmpty(t *testing.T) {
+	c := newCrew(t)
+	if _, err := c.s.AddResults(c.alice.ID, "raw", nil); !errors.Is(err, ErrNoResults) {
+		t.Fatalf("AddResults(nil) = %v, want ErrNoResults", err)
+	}
+}

@@ -121,7 +121,11 @@ func (s *Store) DeleteSession(token string) error {
 
 // CreateResetToken is for the instance admin: there is no email, so the admin
 // hands the resulting link to the user.
+// Expired links are swept here: links are rare, so no timer is needed.
 func (s *Store) CreateResetToken(username string, ttl time.Duration) (string, error) {
+	if _, err := s.db.Exec("DELETE FROM password_resets WHERE expires_at <= unixepoch()"); err != nil {
+		return "", err
+	}
 	token, hash := newToken()
 	res, err := s.db.Exec(`
 		INSERT INTO password_resets(token_hash, user_id, expires_at)

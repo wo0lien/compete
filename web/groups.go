@@ -102,13 +102,16 @@ func (s *Server) settings(w http.ResponseWriter, r *http.Request, u store.User) 
 		s.oops(w, r, err)
 		return
 	}
-	scheme := "https"
-	if !s.secure {
-		scheme = "http"
+	base := s.BaseURL
+	if base == "" {
+		base = "https://" + r.Host
+		if !s.secure {
+			base = "http://" + r.Host
+		}
 	}
 	s.render(w, r, http.StatusOK, "settings.html", map[string]any{
 		"Group": g, "Members": members, "Me": u.ID,
-		"InviteURL": scheme + "://" + r.Host + "/join/" + g.InviteCode,
+		"InviteURL": base + "/join/" + g.InviteCode,
 	})
 }
 
