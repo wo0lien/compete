@@ -19,11 +19,31 @@ func (s *Server) auth(h func(http.ResponseWriter, *http.Request, store.User)) ht
 	return func(w http.ResponseWriter, r *http.Request) {
 		u, ok := userFrom(r)
 		if !ok {
-			http.Redirect(w, r, "/login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusSeeOther)
+			http.Redirect(w, r, "/login?next="+url.QueryEscape(loginNext(r)), http.StatusSeeOther)
 			return
 		}
 		h(w, r, u)
 	}
+}
+
+// loginNext is where to come back after logging in. The redirect would GET a
+// form post's URL, which only accepts POST: a paste comes back as the submit
+// form pre-filled (/share), any other post as the page it was sent from.
+func loginNext(r *http.Request) string {
+	if r.Method == http.MethodGet {
+		return r.URL.RequestURI()
+	}
+	back := r.PostFormValue("back")
+	if text := r.PostFormValue("text"); r.URL.Path == "/results" && text != "" {
+		return "/share?" + url.Values{"text": {text}, "back": {back}}.Encode()
+	}
+	if back != "" {
+		return back
+	}
+	if ref, err := url.Parse(r.Referer()); err == nil && ref.Path != "" {
+		return ref.RequestURI()
+	}
+	return "/"
 }
 
 // safeNext only allows local paths, so ?next= cannot redirect off-site.

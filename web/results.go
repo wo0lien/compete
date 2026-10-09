@@ -67,7 +67,9 @@ func shareText(q url.Values) string {
 	return strings.Join(parts, "\n")
 }
 
-// share is the PWA share target: it only pre-fills the submit form.
+// share is the PWA share target: it only pre-fills the submit form. back is
+// set when coming back from a paste sent with an expired session (loginNext).
 func (s *Server) share(w http.ResponseWriter, r *http.Request, _ store.User) {
-	s.render(w, r, http.StatusOK, "submit.html", map[string]any{"Text": shareText(r.URL.Query()), "Back": "/"})
+	q := r.URL.Query()
+	s.render(w, r, http.StatusOK, "submit.html", map[string]any{"Text": shareText(q), "Back": safeNext(q.Get("back"))})
 }
