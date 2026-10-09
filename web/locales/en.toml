@@ -46,6 +46,7 @@ new_here = "New here?"
 title = "New password"
 
 [account]
+push_error = "Couldn't turn on notifications. Try again."
 notifications = "Notifications"
 push_on = "Turn on notifications"
 push_off = "Turn off on this device"

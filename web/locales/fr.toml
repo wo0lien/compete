@@ -46,6 +46,7 @@ new_here = "Pas encore de compte ?"
 title = "Nouveau mot de passe"
 
 [account]
+push_error = "Impossible d'activer les notifications. Réessaie."
 notifications = "Notifications"
 push_on = "Activer les notifications"
 push_off = "Désactiver sur cet appareil"

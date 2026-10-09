@@ -15,6 +15,7 @@
   <h2>{{t "account.notifications"}}</h2>
   <p data-push-install hidden>{{t "account.push_install"}}</p>
   <p data-push-blocked hidden>{{t "account.push_blocked"}}</p>
+  <p class="error" data-push-error hidden>{{t "account.push_error"}}</p>
   <p><button type="button" class="btn go" data-push-key="{{.}}" hidden>{{t "account.push_on"}}</button></p>
   <form method="post" action="/account/notifications" class="stack" data-push-settings hidden>
     <label><input type="checkbox" name="digest" value="1"{{if $.Prefs.Digest}} checked{{end}} style="width: auto"> {{t "account.push_digest"}}</label>

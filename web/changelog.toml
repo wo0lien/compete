@@ -2,6 +2,12 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.8"
+date = "2026-10-09"
+en = ["Notifications: new puzzles in the morning, a reminder in the evening, and a ping when a friend beats you. Turn them on from your account page."]
+fr = ["Notifications : les nouvelles grilles le matin, un rappel le soir, et une alerte quand un ami te bat. À activer depuis ta page de compte."]
+
+[[release]]
 version = "v0.1.7"
 date = "2026-10-09"
 en = [
