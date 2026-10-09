@@ -114,3 +114,18 @@ func TestRateLimitPageKeepsShell(t *testing.T) {
 		t.Fatalf("21st login = %d, want a 429 page with the app header:\n%s", resp.StatusCode, body)
 	}
 }
+
+func TestPanicRendersErrorPage(t *testing.T) {
+	st, err := store.Open(filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	s := New(st, false, false)
+	h := s.recoverPanic(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { panic("boom") }))
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))
+	if w.Code != http.StatusInternalServerError || !strings.Contains(w.Body.String(), "Something went wrong") {
+		t.Fatalf("panic = %d, want the 500 page:\n%s", w.Code, w.Body)
+	}
+}

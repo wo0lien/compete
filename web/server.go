@@ -6,11 +6,13 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
 	"path"
+	"runtime/debug"
 	"time"
 
 	"github.com/wo0lien/compete/games"
@@ -68,12 +70,29 @@ func New(st *store.Store, secure, trustProxy bool) *Server {
 	}
 	mux := http.NewServeMux()
 	s.routes(mux)
-	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(withLang(s.limitBody(mux))))
+	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(withLang(s.recoverPanic(s.limitBody(mux)))))
 	return s
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.handler.ServeHTTP(w, r)
+}
+
+// recoverPanic turns a handler panic into the 500 page instead of a reset
+// connection. render buffers pages, so nothing half-written precedes it.
+// http.ErrAbortHandler is net/http's deliberate abort: let it through.
+func (s *Server) recoverPanic(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if v := recover(); v != nil {
+				if v == http.ErrAbortHandler {
+					panic(v)
+				}
+				s.oops(w, r, fmt.Errorf("panic serving %s: %v\n%s", r.URL.Path, v, debug.Stack()))
+			}
+		}()
+		h.ServeHTTP(w, r)
+	})
 }
 
 // limitBody answers 413 for a body over maxBody. Browsers send Content-Length
