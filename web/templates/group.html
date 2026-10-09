@@ -10,6 +10,7 @@
   <label for="text" class="visually-hidden">{{t "common.paste_label"}}</label>
   <textarea id="text" name="text" rows="2" required placeholder="{{t "common.paste_placeholder"}}"></textarea>
   <input type="hidden" name="back" value="/g/{{.Group.ID}}">
+  <button type="button" class="btn" data-paste hidden>{{t "common.paste"}}</button>
   <button class="btn go">{{t "common.go"}}</button>
 </form>
 {{range .Boards}}

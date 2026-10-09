@@ -6,6 +6,7 @@ switch_to = "en"
 switch_label = "EN"
 
 [common]
+paste = "Coller"
 today = "Aujourd'hui"
 leaderboard = "Classement"
 settings = "Réglages"
@@ -89,6 +90,9 @@ title = "La course"
 start = "Départ"
 
 [settings]
+share_link = "Partager le lien"
+copy_link = "Copier le lien"
+copied = "Copié ✓"
 invite = "Lien d'invitation"
 invite_text = "Toute personne qui a ce lien peut rejoindre le groupe."
 new_link = "Nouveau lien (l'ancien ne marchera plus)"

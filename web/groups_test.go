@@ -3,6 +3,7 @@ package web
 import (
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -94,5 +95,24 @@ func TestOwnerActions(t *testing.T) {
 	}
 	if resp, _ := get(t, alice, ts.URL+"/g/1/settings"); resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("deleted group still there: %d", resp.StatusCode)
+	}
+}
+
+// The paste forms carry a Paste button and the invite a Share/Copy button; both
+// start hidden and app.js reveals them when the browser has the API.
+func TestClipboardButtons(t *testing.T) {
+	ts, alice, _ := twoPlayers(t)
+	for _, p := range []string{"/", "/g/1"} {
+		_, body := get(t, alice, ts.URL+p)
+		if !strings.Contains(body, `<button type="button" class="btn" data-paste hidden>Paste</button>`) {
+			t.Errorf("%s has no paste button:\n%s", p, body)
+		}
+		if !regexp.MustCompile(`<script src="/static/app\.js\?v=[0-9a-f]+" defer></script>`).MatchString(body) {
+			t.Errorf("%s does not load app.js", p)
+		}
+	}
+	_, body := get(t, alice, ts.URL+"/g/1/settings")
+	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" data-copy-label="Copy link" data-copied="Copied ✓" hidden>Share link</button>`).MatchString(body) {
+		t.Errorf("settings has no share button with the invite URL:\n%s", body)
 	}
 }

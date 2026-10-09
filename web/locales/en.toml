@@ -6,6 +6,7 @@ switch_to = "fr"
 switch_label = "FR"
 
 [common]
+paste = "Paste"
 today = "Today"
 leaderboard = "Leaderboard"
 settings = "Settings"
@@ -89,6 +90,9 @@ title = "The race"
 start = "GO"
 
 [settings]
+share_link = "Share link"
+copy_link = "Copy link"
+copied = "Copied ✓"
 invite = "Invite link"
 invite_text = "Anyone with this link can join."
 new_link = "New link (old one stops working)"
