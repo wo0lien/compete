@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>compete</title>
-<link rel="stylesheet" href="/static/app.css">
+<link rel="stylesheet" href="{{asset "app.css"}}">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="icon" href="{{asset "icon.svg"}}" type="image/svg+xml">
 <meta name="theme-color" content="#62C6F2">
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
-<script src="/static/htmx.min.js" defer></script>
+<script src="{{asset "htmx.min.js"}}" defer></script>
 </head>
 <body hx-boost:inherited="true">
 <header class="top">
