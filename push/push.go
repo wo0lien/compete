@@ -15,6 +15,10 @@ import (
 	"github.com/wo0lien/compete/store"
 )
 
+// sendTimeout bounds one delivery: a push service that never answers must not
+// stall the timer.
+var sendTimeout = 10 * time.Second
+
 // Message is the JSON payload sw.js shows.
 type Message struct {
 	Title string `json:"title"`
@@ -69,6 +73,7 @@ func (n *Notifier) deliver(sub store.Subscription, m Message) error {
 	}, &webpush.Options{
 		Subscriber: n.Subscriber, VAPIDPublicKey: n.publicKey, VAPIDPrivateKey: n.privateKey,
 		TTL: int((12 * time.Hour).Seconds()), Urgency: webpush.UrgencyNormal,
+		HTTPClient: &http.Client{Timeout: sendTimeout},
 	})
 	if err != nil {
 		return err

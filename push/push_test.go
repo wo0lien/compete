@@ -75,3 +75,28 @@ func TestDeliverGoneDeletesSubscription(t *testing.T) {
 		t.Fatalf("subs = %+v, want only the live one", r.Subs)
 	}
 }
+
+// A push endpoint that accepts the connection and never answers must not stall
+// the sender (and with it every timed push).
+func TestDeliverTimesOut(t *testing.T) {
+	st := newTestStore(t)
+	u, _ := st.CreateUser("alice", "correct horse")
+	hang := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { time.Sleep(3 * time.Second) }))
+	defer hang.Close()
+	defer func(d time.Duration) { sendTimeout = d }(sendTimeout)
+	sendTimeout = 200 * time.Millisecond
+	p, a := deviceKeys(t)
+	n, _ := New(st, echoText, "https://example.org")
+	done := make(chan error, 1)
+	go func() {
+		done <- n.Send(store.Subscription{Endpoint: hang.URL + "/x", P256dh: p, Auth: a, UserID: u.ID}, Message{Title: "compete"})
+	}()
+	select {
+	case err := <-done:
+		if err == nil {
+			t.Fatal("hung endpoint reported as delivered")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Send still waiting after 2s: no timeout")
+	}
+}
