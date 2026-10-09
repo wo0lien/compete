@@ -52,15 +52,17 @@ func TestPushSubscribe(t *testing.T) {
 	c := newClient(t)
 	k, _ := ecdh.P256().GenerateKey(rand.Reader)
 	enc := base64.RawURLEncoding.EncodeToString
-	good := map[string]any{"endpoint": "https://push.example/d1", "keys": map[string]string{"p256dh": enc(k.PublicKey().Bytes()), "auth": enc(make([]byte, 16))}}
+	good := map[string]any{"endpoint": "https://fcm.googleapis.com/fcm/send/d1", "keys": map[string]string{"p256dh": enc(k.PublicKey().Bytes()), "auth": enc(make([]byte, 16))}}
 
 	if resp := postJSON(t, c, ts.URL+"/push/subscribe", good); resp.StatusCode != http.StatusSeeOther {
 		t.Fatalf("anonymous subscribe = %d, want a login redirect", resp.StatusCode)
 	}
 	signup(t, ts, c, "alice")
 	for _, bad := range []map[string]any{
-		{"endpoint": "http://push.example/d1", "keys": good["keys"]},
-		{"endpoint": "https://push.example/d1", "keys": map[string]string{"p256dh": "nope", "auth": "x"}},
+		{"endpoint": "http://fcm.googleapis.com/fcm/send/d1", "keys": good["keys"]},
+		{"endpoint": "https://127.0.0.1:8443/x", "keys": good["keys"]},     // the server would POST to itself
+		{"endpoint": "https://evil.example/collect", "keys": good["keys"]}, // not a push service
+		{"endpoint": "https://fcm.googleapis.com/fcm/send/d1", "keys": map[string]string{"p256dh": "nope", "auth": "x"}},
 	} {
 		if resp := postJSON(t, c, ts.URL+"/push/subscribe", bad); resp.StatusCode != http.StatusBadRequest {
 			t.Errorf("bad subscription %v = %d, want 400", bad, resp.StatusCode)
@@ -82,7 +84,7 @@ func TestPushSubscribe(t *testing.T) {
 		t.Fatalf("prefs = %+v, want friends only", p)
 	}
 
-	postJSON(t, c, ts.URL+"/push/unsubscribe", map[string]string{"endpoint": "https://push.example/d1"})
+	postJSON(t, c, ts.URL+"/push/unsubscribe", map[string]string{"endpoint": "https://fcm.googleapis.com/fcm/send/d1"})
 	if r, _ := st.Recipient(1); len(r.Subs) != 0 {
 		t.Fatal("unsubscribe left the subscription")
 	}
