@@ -24,6 +24,7 @@ paste_placeholder = "Colle ton résultat ici…"
 supported_games = "Jeux pris en charge"
 
 [home]
+to_play = "À jouer aujourd'hui"
 title = "Qui a gagné aujourd'hui ?"
 pitch = "Colle tes résultats Tusmo, Songless ou Travle et compare-toi à tes amis. Pas d'e-mail, pas de pistage : juste un pseudo."
 your_groups = "Tes groupes"

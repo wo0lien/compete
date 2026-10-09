@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/wo0lien/compete/games"
 )
@@ -208,4 +209,52 @@ func (s *Store) Puzzles(groupID int64, game, variant string) ([]int, error) {
 		ids = append(ids, id)
 	}
 	return ids, rows.Err()
+}
+
+// ToPlay lists the games (ids, in games.All order) the user submitted in the
+// last 14 days and has not yet played today for at least one of those variants.
+// Games without a known schedule are left out.
+func (s *Store) ToPlay(userID int64) ([]string, error) {
+	now := s.Now()
+	rows, err := s.db.Query(`SELECT DISTINCT game, variant FROM results WHERE user_id = ? AND submitted_at > ?`,
+		userID, now.Add(-14*24*time.Hour).Unix())
+	if err != nil {
+		return nil, err
+	}
+	type key struct{ game, variant string }
+	var keys []key
+	for rows.Next() {
+		var k key
+		if err := rows.Scan(&k.game, &k.variant); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		keys = append(keys, k)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	todo := map[string]bool{}
+	for _, k := range keys {
+		g, _ := games.ByID(k.game)
+		today, ok := g.Today(k.variant, now)
+		if !ok || todo[k.game] {
+			continue
+		}
+		var played bool // a today+1 share counts too
+		err := s.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM results WHERE user_id = ? AND game = ? AND variant = ? AND puzzle_id >= ?)`,
+			userID, k.game, k.variant, today).Scan(&played)
+		if err != nil {
+			return nil, err
+		}
+		todo[k.game] = !played
+	}
+	var out []string
+	for _, g := range games.All {
+		if todo[g.ID] {
+			out = append(out, g.ID)
+		}
+	}
+	return out, nil
 }

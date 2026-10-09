@@ -7,6 +7,12 @@
   <button type="button" class="btn" data-paste hidden>{{t "common.paste"}}</button>
   <button class="btn go">{{t "common.go"}}</button>
 </form>
+{{with .ToPlay}}
+<section class="panel">
+  <h2>{{t "home.to_play"}}</h2>
+  <p class="actions">{{range .}}<a class="btn go play" href="{{gameURL .}}" target="_blank" rel="noopener">{{t "common.play" "Game" (gameName .)}}</a>{{end}}</p>
+</section>
+{{end}}
 <section class="panel">
   <h2>{{t "home.your_groups"}}</h2>
   <ul class="groups">

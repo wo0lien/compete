@@ -24,6 +24,7 @@ paste_placeholder = "Paste your share text…"
 supported_games = "Supported games"
 
 [home]
+to_play = "To play today"
 title = "Who won today?"
 pitch = "Paste your Tusmo, Songless or Travle results and race your friends. No email, no tracking: just a pseudonym."
 your_groups = "Your groups"

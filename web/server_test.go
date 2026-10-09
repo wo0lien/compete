@@ -130,3 +130,17 @@ func TestPanicRendersErrorPage(t *testing.T) {
 		t.Fatalf("panic = %d, want the 500 page:\n%s", w.Code, w.Body)
 	}
 }
+
+func TestHomeToPlay(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	if _, body := get(t, c, ts.URL+"/"); strings.Contains(body, "To play today") {
+		t.Fatal("nothing played yet: no to-play panel")
+	}
+	post(t, c, ts.URL+"/results", url.Values{"text": {"TUSMO #69 3/6 - 0:35"}, "back": {"/"}})
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, "To play today") || !strings.Contains(body, `<a class="btn go play" href="https://www.tusmo.xyz" target="_blank" rel="noopener">Play Tusmo</a>`) {
+		t.Fatalf("home misses the Tusmo play button:\n%s", body)
+	}
+}

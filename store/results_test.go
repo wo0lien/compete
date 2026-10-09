@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -210,5 +211,30 @@ func TestCurrentBoardUnscheduled(t *testing.T) {
 	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
 	if len(bs) != 1 || bs[0].PuzzleID != 140 {
 		t.Fatalf("CurrentBoards = %+v, want challenge #140", bs)
+	}
+}
+
+// A game stays "to play" until today's puzzle is submitted for every variant
+// the member played recently; unscheduled variants and stale games are left out.
+func TestToPlay(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 69, new(3), nil))            // yesterday
+	c.add(t, c.alice, res("travle", "challenge", 140, new(0), nil)) // no schedule
+	c.add(t, c.alice, res("songless", "Rock", 404, new(2), nil))    // today
+	c.add(t, c.alice, res("songless", "All", 403, new(2), nil))     // yesterday
+	got, err := c.s.ToPlay(c.alice.ID)
+	if err != nil || !reflect.DeepEqual(got, []string{"tusmo", "songless"}) {
+		t.Fatalf("ToPlay = %v, %v; want [tusmo songless]", got, err)
+	}
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	c.add(t, c.alice, res("songless", "All", 404, new(4), nil))
+	if got, _ := c.s.ToPlay(c.alice.ID); len(got) != 0 {
+		t.Fatalf("after playing today: ToPlay = %v, want none", got)
+	}
+	// submitted_at is the real insert time: pin it, then move the clock 15 days on.
+	c.s.db.Exec("UPDATE results SET submitted_at = ?", fixtureDay.Unix())
+	c.s.Now = func() time.Time { return fixtureDay.Add(15 * 24 * time.Hour) }
+	if got, _ := c.s.ToPlay(c.alice.ID); len(got) != 0 {
+		t.Fatalf("stale games: ToPlay = %v, want none", got)
 	}
 }
