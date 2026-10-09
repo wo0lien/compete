@@ -106,7 +106,7 @@ func TestPlayLinks(t *testing.T) {
 	submit(t, ts, alice, "Songless #405\n\n🟥🟨🟩⬛️⬛️ [Pop]")
 	submit(t, ts, bob, tusmoBob)
 	_, body := get(t, alice, ts.URL+"/g/1")
-	tusmo, songless := strings.Index(body, "<h2><a href=\"https://www.tusmo.xyz\""), strings.Index(body, "<h2><a href=\"https://less.gg/songless\"")
+	tusmo, songless := strings.Index(body, "<h2><a href=\"https://www.tusmo.xyz\""), strings.Index(body, "<h2><a href=\"https://lessgames.com/songless\"")
 	if tusmo < 0 || songless < 0 || tusmo > songless {
 		t.Fatalf("want linked titles with unplayed Tusmo first (tusmo at %d, songless at %d):\n%s", tusmo, songless, body)
 	}
