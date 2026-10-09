@@ -59,6 +59,7 @@ func main() {
 	db := flag.String("db", env("COMPETE_DB", "compete.db"), "SQLite database path")
 	dev := flag.Bool("dev", false, "allow session cookies over plain http (local development only)")
 	proxy := flag.Bool("trust-proxy", false, "take the client IP from the last X-Forwarded-For entry")
+	baseURL := flag.String("base-url", env("COMPETE_BASE_URL", ""), "public URL for invite and reset links, e.g. https://play.example.org (default: the request's host)")
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	health := flag.Bool("healthcheck", false, "check that the instance at -addr answers, exit 0 or 1 (for container health checks)")
 	flag.Parse()
@@ -86,12 +87,18 @@ func main() {
 		if err != nil {
 			log.Fatalf("reset-link %q: %v", flag.Arg(1), err)
 		}
-		fmt.Printf("/reset/%s (valid 24h; prefix it with your instance URL)\n", tok)
+		if *baseURL != "" {
+			fmt.Printf("%s/reset/%s (valid 24h)\n", strings.TrimSuffix(*baseURL, "/"), tok)
+		} else {
+			fmt.Printf("/reset/%s (valid 24h; prefix it with your instance URL, or set -base-url)\n", tok)
+		}
 		return
 	}
 
 	// No request logging on purpose: the instance keeps no IPs.
-	srv := &http.Server{Addr: *addr, Handler: web.New(st, !*dev, *proxy), ReadHeaderTimeout: 10 * time.Second}
+	h := web.New(st, !*dev, *proxy)
+	h.BaseURL = strings.TrimSuffix(*baseURL, "/")
+	srv := &http.Server{Addr: *addr, Handler: h, ReadHeaderTimeout: 10 * time.Second}
 	log.Printf("compete listening on %s", *addr)
 	log.Fatal(srv.ListenAndServe())
 }

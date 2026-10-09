@@ -33,6 +33,9 @@ Backups: `sqlite3 /var/lib/compete/compete.db ".backup /backups/compete-$(date +
 Forgotten password: `compete -db /var/lib/compete/compete.db reset-link <username>` prints a
 one-time link (24 h) to hand to the user.
 
+Invite links use the request's host and `reset-link` prints a bare path; set
+`-base-url https://compete.example.org` (or `COMPETE_BASE_URL`) to use your public URL in both.
+
 ## Add a game
 
 1. `games/<game>.go`: a `Game` value with a parse func, registered in `games.All`.

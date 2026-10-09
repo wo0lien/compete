@@ -2,10 +2,14 @@ package web
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/wo0lien/compete/store"
 )
 
 func TestCreateJoinKick(t *testing.T) {
@@ -114,5 +118,23 @@ func TestClipboardButtons(t *testing.T) {
 	_, body := get(t, alice, ts.URL+"/g/1/settings")
 	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" data-copy-label="Copy link" data-copied="Copied" hidden>Share link</button>`).MatchString(body) {
 		t.Errorf("settings has no share button with the invite URL:\n%s", body)
+	}
+}
+
+func TestInviteURLUsesBaseURL(t *testing.T) {
+	st, err := store.Open(filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	s := New(st, false, false)
+	s.BaseURL = "https://play.example.org"
+	ts := httptest.NewServer(s)
+	defer ts.Close()
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	if _, body := get(t, c, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="https://play.example.org/join/`) {
+		t.Fatalf("invite link ignores BaseURL:\n%s", body)
 	}
 }
