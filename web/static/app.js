@@ -59,7 +59,11 @@
     if (canPush && Notification.permission === 'denied') part = '[data-push-blocked]';
     else if (canPush) {
       const reg = await navigator.serviceWorker.ready;
-      part = (await reg.pushManager.getSubscription()) ? '[data-push-settings]' : '[data-push-key]';
+      const sub = await reg.pushManager.getSubscription();
+      part = sub ? '[data-push-settings]' : '[data-push-key]';
+      // The device may have been subscribed under another account (or the
+      // server lost the row): re-register it to whoever is logged in now.
+      if (sub) fetch('/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sub) });
     }
     for (const el of box.querySelectorAll('[data-push-install], [data-push-blocked], [data-push-key], [data-push-settings]')) {
       el.hidden = !el.matches(part);
