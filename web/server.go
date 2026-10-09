@@ -41,6 +41,7 @@ var funcs = template.FuncMap{
 	},
 	"gameLang": func(id string) string { g, _ := games.ByID(id); return g.Lang },
 	"inc":      func(i int) int { return i + 1 },
+	"asset":    assetURL,
 	// Per-request functions: stubs for parsing, bound to the request's
 	// language in render.
 	"t":            func(string, ...any) string { return "" },
@@ -79,7 +80,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) routes(mux *http.ServeMux) {
 	static, _ := fs.Sub(assets, "static")
-	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
+	mux.Handle("GET /static/", cacheStatic(http.StripPrefix("/static/", http.FileServerFS(static))))
 	mux.HandleFunc("GET /{$}", s.home)
 	mux.HandleFunc("GET /signup", s.signupForm)
 	mux.HandleFunc("POST /signup", s.limited(s.signup))
