@@ -11,7 +11,7 @@ var (
 	songlessRow  = regexp.MustCompile(`(?m)^([⬜🟥🟨🟩⬛]{5}) \[([^\]\n]+)\][ \t]*$`)
 )
 
-var songless = Game{ID: "songless", Name: "Songless", URL: "https://less.gg/songless", Lang: "en",
+var songless = Game{ID: "songless", Name: "Songless", URL: "https://lessgames.com/songless", Lang: "en",
 	Tags: []string{"music", "english"}, ScoreFmt: "%d/5", Fail: "X/5", Parse: parseSongless,
 	today: daily("America/New_York", "2025-08-29")}
 
