@@ -68,13 +68,25 @@ func New(st *store.Store, secure, trustProxy bool) *Server {
 	}
 	mux := http.NewServeMux()
 	s.routes(mux)
-	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(withLang(mux)))
+	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(withLang(s.limitBody(mux))))
 	return s
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, maxBody)
 	s.handler.ServeHTTP(w, r)
+}
+
+// limitBody answers 413 for a body over maxBody. Browsers send Content-Length
+// with forms; MaxBytesReader still cuts a chunked body that runs over.
+func (s *Server) limitBody(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ContentLength > maxBody {
+			s.message(w, r, http.StatusRequestEntityTooLarge, "msg.too_long", "msg.too_long_text")
+			return
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, maxBody)
+		h.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) routes(mux *http.ServeMux) {
