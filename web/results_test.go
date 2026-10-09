@@ -90,3 +90,11 @@ func TestShareTarget(t *testing.T) { // Review Focus 3
 		t.Fatalf("anonymous share → %q", resp.Header.Get("Location"))
 	}
 }
+
+func TestSubmitTooLarge(t *testing.T) {
+	ts, alice, _ := twoPlayers(t)
+	resp, body := post(t, alice, ts.URL+"/results", url.Values{"text": {strings.Repeat("x", maxBody)}, "back": {"/g/1"}})
+	if resp.StatusCode != http.StatusRequestEntityTooLarge || !strings.Contains(body, "Too long") || !strings.Contains(body, `class="logo"`) {
+		t.Fatalf("oversized paste = %d, want a 413 page:\n%s", resp.StatusCode, body)
+	}
+}

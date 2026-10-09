@@ -6,11 +6,13 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
 	"path"
+	"runtime/debug"
 	"time"
 
 	"github.com/wo0lien/compete/games"
@@ -40,7 +42,6 @@ var funcs = template.FuncMap{
 		return id
 	},
 	"gameLang": func(id string) string { g, _ := games.ByID(id); return g.Lang },
-	"inc":      func(i int) int { return i + 1 },
 	"asset":    assetURL,
 	// Per-request functions: stubs for parsing, bound to the request's
 	// language in render.
@@ -69,13 +70,42 @@ func New(st *store.Store, secure, trustProxy bool) *Server {
 	}
 	mux := http.NewServeMux()
 	s.routes(mux)
-	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(withLang(mux)))
+	s.handler = http.NewCrossOriginProtection().Handler(s.withUser(withLang(s.recoverPanic(s.limitBody(mux)))))
 	return s
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, maxBody)
 	s.handler.ServeHTTP(w, r)
+}
+
+// recoverPanic turns a handler panic into the 500 page instead of a reset
+// connection. render buffers pages, so nothing half-written precedes it.
+// http.ErrAbortHandler is net/http's deliberate abort: let it through.
+func (s *Server) recoverPanic(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if v := recover(); v != nil {
+				if v == http.ErrAbortHandler {
+					panic(v)
+				}
+				s.oops(w, r, fmt.Errorf("panic serving %s: %v\n%s", r.URL.Path, v, debug.Stack()))
+			}
+		}()
+		h.ServeHTTP(w, r)
+	})
+}
+
+// limitBody answers 413 for a body over maxBody. Browsers send Content-Length
+// with forms; MaxBytesReader still cuts a chunked body that runs over.
+func (s *Server) limitBody(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ContentLength > maxBody {
+			s.message(w, r, http.StatusRequestEntityTooLarge, "msg.too_long", "msg.too_long_text")
+			return
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, maxBody)
+		h.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) routes(mux *http.ServeMux) {

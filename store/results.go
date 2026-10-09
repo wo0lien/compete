@@ -56,6 +56,7 @@ type Entry struct {
 	Grid     string
 	Pawn     string
 	Me       bool // the viewer's own row
+	Rank     int  // 1-based, shared on ties like the leaderboard's RANK(); 0 if not played
 }
 
 type Board struct {
@@ -95,6 +96,13 @@ func (s *Store) Board(groupID, viewerID int64, game, variant string, puzzleID in
 		if e.Me && e.Played {
 			b.Revealed = true
 		}
+		if e.Played { // rows come in rank order
+			e.Rank = len(b.Entries) + 1
+			if n := len(b.Entries); n > 0 && b.Entries[n-1].Played &&
+				eqInt(b.Entries[n-1].Score, e.Score) && eqInt(b.Entries[n-1].Tiebreak, e.Tiebreak) {
+				e.Rank = b.Entries[n-1].Rank
+			}
+		}
 		b.Entries = append(b.Entries, e)
 	}
 	if err := rows.Err(); err != nil {
@@ -103,7 +111,7 @@ func (s *Store) Board(groupID, viewerID int64, game, variant string, puzzleID in
 	if !b.Revealed {
 		for i := range b.Entries {
 			if e := &b.Entries[i]; e.Played {
-				e.Hidden, e.Score, e.Tiebreak, e.Grid = true, nil, nil, ""
+				e.Hidden, e.Score, e.Tiebreak, e.Grid, e.Rank = true, nil, nil, "", 0
 			}
 		}
 		sort.SliceStable(b.Entries, func(i, j int) bool {
@@ -115,6 +123,11 @@ func (s *Store) Board(groupID, viewerID int64, game, variant string, puzzleID in
 		})
 	}
 	return b, nil
+}
+
+// eqInt compares nullable ints; two NULLs are equal, as in SQL's RANK().
+func eqInt(a, b *int) bool {
+	return a == nil && b == nil || a != nil && b != nil && *a == *b
 }
 
 // CurrentBoards returns, for each game/variant played in the group, the board of
