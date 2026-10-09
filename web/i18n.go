@@ -103,6 +103,9 @@ func tr(lang, id string, args ...any) string {
 	return s
 }
 
+// Translate is tr for other packages (push texts).
+func Translate(lang, id string, args ...any) string { return tr(lang, id, args...) }
+
 // num formats a decimal with one digit, with a decimal comma in French.
 func num(lang string, f float64) string {
 	s := strconv.FormatFloat(f, 'f', 1, 64)

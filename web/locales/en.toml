@@ -165,3 +165,10 @@ already_submitted = "Already submitted {{.Board}}"
 [score]
 fail = "fail"
 away = "{{.N}} away"
+
+[push]
+digest = "New puzzles are out: {{.Games}}"
+reminder = "Still to play today: {{.Games}}"
+overtaken = "{{.Name}} beat you on {{.Board}} ({{.Score}})"
+everyone = "Everyone in {{.Group}} played {{.Board}}"
+friend = "{{.Name}} played {{.Board}}"
