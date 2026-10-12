@@ -7,7 +7,6 @@ switch_label = "FR"
 
 [common]
 changelog = "What's new"
-play = "Play {{.Game}}"
 paste = "Paste"
 today = "Today"
 leaderboard = "Leaderboard"
@@ -97,9 +96,9 @@ fails = "Fails"
 empty = "Stats appear once a puzzle is finished (when the next one starts)."
 
 [board]
+play = "Play ↗"
 not_played = "not played"
 hint = "Your move! Scores stay hidden until you play."
-your_move = "your move"
 start = "start"
 
 [race]

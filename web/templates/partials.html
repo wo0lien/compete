@@ -26,10 +26,11 @@
   {{else}}
     <p class="hint">{{t "board.hint"}}</p>
     <div class="waiting">
+      {{$game := .Game}}
       {{range .Entries}}
       <div{{if .Me}} class="me"{{end}}>
         {{template "pawn" .Pawn}}
-        {{if .Played}}<span class="hidden-tile">?</span>{{else if .Me}}<span class="start-tile">{{t "board.your_move"}}</span>{{else}}<span class="start-tile">{{t "board.start"}}</span>{{end}}
+        {{if .Played}}<span class="hidden-tile">?</span>{{else if .Me}}<a class="start-tile play-tile" href="{{gameURL $game}}" target="_blank" rel="noopener">{{t "board.play"}}</a>{{else}}<span class="start-tile">{{t "board.start"}}</span>{{end}}
         <span>{{.Username}}</span>
       </div>
       {{end}}

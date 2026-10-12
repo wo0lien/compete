@@ -95,7 +95,11 @@ label { display: block; font-weight: 800; }
 .tile.fail { background: #FFB4AB; }
 .grid { margin: 4px 0 0; font: inherit; font-size: 12px; line-height: 1.1; letter-spacing: 1px; white-space: pre-line; }
 .hint { padding: 10px 14px 0; font-size: 14px; }
-.waiting { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; padding: 12px 14px 16px; }
+/* one row of players; many players scroll sideways */
+.waiting { display: flex; gap: 14px; overflow-x: auto; padding: 12px 14px 16px; scrollbar-width: none; }
+.waiting::-webkit-scrollbar { display: none; }
+.waiting > div { flex: none; min-width: 60px; }
+.play-tile { display: inline-block; min-height: 32px; line-height: 24px; text-decoration: none; }
 .waiting > div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 800; font-size: 14px; }
 .hidden-tile, .start-tile { min-width: 52px; padding: 4px 6px; border-radius: 8px; text-align: center; font-size: 14px; }
 .hidden-tile { background: var(--ink); color: #fff; }

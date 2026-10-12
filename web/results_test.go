@@ -110,8 +110,9 @@ func TestPlayLinks(t *testing.T) {
 	if tusmo < 0 || songless < 0 || tusmo > songless {
 		t.Fatalf("want linked titles with unplayed Tusmo first (tusmo at %d, songless at %d):\n%s", tusmo, songless, body)
 	}
-	if n := strings.Count(body, `class="btn go play"`); n != 1 || !strings.Contains(body, `<a class="btn go play" href="https://www.tusmo.xyz" target="_blank" rel="noopener">Play Tusmo</a>`) {
-		t.Fatalf("want one Play button, for Tusmo (got %d):\n%s", n, body)
+	// the play link is the viewer's own waiting tile, so only unplayed (unrevealed) boards have one
+	if n := strings.Count(body, `class="start-tile play-tile"`); n != 1 || !strings.Contains(body, `<a class="start-tile play-tile" href="https://www.tusmo.xyz" target="_blank" rel="noopener">Play ↗</a>`) {
+		t.Fatalf("want one play link, for Tusmo (got %d):\n%s", n, body)
 	}
 }
 

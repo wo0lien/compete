@@ -7,7 +7,6 @@ switch_label = "EN"
 
 [common]
 changelog = "Nouveautés"
-play = "Jouer à {{.Game}}"
 paste = "Coller"
 today = "Aujourd'hui"
 leaderboard = "Classement"
@@ -97,9 +96,9 @@ fails = "Échecs"
 empty = "Les stats apparaissent quand une grille est terminée (au lancement de la suivante)."
 
 [board]
+play = "Jouer ↗"
 not_played = "pas joué"
 hint = "À toi de jouer ! Les scores restent cachés tant que tu n'as pas joué."
-your_move = "à toi"
 start = "départ"
 
 [race]

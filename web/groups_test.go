@@ -138,3 +138,13 @@ func TestInviteURLUsesBaseURL(t *testing.T) {
 		t.Fatalf("invite link ignores BaseURL:\n%s", body)
 	}
 }
+
+// Your own waiting tile is the way to play: it links to the game, no separate Play button.
+func TestWaitingTileIsPlayLink(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	submit(t, ts, bob, tusmoBob)
+	_, body := get(t, alice, ts.URL+"/g/1")
+	if !strings.Contains(body, `class="start-tile play-tile" href="https://www.tusmo.xyz"`) || strings.Contains(body, `btn go play`) {
+		t.Fatalf("own waiting tile is not the play link:\n%s", body)
+	}
+}

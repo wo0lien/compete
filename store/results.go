@@ -133,6 +133,9 @@ func (s *Store) Board(groupID, viewerID int64, game, variant string, puzzleID in
 		}
 		sort.SliceStable(b.Entries, func(i, j int) bool {
 			a, c := b.Entries[i], b.Entries[j]
+			if a.Me != c.Me { // the viewer first: their tile is the way to play
+				return a.Me
+			}
 			if a.Played != c.Played {
 				return a.Played
 			}
