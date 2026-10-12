@@ -45,7 +45,7 @@ func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 		data["Fragment"] = "paste-error"
 		w.Header().Set("HX-Retarget", "#paste-error")
 		w.Header().Set("HX-Reswap", "innerHTML show:none") // boosted swaps default to show:top, which would scroll the warning to the top
-		w.Header().Set("HX-Push-Url", "false") // the address stays the page's, not /results
+		w.Header().Set("HX-Push-Url", "false")             // the address stays the page's, not /results
 	}
 	rs := games.Parse(text)
 	if rs == nil {
