@@ -3,6 +3,7 @@ package web
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/wo0lien/compete/store"
 )
@@ -16,6 +17,9 @@ func (s *Server) account(w http.ResponseWriter, r *http.Request, u store.User) {
 			return
 		}
 		data["PushKey"], data["Prefs"] = s.Push.PublicKey(), prefs
+		if n, err := strconv.Atoi(r.URL.Query().Get("test")); err == nil {
+			data["TestSent"], data["TestNone"] = n, n == 0
+		}
 	}
 	s.render(w, r, http.StatusOK, "account.html", data)
 }

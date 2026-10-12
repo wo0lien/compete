@@ -100,3 +100,26 @@ func TestDeliverTimesOut(t *testing.T) {
 		t.Fatal("Send still waiting after 2s: no timeout")
 	}
 }
+
+// Test reaches every device of the member whatever the switches, and counts
+// only the deliveries a push service accepted: a gone device is removed, not counted.
+func TestTestCountsLiveDevices(t *testing.T) {
+	st := newTestStore(t)
+	u, _ := st.CreateUser("alice", "correct horse")
+	st.SetNotifyPrefs(u.ID, store.Prefs{}) // every kind off
+	gone := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusGone) }))
+	defer gone.Close()
+	ok := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusCreated) }))
+	defer ok.Close()
+	p, a := deviceKeys(t)
+	st.SaveSubscription(store.Subscription{Endpoint: gone.URL + "/x", P256dh: p, Auth: a, UserID: u.ID})
+	st.SaveSubscription(store.Subscription{Endpoint: ok.URL + "/y", P256dh: p, Auth: a, UserID: u.ID})
+	n, _ := New(st, echoText, "https://example.org")
+
+	if sent := n.Test(u.ID); sent != 1 {
+		t.Fatalf("sent = %d, want 1", sent)
+	}
+	if r, _ := st.Recipient(u.ID); len(r.Subs) != 1 {
+		t.Fatalf("subs = %d, want the gone one removed", len(r.Subs))
+	}
+}

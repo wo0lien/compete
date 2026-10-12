@@ -39,6 +39,8 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: 0 5px 0 var(--sky-dark); font-size: 20px; text-decoration: none; cursor: pointer; }
 .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--sky-dark); }
+/* tap feedback while a request runs: htmx marks the form, app.js the push buttons */
+.htmx-request .btn, .btn.htmx-request, .btn[aria-busy="true"] { opacity: .6; pointer-events: none; }
 .btn.go, .btn.danger { background: var(--coral); color: #fff; box-shadow: 0 5px 0 var(--coral-dark); }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .confirm summary { list-style: none; }

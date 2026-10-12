@@ -98,3 +98,27 @@ func TestAccountWithoutPush(t *testing.T) {
 		t.Fatal("notifications section shown without a notifier")
 	}
 }
+
+// The test button pushes to the member's devices and the account page says how many got it.
+func TestPushTest(t *testing.T) {
+	ts, st := newPushServer(t)
+	c := newClient(t)
+	if resp, _ := post(t, c, ts.URL+"/push/test", nil); resp.StatusCode != http.StatusSeeOther || !strings.HasPrefix(resp.Header.Get("Location"), "/login") {
+		t.Fatalf("anonymous test = %d %q, want a login redirect", resp.StatusCode, resp.Header.Get("Location"))
+	}
+	signup(t, ts, c, "alice")
+	k, _ := ecdh.P256().GenerateKey(rand.Reader)
+	enc := base64.RawURLEncoding.EncodeToString
+	st.SaveSubscription(store.Subscription{Endpoint: "https://fcm.googleapis.com/fcm/send/d1", P256dh: enc(k.PublicKey().Bytes()), Auth: enc(make([]byte, 16)), UserID: 1})
+
+	resp, _ := post(t, c, ts.URL+"/push/test", nil)
+	if loc := resp.Header.Get("Location"); resp.StatusCode != http.StatusSeeOther || loc != "/account?test=1" {
+		t.Fatalf("test = %d %q, want 303 to /account?test=1", resp.StatusCode, loc)
+	}
+	if _, body := get(t, c, ts.URL+"/account?test=1"); !strings.Contains(body, "Test sent to 1 device(s)") {
+		t.Fatalf("account page misses the test result:\n%s", body)
+	}
+	if _, body := get(t, c, ts.URL+"/account?test=0"); !strings.Contains(body, "No device got the test") {
+		t.Fatalf("account page misses the failed test:\n%s", body)
+	}
+}
