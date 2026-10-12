@@ -28,7 +28,8 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 .nav form { margin: 0; }
 .lang { position: relative; padding: 6px 10px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .5); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 /* phone tap targets: an invisible ::after grows small controls to about 44px without changing their look */
-.lang::after, .filters a::after { content: ""; position: absolute; inset: -6px; }
+.lang::after, .filters a::after, .play-tile::after, .squares summary::after { content: ""; position: absolute; inset: -6px; }
+.squares summary::after { inset: -11px -4px; } /* 22px chip → 44px */
 .filters a::after { inset: -4px; } /* chips sit 8px apart: their areas must not overlap */
 /* only the header's account pill: the waiting row also marks the viewer with class "me" */
 .nav .me { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-decoration: none; font-weight: 800; }
@@ -98,7 +99,7 @@ label { display: block; font-weight: 800; }
 .hint { padding: 10px 14px 0; font-size: 14px; }
 /* share grids as palette squares, hidden until tapped */
 .squares { margin-top: 4px; }
-.squares summary { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--sky-pale); font-size: 13px; font-weight: 800; cursor: pointer; list-style: none; }
+.squares summary { position: relative; display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--sky-pale); font-size: 13px; font-weight: 800; cursor: pointer; list-style: none; }
 .squares summary::-webkit-details-marker { display: none; }
 .squares[open] summary { margin-bottom: 6px; }
 .sq-row { display: flex; gap: 3px; margin-bottom: 3px; }
@@ -110,7 +111,7 @@ label { display: block; font-weight: 800; }
 .waiting { display: flex; gap: 14px; overflow-x: auto; padding: 12px 14px 16px; scrollbar-width: none; }
 .waiting::-webkit-scrollbar { display: none; }
 .waiting > div { flex: none; min-width: 60px; }
-.play-tile { display: inline-block; min-height: 32px; line-height: 24px; text-decoration: none; }
+.play-tile { position: relative; display: inline-block; min-height: 32px; line-height: 24px; text-decoration: none; }
 .waiting > div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 800; font-size: 14px; }
 .hidden-tile, .start-tile { min-width: 52px; padding: 4px 6px; border-radius: 8px; text-align: center; font-size: 14px; }
 .hidden-tile { background: var(--ink); color: #fff; }

@@ -34,7 +34,7 @@
         <input type="hidden" name="confirm" value="yes">
         <h2 id="confirm-kick-{{.UserID}}-title">{{t "settings.kick_title" "Name" .Username "Group" $g.Name}}</h2>
         <p>{{t "settings.kick_text" "Name" .Username}}</p>
-        <p class="muted">{{t "settings.kick_back"}}</p>
+        <p class="muted">{{t "settings.kick_back" "Name" .Username}}</p>
         <div class="sheet-actions"><a class="btn" href="#" data-close hx-boost="false">{{t "common.cancel"}}</a><button class="btn danger">{{t "settings.kick_name" "Name" .Username}}</button></div>
       </form>
     </dialog>
