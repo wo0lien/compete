@@ -1,5 +1,22 @@
-# What changed, for members. Newest first; en and fr have the same lines.
+# What changed, for members: only the main changes of each release, newest first;
+# en and fr have the same lines. The GitHub release notes list everything (PRs, closed issues).
 # release.yml refuses a vX.Y.Z tag without its entry here.
+
+[[release]]
+version = "v0.1.11"
+date = "2026-10-12"
+en = [
+  "Group pages are clearer: you come first with a Play link, Songless categories share one card, and grids show as coloured squares.",
+  "Paste fills the box and you tap Submit; a wrong paste is flagged right under it, and the box folds away once everything is played.",
+  "New link, Kick and Delete group ask for confirmation first.",
+  "Easier on phones: games to play as chips, Copy and Share for the invite link, tables that scroll, and feedback while a page loads.",
+]
+fr = [
+  "Pages de groupe plus claires : tu passes en premier avec un lien Jouer, les catégories de Songless partagent une carte, et les grilles s'affichent en carrés colorés.",
+  "Coller remplit la zone et tu touches Envoyer ; un mauvais collage est signalé juste en dessous, et la zone se replie quand tout est joué.",
+  "Nouveau lien, Exclure et Supprimer le groupe demandent d'abord une confirmation.",
+  "Plus pratique sur téléphone : les jeux à jouer en pastilles, Copier et Partager pour le lien d'invitation, des tableaux qui défilent, et un retour visuel pendant le chargement.",
+]
 
 [[release]]
 version = "v0.1.10"

@@ -28,9 +28,11 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 .nav form { margin: 0; }
 .lang { position: relative; padding: 6px 10px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .5); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 /* phone tap targets: an invisible ::after grows small controls to about 44px without changing their look */
-.lang::after, .filters a::after { content: ""; position: absolute; inset: -6px; }
+.lang::after, .filters a::after, .play-tile::after, .squares summary::after { content: ""; position: absolute; inset: -6px; }
+.squares summary::after { inset: -11px -4px; } /* 22px chip → 44px */
 .filters a::after { inset: -4px; } /* chips sit 8px apart: their areas must not overlap */
-.me { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-decoration: none; font-weight: 800; }
+/* only the header's account pill: the waiting row also marks the viewer with class "me" */
+.nav .me { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-decoration: none; font-weight: 800; }
 .pawn { width: 26px; height: 26px; flex: none; }
 .pawn path { stroke: var(--ink); stroke-width: 1.5; }
 
@@ -42,18 +44,26 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: 0 5px 0 var(--sky-dark); font-size: 20px; text-decoration: none; cursor: pointer; }
 .btn.wide { width: 100%; }
+/* the invite link reads as text, not a field to type in; Copy and Share share the row under it (one alone takes it all) */
+.invite-actions { display: flex; gap: 8px; }
+.invite-actions .btn { flex: 1; }
+.invite-link { background: var(--sky-pale); box-shadow: none; font-size: 14px; text-overflow: ellipsis; cursor: default; }
+/* confirm sheets: a bottom sheet over the dimmed page; :target shows the same sheet without JS */
+.sheet { width: min(100% - 24px, 34rem); margin: auto auto 28px; padding: 18px 16px 16px; border: 0; border-radius: 18px; background: #fff; color: var(--ink); box-shadow: 0 6px 0 var(--sky-dark); }
+.sheet::backdrop { background: rgba(16, 38, 74, .55); }
+.sheet:target { display: block; position: fixed; inset: auto 0 0; z-index: 10; box-shadow: 0 0 0 100vmax rgba(16, 38, 74, .55); }
+.sheet h2 { font-size: 22px; }
+.sheet .muted { font-size: 14px; }
+.sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--sky-dark); }
 /* tap feedback while a request runs: htmx marks the form, app.js the push buttons */
-.htmx-request .btn, .btn.htmx-request, .btn[aria-busy="true"] { opacity: .6; pointer-events: none; }
+.htmx-request .btn, a.htmx-request, .btn[aria-busy="true"] { opacity: .6; pointer-events: none; }
+/* while any page or form is loading: a thin bar sliding along the top of the screen */
+body:has(.htmx-request)::before { content: ""; position: fixed; top: 0; left: 0; z-index: 20; width: 40%; height: 3px; background: var(--coral); animation: loading 1s ease-in-out infinite; }
+@keyframes loading { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { body:has(.htmx-request)::before { width: 100%; animation: none; } }
 .btn.go, .btn.danger { background: var(--coral); color: #fff; box-shadow: 0 5px 0 var(--coral-dark); }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; }
-.confirm summary { list-style: none; }
-.confirm summary::-webkit-details-marker { display: none; }
-.confirm[open] summary { opacity: .5; }
-.confirm form { margin-top: 8px; }
-/* an open kick confirm takes its own line, so a long name never sits under the button */
-.row:has(.confirm) { flex-wrap: wrap; align-items: center; }
-.confirm[open] { flex-basis: 100%; display: flex; flex-direction: column; align-items: flex-end; }
 
 input, textarea { width: 100%; padding: 10px 12px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: inset 0 3px 0 var(--line), 0 0 0 2px var(--line); font: inherit; resize: vertical; }
 input[type=color] { width: 64px; height: 44px; padding: 4px; }
@@ -66,27 +76,66 @@ label { display: block; font-weight: 800; }
 .paste { flex-wrap: wrap; }
 .paste textarea { flex-basis: 100%; min-height: 7.5em; }
 .paste .btn { flex: 1; }
+/* everything played today: the paste box folds behind one line, still there for a new game or an old puzzle */
+.paste-later > summary { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; min-height: 44px; padding: 10px 14px; border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--sky-dark); cursor: pointer; list-style: none; font-weight: 800; }
+.paste-later > summary::-webkit-details-marker { display: none; }
+.paste-later .tick { color: var(--grass-dark); font-size: 20px; } /* only the tick is green: green text on white is too faint */
+.paste-later .again { font-size: 14px; text-decoration: underline; }
+.paste-later[open] > summary { margin-bottom: 10px; }
 .stack { display: flex; flex-direction: column; gap: 8px; }
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.title-row h1 { min-width: 0; overflow-wrap: anywhere; }
+/* games still to play: compact chips that wrap */
+.play-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.play-chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--coral); color: #fff; box-shadow: 0 4px 0 var(--coral-dark); font-family: "Lilita One", system-ui, sans-serif; font-size: 17px; text-decoration: none; }
+.play-chips a:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--coral-dark); }
 
 .tabs { display: flex; gap: 8px; }
 .tabs a { flex: 1; min-width: 0; padding: 12px 2px; border-radius: 12px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-align: center; text-decoration: none; font-weight: 800; }
 @media (max-width: 340px) { .tabs { gap: 6px; } .tabs a { font-size: 15px; } }
 .tabs a[aria-current="page"] { background: var(--sun); box-shadow: 0 4px 0 var(--sun-dark); }
-.filters { display: flex; gap: 8px; flex-wrap: wrap; }
-.filters a { position: relative; padding: 8px 12px; border-radius: 999px; background: #fff; box-shadow: 0 3px 0 var(--sky-dark); text-decoration: none; font-weight: 800; font-size: 14px; }
+/* one row that scrolls sideways on a phone; the padding keeps the chips' tap areas inside the scroll box */
+.filters { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; margin: -4px -2px 0; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.filters a { flex: none; position: relative; padding: 8px 12px; border-radius: 999px; background: #fff; box-shadow: 0 3px 0 var(--sky-dark); text-decoration: none; font-weight: 800; font-size: 14px; }
 .filters a[aria-current="page"] { background: var(--sun); box-shadow: 0 3px 0 var(--sun-dark); }
 
 .row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-top: 2px dashed var(--line); }
 .row.out { opacity: .5; }
 .row .grow { flex: 1; min-width: 0; }
+.row:has([data-dialog]) { align-items: center; } /* name level with its Kick button */
 .line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .space { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--sky-pale); box-shadow: 0 3px 0 var(--ink); font-size: 15px; }
 .space.first { background: var(--sun); }
 .tile { margin-left: auto; padding: 1px 8px; border-radius: 6px; background: var(--sun); box-shadow: 0 2px 0 rgba(16, 38, 74, .35); font-weight: 800; }
 .tile.fail { background: #FFB4AB; }
 .grid { margin: 4px 0 0; font: inherit; font-size: 12px; line-height: 1.1; letter-spacing: 1px; white-space: pre-line; }
-.hint { padding: 10px 14px 0; font-size: 14px; }
-.waiting { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; padding: 12px 14px 16px; }
+.hint { padding: 10px 14px 0; font-size: 14px; text-align: center; }
+/* variants of one puzzle (Songless categories) share a card, switched by chips; without JS they stack under their names */
+.variant-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px 2px; scrollbar-width: none; }
+.variant-tabs::-webkit-scrollbar { display: none; }
+.variant { flex: none; position: relative; min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--sky-pale); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.variant::after { content: ""; position: absolute; inset: -4px; }
+.variant.on { background: var(--sun); box-shadow: 0 3px 0 var(--sun-dark); }
+.variant .mark { margin-left: 4px; opacity: .7; }
+.variant-name { margin: 0; padding: 10px 14px 0; font-size: 16px; }
+.tabbed .variant-name { display: none; }
+.variant-panel .foot { padding: 6px 14px 12px; }
+/* share grids as palette squares, hidden until tapped */
+.squares { margin-top: 4px; }
+.squares summary { position: relative; display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--sky-pale); font-size: 13px; font-weight: 800; cursor: pointer; list-style: none; }
+.squares summary::-webkit-details-marker { display: none; }
+.squares[open] summary { margin-bottom: 6px; }
+.sq-row { display: flex; gap: 3px; margin-bottom: 3px; }
+.sq { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 -2px 0 rgba(16, 38, 74, .25); }
+.sq.red { background: var(--coral); } .sq.green { background: var(--grass); }
+.sq.yellow { background: var(--sun); } .sq.orange { background: #FF9F43; }
+.sq.miss { background: #8A97AD; } .sq.empty { background: var(--sky-pale); }
+/* one row of players; many players scroll sideways */
+.waiting { display: flex; gap: 14px; overflow-x: auto; padding: 12px 14px 16px; scrollbar-width: none; }
+.waiting::-webkit-scrollbar { display: none; }
+.waiting > div { flex: none; min-width: 60px; }
+.play-tile { position: relative; display: inline-block; min-height: 32px; line-height: 24px; text-decoration: none; }
 .waiting > div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 800; font-size: 14px; }
 .hidden-tile, .start-tile { min-width: 52px; padding: 4px 6px; border-radius: 8px; text-align: center; font-size: 14px; }
 .hidden-tile { background: var(--ink); color: #fff; }
@@ -104,13 +153,17 @@ label { display: block; font-weight: 800; }
 .legend span { display: flex; align-items: center; gap: 4px; }
 .legend .pawn { width: 16px; height: 16px; }
 
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+/* a stats table never pushes the page wider: it scrolls inside its panel */
+.table-wrap { overflow-x: auto; margin: 0 -4px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; white-space: nowrap; }
 th, td { padding: 6px 4px; border-bottom: 2px dashed var(--line); text-align: left; }
+th:not(:first-child), td:not(:first-child) { text-align: right; }
 .groups { margin: 0; padding-left: 18px; }
 /* links that are the main way around on a phone: a full 44px line */
 .groups a, .foot a, .back a, .panel h2 a, .panel-head h2 a { display: inline-block; padding: 11px 0; margin: -11px 0; }
 .groups li { padding: 11px 0; }
 .error { color: var(--coral-dark); font-weight: 800; }
+#paste-error, .empty { text-align: center; } /* short standalone messages sit centred; lists and forms stay left */
 .muted { opacity: .7; }
 .center { text-align: center; }
 .foot { text-align: center; }

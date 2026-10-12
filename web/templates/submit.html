@@ -1,3 +1,5 @@
+{{/* paste-error is what an htmx paste form gets back: only the warning, under the form */}}
+{{define "paste-error"}}<p class="error">{{.Error}}</p>{{if .Unsupported}}<p><a href="/games">{{t "common.supported_games"}}</a> · <a href="https://github.com/wo0lien/compete/issues/new?template=request-game.md">{{t "submit.ask"}}</a></p>{{end}}{{end}}
 {{define "content"}}
 <section class="panel">
   <h1>{{t "submit.title"}}</h1>
@@ -7,7 +9,8 @@
     <label for="text">{{t "submit.share_text"}}</label>
     <textarea id="text" name="text" rows="6" required>{{.Text}}</textarea>
     <input type="hidden" name="back" value="{{.Back}}">
-    <button class="btn go">{{t "common.go"}}</button>
+    <button class="btn go">{{t "common.submit"}}</button>
   </form>
+  <div id="paste-error" aria-live="polite"></div>
 </section>
 {{end}}

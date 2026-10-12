@@ -12,7 +12,7 @@ var (
 )
 
 var songless = Game{ID: "songless", Name: "Songless", URL: "https://lessgames.com/songless", Lang: "en",
-	Tags: []string{"music", "english"}, ScoreFmt: "%d/5", Fail: "X/5", Parse: parseSongless,
+	Tags: []string{"music", "english"}, ScoreFmt: "%d/5", Fail: "X/5", Parse: parseSongless, VariantsInOneCard: true,
 	today: daily("America/New_York", "2025-08-29")}
 
 // Each category row becomes a board in the group, so a paste is bounded: real

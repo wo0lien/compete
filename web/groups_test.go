@@ -40,8 +40,8 @@ func TestCreateJoinKick(t *testing.T) {
 	if resp, _ := post(t, alice, ts.URL+"/g/1/kick/2", nil); resp.StatusCode != http.StatusUnprocessableEntity {
 		t.Fatalf("kick without confirm = %d, want 422", resp.StatusCode)
 	}
-	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, "<details") {
-		t.Fatal("kick button should sit behind a <details> confirmation")
+	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, `<dialog id="confirm-kick-2"`) {
+		t.Fatal("kick button should open a confirm sheet")
 	}
 	if resp, _ := post(t, alice, ts.URL+"/g/1/kick/2", url.Values{"confirm": {"yes"}}); resp.StatusCode != http.StatusSeeOther {
 		t.Fatalf("kick = %d", resp.StatusCode)
@@ -116,7 +116,7 @@ func TestClipboardButtons(t *testing.T) {
 		}
 	}
 	_, body := get(t, alice, ts.URL+"/g/1/settings")
-	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" data-copy-label="Copy link" data-copied="Copied" hidden>Share link</button>`).MatchString(body) {
+	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" hidden>Share link</button>`).MatchString(body) {
 		t.Errorf("settings has no share button with the invite URL:\n%s", body)
 	}
 }
@@ -136,5 +136,69 @@ func TestInviteURLUsesBaseURL(t *testing.T) {
 	post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
 	if _, body := get(t, c, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="https://play.example.org/join/`) {
 		t.Fatalf("invite link ignores BaseURL:\n%s", body)
+	}
+}
+
+// Your own waiting tile is the way to play: it links to the game, no separate Play button.
+func TestWaitingTileIsPlayLink(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	submit(t, ts, bob, tusmoBob)
+	_, body := get(t, alice, ts.URL+"/g/1")
+	if !strings.Contains(body, `class="start-tile play-tile" href="https://www.tusmo.xyz"`) || strings.Contains(body, `btn go play`) {
+		t.Fatalf("own waiting tile is not the play link:\n%s", body)
+	}
+}
+
+// The owner's settings carry one confirm sheet per destructive action; each Kick targets its own member.
+func TestSettingsConfirmSheets(t *testing.T) {
+	ts, st := newTestServer(t)
+	owner, member := newClient(t), newClient(t)
+	signup(t, ts, owner, "alice")
+	signup(t, ts, member, "bob")
+	post(t, owner, ts.URL+"/groups", url.Values{"name": {"G"}})
+	gs, _ := st.GroupsOf(1)
+	post(t, member, ts.URL+"/join/"+gs[0].InviteCode, nil)
+
+	_, body := get(t, owner, ts.URL+"/g/1/settings")
+	for _, want := range []string{
+		`href="#confirm-new-link"`, `<dialog id="confirm-new-link"`,
+		`href="#confirm-kick-2"`, `<dialog id="confirm-kick-2"`, `action="/g/1/kick/2"`,
+		`href="#confirm-delete"`, `<dialog id="confirm-delete"`,
+		`<input type="hidden" name="confirm" value="yes">`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("settings misses %q", want)
+		}
+	}
+	if strings.Contains(body, `type="checkbox" name="confirm"`) {
+		t.Error("delete still asks for a tick box")
+	}
+
+	// A member sees none of them.
+	if _, body := get(t, member, ts.URL+"/g/1/settings"); strings.Contains(body, "<dialog") {
+		t.Fatalf("member sees owner dialogs:\n%s", body)
+	}
+
+	// The delete sheet's own fields delete the group (no JS involved).
+	post(t, owner, ts.URL+"/g/1/delete", url.Values{"confirm": {"yes"}})
+	if resp, _ := get(t, owner, ts.URL+"/g/1"); resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("group still there after the sheet's delete: %d", resp.StatusCode)
+	}
+}
+
+// The invite link reads as text; Copy and Share sit side by side in one row under it.
+func TestInviteCopyButton(t *testing.T) {
+	ts, st := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}})
+	gs, _ := st.GroupsOf(1)
+	_, body := get(t, c, ts.URL+"/g/1/settings")
+	link := regexp.QuoteMeta(gs[0].InviteCode)
+	if !regexp.MustCompile(`<input class="invite-link" readonly value="[^"]*/join/` + link + `"[^>]*>\s*<div class="invite-actions"><button type="button" class="btn" data-copy="[^"]*/join/` + link + `" data-copied="Copied" hidden>Copy</button><button type="button" class="btn" data-share="[^"]*/join/` + link + `" hidden>Share link</button></div>`).MatchString(body) {
+		t.Fatalf("Copy and Share are not one row under the invite link:\n%s", body)
+	}
+	if !strings.Contains(body, `data-share="`) || strings.Contains(body, "data-copy-label") {
+		t.Fatalf("Share should be its own button without a copy fallback:\n%s", body)
 	}
 }

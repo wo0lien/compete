@@ -8,9 +8,17 @@
 <section class="panel">
   <h2>{{t "settings.invite"}}</h2>
   <p>{{t "settings.invite_text"}}</p>
-  <input readonly value="{{.InviteURL}}" aria-label="{{t "settings.invite"}}">
-  <p><button type="button" class="btn wide" data-share="{{.InviteURL}}" data-copy-label="{{t "settings.copy_link"}}" data-copied="{{t "settings.copied"}}" hidden>{{t "settings.share_link"}}</button></p>
-  {{if eq .Group.Role "owner"}}<form method="post" action="/g/{{.Group.ID}}/code" class="stack"><button class="btn wide">{{t "settings.new_link"}}</button><small class="muted center">{{t "settings.new_link_hint"}}</small></form>{{end}}
+  <input class="invite-link" readonly value="{{.InviteURL}}" aria-label="{{t "settings.invite"}}">
+  <div class="invite-actions"><button type="button" class="btn" data-copy="{{.InviteURL}}" data-copied="{{t "settings.copied"}}" hidden>{{t "settings.copy"}}</button><button type="button" class="btn" data-share="{{.InviteURL}}" hidden>{{t "settings.share_link"}}</button></div>
+  {{if eq .Group.Role "owner"}}<a class="btn wide" href="#confirm-new-link" data-dialog hx-boost="false">{{t "settings.new_link"}}</a>
+  <dialog id="confirm-new-link" class="sheet" aria-labelledby="confirm-new-link-title">
+    <form method="post" action="/g/{{.Group.ID}}/code" class="stack">
+      <h2 id="confirm-new-link-title">{{t "settings.new_link_title"}}</h2>
+      <p>{{t "settings.new_link_text"}}</p>
+      <p class="muted">{{t "settings.new_link_keep"}}</p>
+      <div class="sheet-actions"><a class="btn" href="#" data-close hx-boost="false">{{t "common.cancel"}}</a><button class="btn danger">{{t "settings.new_link"}}</button></div>
+    </form>
+  </dialog>{{end}}
 </section>
 <section class="panel flush">
   <div class="panel-head"><h2>{{t "settings.players"}}</h2></div>
@@ -20,13 +28,16 @@
     {{template "pawn" .Pawn}}
     <div class="grow line"><b>{{.Username}}</b>{{if eq .Role "owner"}}<span class="chip">{{t "settings.owner"}}</span>{{end}}</div>
     {{if and (eq $g.Role "owner") (ne .UserID $me)}}
-    <details class="confirm">
-      <summary class="btn danger">{{t "settings.kick"}}</summary>
-      <form method="post" action="/g/{{$g.ID}}/kick/{{.UserID}}">
+    <a class="btn danger" href="#confirm-kick-{{.UserID}}" data-dialog hx-boost="false">{{t "settings.kick"}}</a>
+    <dialog id="confirm-kick-{{.UserID}}" class="sheet" aria-labelledby="confirm-kick-{{.UserID}}-title">
+      <form method="post" action="/g/{{$g.ID}}/kick/{{.UserID}}" class="stack">
         <input type="hidden" name="confirm" value="yes">
-        <button class="btn danger">{{t "settings.kick_name" "Name" .Username}}</button>
+        <h2 id="confirm-kick-{{.UserID}}-title">{{t "settings.kick_title" "Name" .Username "Group" $g.Name}}</h2>
+        <p>{{t "settings.kick_text" "Name" .Username}}</p>
+        <p class="muted">{{t "settings.kick_back" "Name" .Username}}</p>
+        <div class="sheet-actions"><a class="btn" href="#" data-close hx-boost="false">{{t "common.cancel"}}</a><button class="btn danger">{{t "settings.kick_name" "Name" .Username}}</button></div>
       </form>
-    </details>
+    </dialog>
     {{end}}
   </div>
   {{end}}
@@ -39,10 +50,16 @@
     <input id="name" name="name" value="{{.Group.Name}}" maxlength="50" required>
     <button class="btn">{{t "settings.rename"}}</button>
   </form>
-  <form method="post" action="/g/{{.Group.ID}}/delete" class="stack">
-    <label><input type="checkbox" name="confirm" value="yes" required> {{t "settings.delete_confirm"}}</label>
-    <button class="btn danger">{{t "settings.delete"}}</button>
-  </form>
+  <a class="btn danger" href="#confirm-delete" data-dialog hx-boost="false">{{t "settings.delete"}}</a>
+  <dialog id="confirm-delete" class="sheet" aria-labelledby="confirm-delete-title">
+    <form method="post" action="/g/{{.Group.ID}}/delete" class="stack">
+      <input type="hidden" name="confirm" value="yes">
+      <h2 id="confirm-delete-title">{{t "settings.delete_title" "Name" .Group.Name}}</h2>
+      <p>{{t "settings.delete_text"}}</p>
+      <p class="muted">{{t "settings.delete_keep"}}</p>
+      <div class="sheet-actions"><a class="btn" href="#" data-close hx-boost="false">{{t "common.cancel"}}</a><button class="btn danger">{{t "settings.delete_short"}}</button></div>
+    </form>
+  </dialog>
 </section>
 {{else}}
 <form method="post" action="/g/{{.Group.ID}}/leave"><button class="btn danger">{{t "settings.leave"}}</button></form>

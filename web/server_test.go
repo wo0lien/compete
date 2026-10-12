@@ -140,7 +140,39 @@ func TestHomeToPlay(t *testing.T) {
 	}
 	post(t, c, ts.URL+"/results", url.Values{"text": {"TUSMO #69 3/6 - 0:35"}, "back": {"/"}})
 	_, body := get(t, c, ts.URL+"/")
-	if !strings.Contains(body, "To play today") || !strings.Contains(body, `<a class="btn go play" href="https://www.tusmo.xyz" target="_blank" rel="noopener">Play Tusmo</a>`) {
-		t.Fatalf("home misses the Tusmo play button:\n%s", body)
+	if !strings.Contains(body, "To play today") || !strings.Contains(body, `<nav class="play-chips"`) ||
+		!strings.Contains(body, `<a href="https://www.tusmo.xyz" target="_blank" rel="noopener">Tusmo ↗</a>`) || strings.Contains(body, `btn go play`) {
+		t.Fatalf("to-play games are not chips:\n%s", body)
+	}
+}
+
+// The paste form says what it does: Paste fills the box, Submit sends it.
+func TestPasteFormSubmitLabel(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, `<button class="btn go">Submit</button>`) || strings.Contains(body, "Go!") {
+		t.Fatalf("paste form submit button is not labelled Submit:\n%s", body)
+	}
+}
+
+// Nothing left to play today: the paste box folds behind "Paste another result".
+// A member who never played anything still gets the open box.
+func TestHomePasteFoldsWhenAllPlayed(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	if _, body := get(t, c, ts.URL+"/"); strings.Contains(body, `<details class="paste-later">`) {
+		t.Fatal("new member: paste box folded")
+	}
+	post(t, c, ts.URL+"/results", url.Values{"text": {"TUSMO #69 3/6 - 0:35"}, "back": {"/"}}) // yesterday: today's Tusmo still to play
+	if _, body := get(t, c, ts.URL+"/"); strings.Contains(body, `<details class="paste-later">`) {
+		t.Fatal("a game still to play: paste box folded")
+	}
+	post(t, c, ts.URL+"/results", url.Values{"text": {"TUSMO #70 3/6 - 0:35"}, "back": {"/"}}) // today's
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, `<details class="paste-later"><summary>`) || !strings.Contains(body, "All played today") || !strings.Contains(body, `action="/results"`) {
+		t.Fatalf("all played: want the folded paste box:\n%s", body)
 	}
 }

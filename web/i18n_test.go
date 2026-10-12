@@ -221,3 +221,14 @@ func TestFrenchPages(t *testing.T) {
 		t.Fatalf("signup error not French:\n%s", body)
 	}
 }
+
+// French confirm sheets: no broken elision before a vowel group name, no gendered "Il" for the kicked player,
+// and "stops working" must not read as "doesn't work right now".
+func TestFrenchConfirmWording(t *testing.T) {
+	title := Translate("fr", "settings.kick_title", "Name", "bob", "Group", "Amis")
+	back := Translate("fr", "settings.kick_back", "Name", "bob")
+	link := Translate("fr", "settings.new_link_text")
+	if strings.Contains(title, "de Amis") || strings.HasPrefix(back, "Il ") || strings.Contains(link, "ne marche plus tout de suite") {
+		t.Fatalf("French wording: %q / %q / %q", title, back, link)
+	}
+}

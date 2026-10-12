@@ -51,6 +51,7 @@ var funcs = template.FuncMap{
 	"gameLang": func(id string) string { g, _ := games.ByID(id); return g.Lang },
 	"gameURL":  func(id string) string { g, _ := games.ByID(id); return g.URL },
 	"asset":    assetURL,
+	"squares":  squares,
 	// Per-request functions: stubs for parsing, bound to the request's
 	// language in render.
 	"t":            func(string, ...any) string { return "" },
@@ -202,7 +203,8 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, page
 		"version":      func() string { return cmp.Or(s.Version, "dev") },
 	})
 	var buf bytes.Buffer
-	if err := t.ExecuteTemplate(&buf, "base", data); err != nil {
+	frag, _ := data["Fragment"].(string) // a named piece of the page instead of the whole page
+	if err := t.ExecuteTemplate(&buf, cmp.Or(frag, "base"), data); err != nil {
 		fail(w, err)
 		return
 	}
@@ -240,5 +242,11 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		s.oops(w, r, err)
 		return
 	}
-	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "ToPlay": toPlay})
+	played, err := s.store.PlayedRecently(u.ID)
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
+	// nothing left today (and not a new member): the paste box folds away
+	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "ToPlay": toPlay, "AllPlayed": played && len(toPlay) == 0})
 }

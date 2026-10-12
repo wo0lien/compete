@@ -22,13 +22,17 @@ type Result struct {
 // Game describes a supported game and how to parse and display its results.
 type Game struct {
 	ID, Name, URL string
-	Lang          string                                          // the game's language, BCP 47 ("fr", "en")
-	Tags          []string                                        // topics for filtering: "words", "music", "geography", "french"…
-	ScoreFmt      string                                          // formats a score, e.g. "%d/6"
-	Fail          string                                          // shown for a failed result, e.g. "X/6"
-	TiebreakKind  string                                          // "time" (seconds), "away" (countries short) or ""
-	Parse         func(text string) []Result                      // nil = not this game
-	today         func(variant string, now time.Time) (int, bool) // nil = no known schedule
+	Lang          string   // the game's language, BCP 47 ("fr", "en")
+	Tags          []string // topics for filtering: "words", "music", "geography", "french"…
+	ScoreFmt      string   // formats a score, e.g. "%d/6"
+	Fail          string   // shown for a failed result, e.g. "X/6"
+	TiebreakKind  string   // "time" (seconds), "away" (countries short) or ""
+	// VariantsInOneCard: the variants are parts of one daily puzzle played at
+	// one URL (Songless categories), so they share a card. Otherwise each
+	// variant is its own game (Travle maps) with its own card.
+	VariantsInOneCard bool
+	Parse             func(text string) []Result                      // nil = not this game
+	today             func(variant string, now time.Time) (int, bool) // nil = no known schedule
 }
 
 // Today is the number of today's puzzle for variant at now, from the game's

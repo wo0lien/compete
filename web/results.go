@@ -22,14 +22,24 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 		s.oops(w, r, err)
 		return
 	}
-	// Boards still to play first: after a submit, the next game is on top.
-	sort.SliceStable(boards, func(i, j int) bool { return !boards[i].Revealed && boards[j].Revealed })
+	cs := cards(boards)
+	for i := range cs {
+		cs[i].Group = g.ID
+	}
+	// Cards still to play first: after a submit, the next game is on top.
+	sort.SliceStable(cs, func(i, j int) bool { return cs[i].ToPlay() && !cs[j].ToPlay() })
+	allPlayed := len(cs) > 0
+	for _, c := range cs {
+		for _, b := range c.Boards {
+			allPlayed = allPlayed && b.Revealed
+		}
+	}
 	race, err := s.raceData(g.ID, nil)
 	if err != nil {
 		s.oops(w, r, err)
 		return
 	}
-	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Boards": boards, "Race": race})
+	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Cards": cs, "Race": race, "AllPlayed": allPlayed})
 }
 
 // submit parses a pasted share text and stores its results for the current user.
@@ -37,6 +47,12 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 	text, back := r.FormValue("text"), safeNext(r.FormValue("back"))
 	data := map[string]any{"Text": text, "Back": back}
+	if r.Header.Get("HX-Request") == "true" { // the page's own paste form: keep the page, show the warning under it
+		data["Fragment"] = "paste-error"
+		w.Header().Set("HX-Retarget", "#paste-error")
+		w.Header().Set("HX-Reswap", "innerHTML show:none") // boosted swaps default to show:top, which would scroll the warning to the top
+		w.Header().Set("HX-Push-Url", "false")             // the address stays the page's, not /results
+	}
 	rs := games.Parse(text)
 	if rs == nil {
 		data["Error"], data["Unsupported"] = tr(langFrom(r), "err.unsupported"), true

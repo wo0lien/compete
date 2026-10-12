@@ -75,11 +75,11 @@ func TestBoardHiddenUntilViewerSubmits(t *testing.T) { // Review Focus 3
 	if b.Revealed {
 		t.Fatal("board revealed before alice submitted")
 	}
-	// played members alphabetically (not by rank), then non-players; dave absent
-	if got := names(b); len(got) != 3 || got[0] != "bob" || got[1] != "carol" || got[2] != "alice" {
-		t.Fatalf("hidden order = %v, want [bob carol alice]", got)
+	// the viewer first, then played members alphabetically (not by rank), then non-players; dave absent
+	if got := names(b); len(got) != 3 || got[0] != "alice" || got[1] != "bob" || got[2] != "carol" {
+		t.Fatalf("hidden order = %v, want [alice bob carol]", got)
 	}
-	for _, e := range b.Entries[:2] {
+	for _, e := range b.Entries[1:] {
 		if !e.Hidden || e.Score != nil || e.Tiebreak != nil || e.Grid != "" {
 			t.Fatalf("hidden entry leaks data: %+v", e)
 		}
@@ -249,5 +249,41 @@ func TestCurrentBoardIgnoresStoredFutureIds(t *testing.T) {
 	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
 	if len(bs) != 1 || bs[0].PuzzleID != 70 {
 		t.Fatalf("CurrentBoards = %+v, want today's #70, not the stored #99", bs)
+	}
+}
+
+// Waiting row: the viewer first, then who played, then who hasn't (names A→Z).
+func TestBoardWaitingViewerFirst(t *testing.T) {
+	c := newCrew(t) // alice (viewer), bob, carol in the group
+	c.add(t, c.carol, res("tusmo", "", 70, new(2), nil))
+	b, err := c.s.Board(c.g.ID, c.alice.ID, "tusmo", "", 70)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := names(b); !reflect.DeepEqual(got, []string{"alice", "carol", "bob"}) {
+		t.Fatalf("waiting order = %v, want [alice carol bob]", got)
+	}
+}
+
+// Alone in a group: just the viewer.
+func TestBoardWaitingAlone(t *testing.T) {
+	s := newStore(t)
+	u := mustUser(t, s, "solo")
+	g, _ := s.CreateGroup(u.ID, "Me")
+	b, err := s.Board(g.ID, u.ID, "tusmo", "", 70)
+	if err != nil || len(b.Entries) != 1 || !b.Entries[0].Me {
+		t.Fatalf("entries = %+v, err %v; want only the viewer", b.Entries, err)
+	}
+}
+
+// PlayedRecently: any result in the last 14 days (the same window as ToPlay).
+func TestPlayedRecently(t *testing.T) {
+	c := newCrew(t)
+	if ok, err := c.s.PlayedRecently(c.alice.ID); err != nil || ok {
+		t.Fatalf("no results: PlayedRecently = %v, %v", ok, err)
+	}
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	if ok, err := c.s.PlayedRecently(c.alice.ID); err != nil || !ok {
+		t.Fatalf("after a result: PlayedRecently = %v, %v", ok, err)
 	}
 }

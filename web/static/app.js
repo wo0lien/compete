@@ -7,33 +7,43 @@
 
   function reveal(root) {
     root.querySelectorAll('[data-paste]').forEach(b => { b.hidden = !canPaste; });
-    root.querySelectorAll('[data-share]').forEach(b => {
-      if (!canShare) b.textContent = b.dataset.copyLabel;
-      b.hidden = !canShare && !canCopy;
-    });
+    root.querySelectorAll('[data-share]').forEach(b => { b.hidden = !canShare; });
+    root.querySelectorAll('[data-copy]').forEach(b => { b.hidden = !canCopy; });
     pushState(root);
+    root.querySelectorAll('[data-variants]').forEach(card => {
+      card.querySelector('[role=tablist]').hidden = false;
+      card.classList.add('tabbed');
+      showVariant(card, card.querySelector('[aria-selected=true]').dataset.variant);
+    });
   }
 
-  // Paste and submit: one tap from the game's share button to the board.
+  // A card holding several variants of one puzzle shows one at a time.
+  function showVariant(card, i) {
+    card.querySelectorAll('[data-variant]').forEach(b => {
+      const on = b.dataset.variant === i;
+      b.setAttribute('aria-selected', on);
+      b.classList.toggle('on', on);
+    });
+    card.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== i; });
+  }
+
+  // Paste fills the box; the member checks it and taps Submit.
   async function paste(button) {
-    const form = button.form;
-    const text = form.querySelector('textarea');
+    const text = button.form.querySelector('textarea');
     try {
       text.value = (await navigator.clipboard.readText()).trim();
     } catch { /* refused: fall back to a manual paste */ }
-    if (text.value) form.requestSubmit();
-    else text.focus();
+    if (!text.value) text.focus();
   }
 
   async function share(button) {
-    const url = button.dataset.share;
-    if (canShare) {
-      try { await navigator.share({ url }); } catch { /* cancelled */ }
-      return;
-    }
+    try { await navigator.share({ url: button.dataset.share }); } catch { /* cancelled */ }
+  }
+
+  async function copy(button) {
     try {
-      await navigator.clipboard.writeText(url);
-    } catch { // refused: select the invite field for a manual copy
+      await navigator.clipboard.writeText(button.dataset.copy);
+    } catch { // refused: select the link for a manual copy
       button.closest('section')?.querySelector('input[readonly]')?.select();
       return;
     }
@@ -112,10 +122,19 @@
   }
 
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-paste], [data-share], [data-push-key], [data-push-off]');
+    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant]');
     if (!b) return;
+    if (b.matches('[data-variant]')) { showVariant(b.closest('[data-variants]'), b.dataset.variant); return; }
+    // confirm sheets: without JS the #id link and dialog:target show the same sheet
+    if (b.matches('[data-dialog]')) { e.preventDefault(); document.querySelector(b.getAttribute('href')).showModal(); return; }
+    if (b.matches('[data-close]')) { // shown by :target instead (#id in the URL): let href="#" clear it
+      const d = b.closest('dialog');
+      if (d.open) { e.preventDefault(); d.close(); }
+      return;
+    }
     if (b.matches('[data-paste]')) paste(b);
     else if (b.matches('[data-share]')) share(b);
+    else if (b.matches('[data-copy]')) copy(b);
     else if (b.matches('[data-push-key]')) pushOn(b);
     else pushOff(b);
   });

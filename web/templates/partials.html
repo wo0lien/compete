@@ -5,6 +5,28 @@
     <h2><a href="{{gameURL .Game}}" target="_blank" rel="noopener">{{gameName .Game}} #{{.PuzzleID}}{{with .Variant}} · {{.}}{{end}} ↗</a></h2>
     <span class="chip">{{gameLang .Game}}</span>
   </div>
+  {{template "board-body" .}}
+</section>
+{{end}}
+{{/* card: every variant of one puzzle in one panel; JS shows the chips and one variant, without JS all variants stack */}}
+{{define "card"}}
+{{$sel := .Selected}}{{$g := .Group}}
+<section class="panel flush" data-variants>
+  <div class="panel-head">
+    <h2><a href="{{gameURL .Game}}" target="_blank" rel="noopener">{{gameName .Game}} #{{.PuzzleID}} ↗</a></h2>
+    <span class="chip">{{gameLang .Game}}</span>
+  </div>
+  <div class="variant-tabs" role="tablist" hidden>{{range $i, $b := .Boards}}<button type="button" class="variant{{if eq $i $sel}} on{{end}}" role="tab" aria-selected="{{eq $i $sel}}" data-variant="{{$i}}">{{$b.Variant}} <span class="mark" aria-hidden="true">{{if $b.Revealed}}✓{{else}}•{{end}}</span></button>{{end}}</div>
+  {{range $i, $b := .Boards}}
+  <div class="variant-panel" data-panel="{{$i}}">
+    <h3 class="variant-name">{{$b.Variant}}</h3>
+    {{template "board-body" $b}}
+    <p class="foot"><a href="/g/{{$g}}/history?game={{$b.Game}}&amp;variant={{$b.Variant}}">{{t "group.older" "Game" (print (gameName $b.Game) " · " $b.Variant)}}</a></p>
+  </div>
+  {{end}}
+</section>
+{{end}}
+{{define "board-body"}}
   {{if .Revealed}}
     {{$game := .Game}}
     {{range $i, $e := .Entries}}
@@ -19,23 +41,23 @@
           {{with tiebreakText $game $e.Tiebreak}}<span>{{.}}</span>{{end}}
           {{else}}<span class="muted">{{t "board.not_played"}}</span>{{end}}
         </div>
-        {{with $e.Grid}}<pre class="grid">{{.}}</pre>{{end}}
+        {{with $e.Grid}}<details class="squares"><summary>{{t "board.show_grid"}}</summary>{{with squares .}}{{range .}}<div class="sq-row">{{range .}}<span class="{{.}}"></span>{{end}}</div>{{end}}{{else}}<pre class="grid">{{$e.Grid}}</pre>{{end}}</details>{{end}}
       </div>
     </div>
     {{end}}
   {{else}}
     <p class="hint">{{t "board.hint"}}</p>
     <div class="waiting">
+      {{$game := .Game}}
       {{range .Entries}}
       <div{{if .Me}} class="me"{{end}}>
         {{template "pawn" .Pawn}}
-        {{if .Played}}<span class="hidden-tile">?</span>{{else if .Me}}<span class="start-tile">{{t "board.your_move"}}</span>{{else}}<span class="start-tile">{{t "board.start"}}</span>{{end}}
+        {{if .Played}}<span class="hidden-tile">?</span>{{else if .Me}}<a class="start-tile play-tile" href="{{gameURL $game}}" target="_blank" rel="noopener">{{t "board.play"}}</a>{{else}}<span class="start-tile">{{t "board.start"}}</span>{{end}}
         <span>{{.Username}}</span>
       </div>
       {{end}}
     </div>
   {{end}}
-</section>
 {{end}}
 {{define "race"}}
 <section class="panel">
