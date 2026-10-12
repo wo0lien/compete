@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -79,11 +80,18 @@ func (n *Notifier) deliver(sub store.Subscription, m Message) error {
 		return err
 	}
 	resp.Body.Close()
+	// one line per delivery (push service host, not the endpoint: it is a capability URL)
+	host := sub.Endpoint
+	if u, err := url.Parse(sub.Endpoint); err == nil {
+		host = u.Host
+	}
+	log.Printf("push user %d via %s: %s", sub.UserID, host, resp.Status)
 	switch {
 	case resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusGone:
+		log.Printf("push user %d via %s: subscription gone, removed", sub.UserID, host)
 		return n.Store.DeleteSubscription(sub.Endpoint)
 	case resp.StatusCode >= 400:
-		return fmt.Errorf("push %s: %s", sub.Endpoint, resp.Status)
+		return fmt.Errorf("push service refused: %s", resp.Status)
 	}
 	return nil
 }
