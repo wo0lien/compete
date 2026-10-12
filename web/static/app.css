@@ -44,6 +44,9 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: 0 5px 0 var(--sky-dark); font-size: 20px; text-decoration: none; cursor: pointer; }
 .btn.wide { width: 100%; }
+/* the invite link reads as text, not a field to type in; Copy sits beside it */
+.invite-row { display: flex; gap: 8px; align-items: stretch; }
+.invite-link { flex: 1; min-width: 0; background: var(--sky-pale); box-shadow: none; font-size: 14px; text-overflow: ellipsis; cursor: default; }
 /* confirm sheets: a bottom sheet over the dimmed page; :target shows the same sheet without JS */
 .sheet { width: min(100% - 24px, 34rem); margin: auto auto 28px; padding: 18px 16px 16px; border: 0; border-radius: 18px; background: #fff; color: var(--ink); box-shadow: 0 6px 0 var(--sky-dark); }
 .sheet::backdrop { background: rgba(16, 38, 74, .55); }

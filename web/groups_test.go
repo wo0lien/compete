@@ -116,7 +116,7 @@ func TestClipboardButtons(t *testing.T) {
 		}
 	}
 	_, body := get(t, alice, ts.URL+"/g/1/settings")
-	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" data-copy-label="Copy link" data-copied="Copied" hidden>Share link</button>`).MatchString(body) {
+	if !regexp.MustCompile(`data-share="http://127\.0\.0\.1:\d+/join/[\w-]+" hidden>Share link</button>`).MatchString(body) {
 		t.Errorf("settings has no share button with the invite URL:\n%s", body)
 	}
 }
@@ -183,5 +183,22 @@ func TestSettingsConfirmSheets(t *testing.T) {
 	post(t, owner, ts.URL+"/g/1/delete", url.Values{"confirm": {"yes"}})
 	if resp, _ := get(t, owner, ts.URL+"/g/1"); resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("group still there after the sheet's delete: %d", resp.StatusCode)
+	}
+}
+
+// The invite link reads as text with its own Copy button; Share is a separate button for share sheets.
+func TestInviteCopyButton(t *testing.T) {
+	ts, st := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}})
+	gs, _ := st.GroupsOf(1)
+	_, body := get(t, c, ts.URL+"/g/1/settings")
+	link := regexp.QuoteMeta(gs[0].InviteCode)
+	if !regexp.MustCompile(`<div class="invite-row"><input class="invite-link" readonly value="[^"]*/join/` + link + `"[^>]*><button type="button" class="btn" data-copy="[^"]*/join/` + link + `" data-copied="Copied" hidden>Copy</button></div>`).MatchString(body) {
+		t.Fatalf("invite link has no Copy button beside it:\n%s", body)
+	}
+	if !strings.Contains(body, `data-share="`) || strings.Contains(body, "data-copy-label") {
+		t.Fatalf("Share should be its own button without a copy fallback:\n%s", body)
 	}
 }

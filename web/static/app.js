@@ -7,10 +7,8 @@
 
   function reveal(root) {
     root.querySelectorAll('[data-paste]').forEach(b => { b.hidden = !canPaste; });
-    root.querySelectorAll('[data-share]').forEach(b => {
-      if (!canShare) b.textContent = b.dataset.copyLabel;
-      b.hidden = !canShare && !canCopy;
-    });
+    root.querySelectorAll('[data-share]').forEach(b => { b.hidden = !canShare; });
+    root.querySelectorAll('[data-copy]').forEach(b => { b.hidden = !canCopy; });
     pushState(root);
     root.querySelectorAll('[data-variants]').forEach(card => {
       card.querySelector('[role=tablist]').hidden = false;
@@ -39,15 +37,14 @@
   }
 
   async function share(button) {
-    const url = button.dataset.share;
-    if (canShare) {
-      try { await navigator.share({ url }); } catch { /* cancelled */ }
-      return;
-    }
+    try { await navigator.share({ url: button.dataset.share }); } catch { /* cancelled */ }
+  }
+
+  async function copy(button) {
     try {
-      await navigator.clipboard.writeText(url);
-    } catch { // refused: select the invite field for a manual copy
-      button.closest('section')?.querySelector('input[readonly]')?.select();
+      await navigator.clipboard.writeText(button.dataset.copy);
+    } catch { // refused: select the link for a manual copy
+      button.parentElement.querySelector('input[readonly]')?.select();
       return;
     }
     const label = button.textContent;
@@ -125,7 +122,7 @@
   }
 
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-paste], [data-share], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant]');
+    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant]');
     if (!b) return;
     if (b.matches('[data-variant]')) { showVariant(b.closest('[data-variants]'), b.dataset.variant); return; }
     // confirm sheets: without JS the #id link and dialog:target show the same sheet
@@ -137,6 +134,7 @@
     }
     if (b.matches('[data-paste]')) paste(b);
     else if (b.matches('[data-share]')) share(b);
+    else if (b.matches('[data-copy]')) copy(b);
     else if (b.matches('[data-push-key]')) pushOn(b);
     else pushOff(b);
   });
