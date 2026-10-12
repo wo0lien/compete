@@ -51,7 +51,7 @@
   }
 
   // pushState shows exactly one of the section's parts. It can run more than
-  // once per page (load and htmx:load), so it sets every part, never just one.
+  // once per page (load and every htmx swap), so it sets every part, never just one.
   async function pushState(root) {
     const box = root.querySelector('[data-push]');
     if (!box) return;
@@ -119,7 +119,7 @@
     else if (b.matches('[data-push-key]')) pushOn(b);
     else pushOff(b);
   });
-  // htmx:load fires for the first page and for every swapped-in fragment.
-  document.addEventListener('htmx:load', e => reveal(e.target));
+  // htmx 4 has no htmx:load: re-reveal after every swap (boosted links and forms).
+  document.addEventListener('htmx:after:swap', () => reveal(document));
   reveal(document);
 })();
