@@ -140,7 +140,8 @@ func TestHomeToPlay(t *testing.T) {
 	}
 	post(t, c, ts.URL+"/results", url.Values{"text": {"TUSMO #69 3/6 - 0:35"}, "back": {"/"}})
 	_, body := get(t, c, ts.URL+"/")
-	if !strings.Contains(body, "To play today") || !strings.Contains(body, `<a class="btn go play" href="https://www.tusmo.xyz" target="_blank" rel="noopener">Play Tusmo</a>`) {
-		t.Fatalf("home misses the Tusmo play button:\n%s", body)
+	if !strings.Contains(body, "To play today") || !strings.Contains(body, `<nav class="play-chips"`) ||
+		!strings.Contains(body, `<a href="https://www.tusmo.xyz" target="_blank" rel="noopener">Tusmo ↗</a>`) || strings.Contains(body, `btn go play`) {
+		t.Fatalf("to-play games are not chips:\n%s", body)
 	}
 }

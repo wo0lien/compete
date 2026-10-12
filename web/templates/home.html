@@ -10,7 +10,7 @@
 {{with .ToPlay}}
 <section class="panel">
   <h2>{{t "home.to_play"}}</h2>
-  <p class="actions">{{range .}}<a class="btn go play" href="{{gameURL .}}" target="_blank" rel="noopener">{{t "common.play" "Game" (gameName .)}}</a>{{end}}</p>
+  <nav class="play-chips" aria-label="{{t "home.to_play"}}">{{range .}}<a href="{{gameURL .}}" target="_blank" rel="noopener">{{gameName .}} ↗</a>{{end}}</nav>
 </section>
 {{end}}
 <section class="panel">

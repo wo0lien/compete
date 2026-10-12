@@ -55,3 +55,14 @@ func TestPasswordReset(t *testing.T) {
 		t.Fatalf("reused token = %d, want 404", resp.StatusCode)
 	}
 }
+
+// Log out sits on the title line; no section holds it alone.
+func TestAccountLogoutBesideName(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/account")
+	if !strings.Contains(body, `<div class="title-row"><h1>alice</h1><form method="post" action="/logout">`) {
+		t.Fatalf("logout not beside the name:\n%s", body)
+	}
+}

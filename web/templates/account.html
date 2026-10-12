@@ -1,5 +1,5 @@
 {{define "content"}}
-<h1>{{.User.Username}}</h1>
+<div class="title-row"><h1>{{.User.Username}}</h1><form method="post" action="/logout"><button class="btn">{{t "account.logout"}}</button></form></div>
 {{with .Error}}<p class="error">{{.}}</p>{{end}}
 <section class="panel">
   <h2>{{t "account.pawn"}}</h2>
@@ -28,9 +28,6 @@
   </form>
 </section>
 {{end}}
-<section class="panel">
-  <form method="post" action="/logout"><button class="btn">{{t "account.logout"}}</button></form>
-</section>
 <section class="panel">
   <h2>{{t "account.delete_title"}}</h2>
   <p>{{t "account.delete_text"}}</p>

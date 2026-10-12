@@ -68,6 +68,12 @@ label { display: block; font-weight: 800; }
 .paste textarea { flex-basis: 100%; min-height: 7.5em; }
 .paste .btn { flex: 1; }
 .stack { display: flex; flex-direction: column; gap: 8px; }
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.title-row h1 { min-width: 0; overflow-wrap: anywhere; }
+/* games still to play: compact chips that wrap */
+.play-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.play-chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--coral); color: #fff; box-shadow: 0 4px 0 var(--coral-dark); font-family: "Lilita One", system-ui, sans-serif; font-size: 17px; text-decoration: none; }
+.play-chips a:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--coral-dark); }
 
 .tabs { display: flex; gap: 8px; }
 .tabs a { flex: 1; min-width: 0; padding: 12px 2px; border-radius: 12px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-align: center; text-decoration: none; font-weight: 800; }
