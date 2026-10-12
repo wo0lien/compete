@@ -20,10 +20,10 @@
   {{if $.TestNone}}<p class="error">{{t "account.push_test_none"}}</p>{{end}}
   <p><button type="button" class="btn go" data-push-key="{{.}}" data-busy="{{t "account.push_turning_on"}}" hidden>{{t "account.push_on"}}</button></p>
   <form method="post" action="/account/notifications" class="stack" data-push-settings hidden>
-    <label><input type="checkbox" name="digest" value="1"{{if $.Prefs.Digest}} checked{{end}} style="width: auto"> {{t "account.push_digest"}}</label>
-    <label><input type="checkbox" name="reminder" value="1"{{if $.Prefs.Reminder}} checked{{end}} style="width: auto"> {{t "account.push_reminder"}}</label>
-    <label><input type="checkbox" name="social" value="1"{{if $.Prefs.Social}} checked{{end}} style="width: auto"> {{t "account.push_social"}}</label>
-    <label><input type="checkbox" name="friends" value="1"{{if $.Prefs.Friends}} checked{{end}} style="width: auto"> {{t "account.push_friends"}}</label>
+    <label><input type="checkbox" name="digest" value="1"{{if $.Prefs.Digest}} checked{{end}}> {{t "account.push_digest"}}</label>
+    <label><input type="checkbox" name="reminder" value="1"{{if $.Prefs.Reminder}} checked{{end}}> {{t "account.push_reminder"}}</label>
+    <label><input type="checkbox" name="social" value="1"{{if $.Prefs.Social}} checked{{end}}> {{t "account.push_social"}}</label>
+    <label><input type="checkbox" name="friends" value="1"{{if $.Prefs.Friends}} checked{{end}}> {{t "account.push_friends"}}</label>
     <p class="actions"><button class="btn">{{t "common.save"}}</button> <button type="button" class="btn" data-push-off>{{t "account.push_off"}}</button> <button class="btn" formaction="/push/test">{{t "account.push_test"}}</button></p>
   </form>
 </section>
