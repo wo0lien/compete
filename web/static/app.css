@@ -76,6 +76,12 @@ label { display: block; font-weight: 800; }
 .paste { flex-wrap: wrap; }
 .paste textarea { flex-basis: 100%; min-height: 7.5em; }
 .paste .btn { flex: 1; }
+/* everything played today: the paste box folds behind one line, still there for a new game or an old puzzle */
+.paste-later > summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--sky-dark); cursor: pointer; list-style: none; font-weight: 800; }
+.paste-later > summary::-webkit-details-marker { display: none; }
+.paste-later .tick { color: var(--grass-dark); font-size: 20px; } /* only the tick is green: green text on white is too faint */
+.paste-later .again { font-size: 14px; text-decoration: underline; }
+.paste-later[open] > summary { margin-bottom: 10px; }
 .stack { display: flex; flex-direction: column; gap: 8px; }
 .title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .title-row h1 { min-width: 0; overflow-wrap: anywhere; }

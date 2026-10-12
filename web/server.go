@@ -242,5 +242,11 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		s.oops(w, r, err)
 		return
 	}
-	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "ToPlay": toPlay})
+	played, err := s.store.PlayedRecently(u.ID)
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
+	// nothing left today (and not a new member): the paste box folds away
+	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "ToPlay": toPlay, "AllPlayed": played && len(toPlay) == 0})
 }

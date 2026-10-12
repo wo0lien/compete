@@ -6,6 +6,8 @@ switch_to = "en"
 switch_label = "EN"
 
 [common]
+all_played = "Tout est joué aujourd'hui"
+paste_another = "Coller un autre résultat"
 cancel = "Annuler"
 changelog = "Nouveautés"
 paste = "Coller"

@@ -216,13 +216,24 @@ func (s *Store) Puzzles(groupID int64, game, variant string) ([]int, error) {
 	return ids, rows.Err()
 }
 
+// recent is how far back a member's games count as theirs (ToPlay, PlayedRecently).
+const recent = 14 * 24 * time.Hour
+
+// PlayedRecently: the user submitted any result in the recent window.
+func (s *Store) PlayedRecently(userID int64) (bool, error) {
+	var ok bool
+	err := s.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM results WHERE user_id = ? AND submitted_at > ?)`,
+		userID, s.Now().Add(-recent).Unix()).Scan(&ok)
+	return ok, err
+}
+
 // ToPlay lists the games (ids, in games.All order) the user submitted in the
 // last 14 days and has not yet played today for at least one of those variants.
 // Games without a known schedule are left out.
 func (s *Store) ToPlay(userID int64) ([]string, error) {
 	now := s.Now()
 	rows, err := s.db.Query(`SELECT DISTINCT game, variant FROM results WHERE user_id = ? AND submitted_at > ?`,
-		userID, now.Add(-14*24*time.Hour).Unix())
+		userID, now.Add(-recent).Unix())
 	if err != nil {
 		return nil, err
 	}

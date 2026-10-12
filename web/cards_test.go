@@ -77,3 +77,15 @@ func TestGroupPageVariantCard(t *testing.T) {
 		t.Errorf("card title repeated per category:\n%s", body)
 	}
 }
+
+// On a group page the paste box folds once every card is played by the viewer.
+func TestGroupPasteFoldsWhenAllPlayed(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	submit(t, ts, alice, tusmoAlice)
+	if _, body := get(t, alice, ts.URL+"/g/1"); !strings.Contains(body, `<details class="paste-later">`) {
+		t.Fatalf("alice played every board: want the folded paste box:\n%s", body)
+	}
+	if _, body := get(t, bob, ts.URL+"/g/1"); strings.Contains(body, `<details class="paste-later">`) {
+		t.Fatal("bob still has Tusmo to play: paste box folded")
+	}
+}

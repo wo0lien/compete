@@ -1,5 +1,6 @@
 {{define "content"}}
 {{if .User}}
+{{if .AllPlayed}}<details class="paste-later"><summary><span class="done"><span class="tick" aria-hidden="true">✓</span> {{t "common.all_played"}}</span> <span class="again">{{t "common.paste_another"}}</span></summary>{{end}}
 <form method="post" action="/results" class="paste">
   <label for="text" class="visually-hidden">{{t "common.paste_label"}}</label>
   <textarea id="text" name="text" rows="2" required placeholder="{{t "common.paste_placeholder"}}"></textarea>
@@ -7,6 +8,7 @@
   <button type="button" class="btn" data-paste hidden>{{t "common.paste"}}</button>
   <button class="btn go">{{t "common.submit"}}</button>
 </form>
+{{if .AllPlayed}}</details>{{end}}
 <div id="paste-error" aria-live="polite"></div>
 {{with .ToPlay}}
 <section class="panel">

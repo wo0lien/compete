@@ -275,3 +275,15 @@ func TestBoardWaitingAlone(t *testing.T) {
 		t.Fatalf("entries = %+v, err %v; want only the viewer", b.Entries, err)
 	}
 }
+
+// PlayedRecently: any result in the last 14 days (the same window as ToPlay).
+func TestPlayedRecently(t *testing.T) {
+	c := newCrew(t)
+	if ok, err := c.s.PlayedRecently(c.alice.ID); err != nil || ok {
+		t.Fatalf("no results: PlayedRecently = %v, %v", ok, err)
+	}
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	if ok, err := c.s.PlayedRecently(c.alice.ID); err != nil || !ok {
+		t.Fatalf("after a result: PlayedRecently = %v, %v", ok, err)
+	}
+}
