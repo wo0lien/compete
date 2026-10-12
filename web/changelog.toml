@@ -2,6 +2,20 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.9"
+date = "2026-10-12"
+en = [
+  "Notifications settings show correctly, buttons react while they work, and a \"Send a test notification\" button checks that your devices get them.",
+  "Easier on phones: a bigger paste box, larger links and buttons to tap, and tidier group settings.",
+  "When you add compete to your home screen, its description follows your language.",
+]
+fr = [
+  "Les réglages des notifications s'affichent correctement, les boutons réagissent pendant qu'ils travaillent, et un bouton « Envoyer une notification de test » vérifie que tes appareils les reçoivent.",
+  "Plus pratique sur téléphone : une zone de collage plus grande, des liens et boutons plus faciles à toucher, et des réglages de groupe mieux rangés.",
+  "Quand tu ajoutes compete à ton écran d'accueil, sa description suit ta langue.",
+]
+
+[[release]]
 version = "v0.1.8"
 date = "2026-10-09"
 en = ["Notifications: new puzzles in the morning, a reminder in the evening, and a ping when a friend beats you. Turn them on from your account page."]
