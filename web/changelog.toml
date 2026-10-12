@@ -7,11 +7,13 @@ date = "2026-10-12"
 en = [
   "Group pages are tidier: you come first in the waiting row and your tile opens the game, and share grids show as coloured squares when you tap Show grid.",
   "New link, Kick and Delete group ask for confirmation in a clear window first.",
+  "Paste now only fills the box: check your result, then tap Submit.",
   "Fits phones better: games to play as chips, Log out next to your name, and leaderboard tables that scroll instead of overflowing.",
 ]
 fr = [
   "Pages de groupe plus claires : tu passes en premier dans la file d'attente et ta case ouvre le jeu, et les grilles s'affichent en carrés colorés quand tu touches Voir la grille.",
   "Nouveau lien, Exclure et Supprimer le groupe demandent d'abord une confirmation dans une fenêtre claire.",
+  "Coller remplit seulement la zone : vérifie ton résultat, puis touche Envoyer.",
   "Mieux adapté aux téléphones : les jeux à jouer en pastilles, « Se déconnecter » à côté de ton nom, et des tableaux du classement qui défilent au lieu de déborder.",
 ]
 

@@ -14,15 +14,13 @@
     pushState(root);
   }
 
-  // Paste and submit: one tap from the game's share button to the board.
+  // Paste fills the box; the member checks it and taps Submit.
   async function paste(button) {
-    const form = button.form;
-    const text = form.querySelector('textarea');
+    const text = button.form.querySelector('textarea');
     try {
       text.value = (await navigator.clipboard.readText()).trim();
     } catch { /* refused: fall back to a manual paste */ }
-    if (text.value) form.requestSubmit();
-    else text.focus();
+    if (!text.value) text.focus();
   }
 
   async function share(button) {

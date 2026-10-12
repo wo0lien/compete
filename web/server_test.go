@@ -145,3 +145,14 @@ func TestHomeToPlay(t *testing.T) {
 		t.Fatalf("to-play games are not chips:\n%s", body)
 	}
 }
+
+// The paste form says what it does: Paste fills the box, Submit sends it.
+func TestPasteFormSubmitLabel(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, `<button class="btn go">Submit</button>`) || strings.Contains(body, "Go!") {
+		t.Fatalf("paste form submit button is not labelled Submit:\n%s", body)
+	}
+}
