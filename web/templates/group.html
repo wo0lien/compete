@@ -22,6 +22,6 @@
   <p class="foot"><a href="/g/{{$.Group.ID}}/history?game={{.Game}}&amp;variant={{.Variant}}">{{$name := gameName .Game}}{{with .Variant}}{{$name = print $name " · " .}}{{end}}{{t "group.older" "Game" $name}}</a></p>
   {{end}}{{else}}{{template "card" .}}{{end}}
 {{else}}
-<section class="panel"><p>{{t "group.empty"}}</p></section>
+<section class="panel empty"><p>{{t "group.empty"}}</p></section>
 {{end}}
 {{end}}

@@ -77,7 +77,7 @@ label { display: block; font-weight: 800; }
 .paste textarea { flex-basis: 100%; min-height: 7.5em; }
 .paste .btn { flex: 1; }
 /* everything played today: the paste box folds behind one line, still there for a new game or an old puzzle */
-.paste-later > summary { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; padding: 10px 14px; border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--sky-dark); cursor: pointer; list-style: none; font-weight: 800; }
+.paste-later > summary { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; min-height: 44px; padding: 10px 14px; border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--sky-dark); cursor: pointer; list-style: none; font-weight: 800; }
 .paste-later > summary::-webkit-details-marker { display: none; }
 .paste-later .tick { color: var(--grass-dark); font-size: 20px; } /* only the tick is green: green text on white is too faint */
 .paste-later .again { font-size: 14px; text-decoration: underline; }
@@ -110,7 +110,7 @@ label { display: block; font-weight: 800; }
 .tile { margin-left: auto; padding: 1px 8px; border-radius: 6px; background: var(--sun); box-shadow: 0 2px 0 rgba(16, 38, 74, .35); font-weight: 800; }
 .tile.fail { background: #FFB4AB; }
 .grid { margin: 4px 0 0; font: inherit; font-size: 12px; line-height: 1.1; letter-spacing: 1px; white-space: pre-line; }
-.hint { padding: 10px 14px 0; font-size: 14px; }
+.hint { padding: 10px 14px 0; font-size: 14px; text-align: center; }
 /* variants of one puzzle (Songless categories) share a card, switched by chips; without JS they stack under their names */
 .variant-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px 2px; scrollbar-width: none; }
 .variant-tabs::-webkit-scrollbar { display: none; }
@@ -163,6 +163,7 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 .groups a, .foot a, .back a, .panel h2 a, .panel-head h2 a { display: inline-block; padding: 11px 0; margin: -11px 0; }
 .groups li { padding: 11px 0; }
 .error { color: var(--coral-dark); font-weight: 800; }
+#paste-error, .empty { text-align: center; } /* short standalone messages sit centred; lists and forms stay left */
 .muted { opacity: .7; }
 .center { text-align: center; }
 .foot { text-align: center; }
