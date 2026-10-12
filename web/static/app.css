@@ -30,7 +30,8 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 /* phone tap targets: an invisible ::after grows small controls to about 44px without changing their look */
 .lang::after, .filters a::after { content: ""; position: absolute; inset: -6px; }
 .filters a::after { inset: -4px; } /* chips sit 8px apart: their areas must not overlap */
-.me { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-decoration: none; font-weight: 800; }
+/* only the header's account pill: the waiting row also marks the viewer with class "me" */
+.nav .me { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-decoration: none; font-weight: 800; }
 .pawn { width: 26px; height: 26px; flex: none; }
 .pawn path { stroke: var(--ink); stroke-width: 1.5; }
 
@@ -72,8 +73,10 @@ label { display: block; font-weight: 800; }
 .tabs a { flex: 1; min-width: 0; padding: 12px 2px; border-radius: 12px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-align: center; text-decoration: none; font-weight: 800; }
 @media (max-width: 340px) { .tabs { gap: 6px; } .tabs a { font-size: 15px; } }
 .tabs a[aria-current="page"] { background: var(--sun); box-shadow: 0 4px 0 var(--sun-dark); }
-.filters { display: flex; gap: 8px; flex-wrap: wrap; }
-.filters a { position: relative; padding: 8px 12px; border-radius: 999px; background: #fff; box-shadow: 0 3px 0 var(--sky-dark); text-decoration: none; font-weight: 800; font-size: 14px; }
+/* one row that scrolls sideways on a phone; the padding keeps the chips' tap areas inside the scroll box */
+.filters { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; margin: -4px -2px 0; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.filters a { flex: none; position: relative; padding: 8px 12px; border-radius: 999px; background: #fff; box-shadow: 0 3px 0 var(--sky-dark); text-decoration: none; font-weight: 800; font-size: 14px; }
 .filters a[aria-current="page"] { background: var(--sun); box-shadow: 0 3px 0 var(--sun-dark); }
 
 .row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-top: 2px dashed var(--line); }
@@ -104,8 +107,11 @@ label { display: block; font-weight: 800; }
 .legend span { display: flex; align-items: center; gap: 4px; }
 .legend .pawn { width: 16px; height: 16px; }
 
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+/* a stats table never pushes the page wider: it scrolls inside its panel */
+.table-wrap { overflow-x: auto; margin: 0 -4px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; white-space: nowrap; }
 th, td { padding: 6px 4px; border-bottom: 2px dashed var(--line); text-align: left; }
+th:not(:first-child), td:not(:first-child) { text-align: right; }
 .groups { margin: 0; padding-left: 18px; }
 /* links that are the main way around on a phone: a full 44px line */
 .groups a, .foot a, .back a, .panel h2 a, .panel-head h2 a { display: inline-block; padding: 11px 0; margin: -11px 0; }

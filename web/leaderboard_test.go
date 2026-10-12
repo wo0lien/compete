@@ -67,3 +67,15 @@ func TestTagFilterMarksSelection(t *testing.T) {
 		t.Fatalf("tag filter should be a .filters nav with music selected:\n%s", body)
 	}
 }
+
+// Stats tables scroll inside their panel instead of widening the page on a phone.
+func TestLeaderboardTableWrapped(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	submit(t, ts, alice, tusmoAlice)
+	submit(t, ts, bob, tusmoBob)
+	submit(t, ts, alice, strings.Replace(tusmoAlice, "#70", "#71", 1)) // closes #70, so stats exist
+	_, body := get(t, bob, ts.URL+"/g/1/leaderboard")
+	if !strings.Contains(body, `<div class="table-wrap"><table>`) {
+		t.Fatalf("stats table not wrapped:\n%s", body)
+	}
+}
