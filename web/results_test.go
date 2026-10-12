@@ -140,7 +140,7 @@ func TestSubmitErrorStaysOnPage(t *testing.T) {
 		t.Fatal(err)
 	}
 	body := readAll(t, resp)
-	if resp.StatusCode != http.StatusUnprocessableEntity || resp.Header.Get("HX-Retarget") != "#paste-error" || resp.Header.Get("HX-Reswap") != "innerHTML" || resp.Header.Get("HX-Push-Url") != "false" ||
+	if resp.StatusCode != http.StatusUnprocessableEntity || resp.Header.Get("HX-Retarget") != "#paste-error" || resp.Header.Get("HX-Reswap") != "innerHTML show:none" || resp.Header.Get("HX-Push-Url") != "false" ||
 		strings.Contains(body, "<html") || !strings.Contains(body, `<p class="error">`) {
 		t.Fatalf("htmx bad paste = %d retarget %q reswap %q:\n%s", resp.StatusCode, resp.Header.Get("HX-Retarget"), resp.Header.Get("HX-Reswap"), body)
 	}
