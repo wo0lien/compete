@@ -2,6 +2,12 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.10"
+date = "2026-10-12"
+en = ["The paste button and the notification settings show again after moving between pages, without a refresh."]
+fr = ["Le bouton Coller et les réglages des notifications s'affichent de nouveau quand on change de page, sans rafraîchir."]
+
+[[release]]
 version = "v0.1.9"
 date = "2026-10-12"
 en = [
