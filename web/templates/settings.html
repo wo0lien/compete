@@ -8,8 +8,8 @@
 <section class="panel">
   <h2>{{t "settings.invite"}}</h2>
   <p>{{t "settings.invite_text"}}</p>
-  <div class="invite-row"><input class="invite-link" readonly value="{{.InviteURL}}" aria-label="{{t "settings.invite"}}"><button type="button" class="btn" data-copy="{{.InviteURL}}" data-copied="{{t "settings.copied"}}" hidden>{{t "settings.copy"}}</button></div>
-  <p><button type="button" class="btn wide" data-share="{{.InviteURL}}" hidden>{{t "settings.share_link"}}</button></p>
+  <input class="invite-link" readonly value="{{.InviteURL}}" aria-label="{{t "settings.invite"}}">
+  <div class="invite-actions"><button type="button" class="btn" data-copy="{{.InviteURL}}" data-copied="{{t "settings.copied"}}" hidden>{{t "settings.copy"}}</button><button type="button" class="btn" data-share="{{.InviteURL}}" hidden>{{t "settings.share_link"}}</button></div>
   {{if eq .Group.Role "owner"}}<a class="btn wide" href="#confirm-new-link" data-dialog hx-boost="false">{{t "settings.new_link"}}</a>
   <dialog id="confirm-new-link" class="sheet" aria-labelledby="confirm-new-link-title">
     <form method="post" action="/g/{{.Group.ID}}/code" class="stack">

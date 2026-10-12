@@ -186,7 +186,7 @@ func TestSettingsConfirmSheets(t *testing.T) {
 	}
 }
 
-// The invite link reads as text with its own Copy button; Share is a separate button for share sheets.
+// The invite link reads as text; Copy and Share sit side by side in one row under it.
 func TestInviteCopyButton(t *testing.T) {
 	ts, st := newTestServer(t)
 	c := newClient(t)
@@ -195,8 +195,8 @@ func TestInviteCopyButton(t *testing.T) {
 	gs, _ := st.GroupsOf(1)
 	_, body := get(t, c, ts.URL+"/g/1/settings")
 	link := regexp.QuoteMeta(gs[0].InviteCode)
-	if !regexp.MustCompile(`<div class="invite-row"><input class="invite-link" readonly value="[^"]*/join/` + link + `"[^>]*><button type="button" class="btn" data-copy="[^"]*/join/` + link + `" data-copied="Copied" hidden>Copy</button></div>`).MatchString(body) {
-		t.Fatalf("invite link has no Copy button beside it:\n%s", body)
+	if !regexp.MustCompile(`<input class="invite-link" readonly value="[^"]*/join/` + link + `"[^>]*>\s*<div class="invite-actions"><button type="button" class="btn" data-copy="[^"]*/join/` + link + `" data-copied="Copied" hidden>Copy</button><button type="button" class="btn" data-share="[^"]*/join/` + link + `" hidden>Share link</button></div>`).MatchString(body) {
+		t.Fatalf("Copy and Share are not one row under the invite link:\n%s", body)
 	}
 	if !strings.Contains(body, `data-share="`) || strings.Contains(body, "data-copy-label") {
 		t.Fatalf("Share should be its own button without a copy fallback:\n%s", body)

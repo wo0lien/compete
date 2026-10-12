@@ -44,7 +44,7 @@
     try {
       await navigator.clipboard.writeText(button.dataset.copy);
     } catch { // refused: select the link for a manual copy
-      button.parentElement.querySelector('input[readonly]')?.select();
+      button.closest('section')?.querySelector('input[readonly]')?.select();
       return;
     }
     const label = button.textContent;
