@@ -13,6 +13,7 @@
   <button type="button" class="btn" data-paste hidden>{{t "common.paste"}}</button>
   <button class="btn go">{{t "common.submit"}}</button>
 </form>
+<div id="paste-error" aria-live="polite"></div>
 {{range .Boards}}
   {{template "board" .}}
   <p class="foot"><a href="/g/{{$.Group.ID}}/history?game={{.Game}}&amp;variant={{.Variant}}">{{$name := gameName .Game}}{{with .Variant}}{{$name = print $name " · " .}}{{end}}{{t "group.older" "Game" $name}}</a></p>

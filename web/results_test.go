@@ -124,3 +124,30 @@ func TestSubmitFuturePuzzle(t *testing.T) {
 		t.Fatalf("future puzzle = %d, board shows #99: %v", resp.StatusCode, strings.Contains(body, "#99"))
 	}
 }
+
+// From the page's own paste form (htmx), a bad paste stays on the page: only the
+// warning comes back, aimed under the form; the pasted text is left untouched.
+func TestSubmitErrorStaysOnPage(t *testing.T) {
+	ts, alice, _ := twoPlayers(t)
+	if _, body := get(t, alice, ts.URL+"/g/1"); !strings.Contains(body, `<div id="paste-error" aria-live="polite"></div>`) {
+		t.Fatalf("paste form has no warning slot:\n%s", body)
+	}
+	req, _ := http.NewRequest("POST", ts.URL+"/results", strings.NewReader(url.Values{"text": {"hello"}, "back": {"/g/1"}}.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("HX-Request", "true")
+	resp, err := alice.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := readAll(t, resp)
+	if resp.StatusCode != http.StatusUnprocessableEntity || resp.Header.Get("HX-Retarget") != "#paste-error" || resp.Header.Get("HX-Reswap") != "innerHTML" || resp.Header.Get("HX-Push-Url") != "false" ||
+		strings.Contains(body, "<html") || !strings.Contains(body, `<p class="error">`) {
+		t.Fatalf("htmx bad paste = %d retarget %q reswap %q:\n%s", resp.StatusCode, resp.Header.Get("HX-Retarget"), resp.Header.Get("HX-Reswap"), body)
+	}
+
+	// Without htmx (no JS) the full page with the form stays the fallback.
+	resp, body = post(t, alice, ts.URL+"/results", url.Values{"text": {"hello"}, "back": {"/g/1"}})
+	if resp.StatusCode != http.StatusUnprocessableEntity || !strings.Contains(body, "<html") {
+		t.Fatalf("plain bad paste = %d, want the full error page", resp.StatusCode)
+	}
+}

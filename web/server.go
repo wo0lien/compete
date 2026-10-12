@@ -203,7 +203,8 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, page
 		"version":      func() string { return cmp.Or(s.Version, "dev") },
 	})
 	var buf bytes.Buffer
-	if err := t.ExecuteTemplate(&buf, "base", data); err != nil {
+	frag, _ := data["Fragment"].(string) // a named piece of the page instead of the whole page
+	if err := t.ExecuteTemplate(&buf, cmp.Or(frag, "base"), data); err != nil {
 		fail(w, err)
 		return
 	}

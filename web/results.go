@@ -37,6 +37,12 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 func (s *Server) submit(w http.ResponseWriter, r *http.Request, u store.User) {
 	text, back := r.FormValue("text"), safeNext(r.FormValue("back"))
 	data := map[string]any{"Text": text, "Back": back}
+	if r.Header.Get("HX-Request") == "true" { // the page's own paste form: keep the page, show the warning under it
+		data["Fragment"] = "paste-error"
+		w.Header().Set("HX-Retarget", "#paste-error")
+		w.Header().Set("HX-Reswap", "innerHTML")
+		w.Header().Set("HX-Push-Url", "false") // the address stays the page's, not /results
+	}
 	rs := games.Parse(text)
 	if rs == nil {
 		data["Error"], data["Unsupported"] = tr(langFrom(r), "err.unsupported"), true
