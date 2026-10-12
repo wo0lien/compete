@@ -112,8 +112,11 @@
   }
 
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-paste], [data-share], [data-push-key], [data-push-off]');
+    const b = e.target.closest('[data-paste], [data-share], [data-push-key], [data-push-off], [data-dialog], [data-close]');
     if (!b) return;
+    // confirm sheets: without JS the #id link and dialog:target show the same sheet
+    if (b.matches('[data-dialog]')) { e.preventDefault(); document.querySelector(b.getAttribute('href')).showModal(); return; }
+    if (b.matches('[data-close]')) { e.preventDefault(); b.closest('dialog').close(); return; }
     if (b.matches('[data-paste]')) paste(b);
     else if (b.matches('[data-share]')) share(b);
     else if (b.matches('[data-push-key]')) pushOn(b);

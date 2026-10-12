@@ -40,8 +40,8 @@ func TestCreateJoinKick(t *testing.T) {
 	if resp, _ := post(t, alice, ts.URL+"/g/1/kick/2", nil); resp.StatusCode != http.StatusUnprocessableEntity {
 		t.Fatalf("kick without confirm = %d, want 422", resp.StatusCode)
 	}
-	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, "<details") {
-		t.Fatal("kick button should sit behind a <details> confirmation")
+	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, `<dialog id="confirm-kick-2"`) {
+		t.Fatal("kick button should open a confirm sheet")
 	}
 	if resp, _ := post(t, alice, ts.URL+"/g/1/kick/2", url.Values{"confirm": {"yes"}}); resp.StatusCode != http.StatusSeeOther {
 		t.Fatalf("kick = %d", resp.StatusCode)
@@ -146,5 +146,42 @@ func TestWaitingTileIsPlayLink(t *testing.T) {
 	_, body := get(t, alice, ts.URL+"/g/1")
 	if !strings.Contains(body, `class="start-tile play-tile" href="https://www.tusmo.xyz"`) || strings.Contains(body, `btn go play`) {
 		t.Fatalf("own waiting tile is not the play link:\n%s", body)
+	}
+}
+
+// The owner's settings carry one confirm sheet per destructive action; each Kick targets its own member.
+func TestSettingsConfirmSheets(t *testing.T) {
+	ts, st := newTestServer(t)
+	owner, member := newClient(t), newClient(t)
+	signup(t, ts, owner, "alice")
+	signup(t, ts, member, "bob")
+	post(t, owner, ts.URL+"/groups", url.Values{"name": {"G"}})
+	gs, _ := st.GroupsOf(1)
+	post(t, member, ts.URL+"/join/"+gs[0].InviteCode, nil)
+
+	_, body := get(t, owner, ts.URL+"/g/1/settings")
+	for _, want := range []string{
+		`href="#confirm-new-link"`, `<dialog id="confirm-new-link"`,
+		`href="#confirm-kick-2"`, `<dialog id="confirm-kick-2"`, `action="/g/1/kick/2"`,
+		`href="#confirm-delete"`, `<dialog id="confirm-delete"`,
+		`<input type="hidden" name="confirm" value="yes">`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("settings misses %q", want)
+		}
+	}
+	if strings.Contains(body, `type="checkbox" name="confirm"`) {
+		t.Error("delete still asks for a tick box")
+	}
+
+	// A member sees none of them.
+	if _, body := get(t, member, ts.URL+"/g/1/settings"); strings.Contains(body, "<dialog") {
+		t.Fatalf("member sees owner dialogs:\n%s", body)
+	}
+
+	// The delete sheet's own fields delete the group (no JS involved).
+	post(t, owner, ts.URL+"/g/1/delete", url.Values{"confirm": {"yes"}})
+	if resp, _ := get(t, owner, ts.URL+"/g/1"); resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("group still there after the sheet's delete: %d", resp.StatusCode)
 	}
 }

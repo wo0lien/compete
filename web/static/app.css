@@ -43,18 +43,18 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: 0 5px 0 var(--sky-dark); font-size: 20px; text-decoration: none; cursor: pointer; }
 .btn.wide { width: 100%; }
+/* confirm sheets: a bottom sheet over the dimmed page; :target shows the same sheet without JS */
+.sheet { width: min(100% - 24px, 34rem); margin: auto auto 28px; padding: 18px 16px 16px; border: 0; border-radius: 18px; background: #fff; color: var(--ink); box-shadow: 0 6px 0 var(--sky-dark); }
+.sheet::backdrop { background: rgba(16, 38, 74, .55); }
+.sheet:target { display: block; position: fixed; inset: auto 0 0; z-index: 10; box-shadow: 0 0 0 100vmax rgba(16, 38, 74, .55); }
+.sheet h2 { font-size: 22px; }
+.sheet .muted { font-size: 14px; }
+.sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--sky-dark); }
 /* tap feedback while a request runs: htmx marks the form, app.js the push buttons */
 .htmx-request .btn, .btn.htmx-request, .btn[aria-busy="true"] { opacity: .6; pointer-events: none; }
 .btn.go, .btn.danger { background: var(--coral); color: #fff; box-shadow: 0 5px 0 var(--coral-dark); }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; }
-.confirm summary { list-style: none; }
-.confirm summary::-webkit-details-marker { display: none; }
-.confirm[open] summary { opacity: .5; }
-.confirm form { margin-top: 8px; }
-/* an open kick confirm takes its own line, so a long name never sits under the button */
-.row:has(.confirm) { flex-wrap: wrap; align-items: center; }
-.confirm[open] { flex-basis: 100%; display: flex; flex-direction: column; align-items: flex-end; }
 
 input, textarea { width: 100%; padding: 10px 12px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: inset 0 3px 0 var(--line), 0 0 0 2px var(--line); font: inherit; resize: vertical; }
 input[type=color] { width: 64px; height: 44px; padding: 4px; }
@@ -88,6 +88,7 @@ label { display: block; font-weight: 800; }
 .row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-top: 2px dashed var(--line); }
 .row.out { opacity: .5; }
 .row .grow { flex: 1; min-width: 0; }
+.row:has([data-dialog]) { align-items: center; } /* name level with its Kick button */
 .line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .space { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--sky-pale); box-shadow: 0 3px 0 var(--ink); font-size: 15px; }
 .space.first { background: var(--sun); }
