@@ -5,11 +5,15 @@ on:
 permissions:
   contents: write
   packages: write
+  issues: read
+  pull-requests: read
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # tags, to find the previous release for the notes
       - name: changelog has this release
         run: |
           # A vX.Y.Z release must say what changed for members (web/changelog.toml).
@@ -66,6 +70,25 @@ jobs:
       - name: move latest
         if: steps.kind.outputs.latest == 'true'
         run: docker buildx imagetools create -t ghcr.io/wo0lien/compete:latest "ghcr.io/wo0lien/compete:$GITHUB_REF_NAME"
-      - run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes ${{ steps.kind.outputs.flag }}
+      # The members' changelog (web/changelog.toml) keeps only the main changes; the release
+      # notes are exhaustive: GitHub's generated list of PRs, then every issue closed since.
+      - name: release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prev=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
+          gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$GITHUB_REF_NAME" \
+            ${prev:+-f previous_tag_name="$prev"} --jq .body > "$RUNNER_TEMP/notes.md"
+          if [ -n "$prev" ]; then
+            since=$(git log -1 --format=%cI "$prev")
+            gh issue list --repo "$GITHUB_REPOSITORY" --state closed --limit 200 \
+              --search "closed:>$since reason:completed" --json number,title \
+              --jq '.[] | "- \(.title) #\(.number)"' > "$RUNNER_TEMP/issues.md"
+            if [ -s "$RUNNER_TEMP/issues.md" ]; then
+              printf '\n## Closed issues\n\n' >> "$RUNNER_TEMP/notes.md"
+              cat "$RUNNER_TEMP/issues.md" >> "$RUNNER_TEMP/notes.md"
+            fi
+          fi
+      - run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --notes-file "$RUNNER_TEMP/notes.md" ${{ steps.kind.outputs.flag }}
         env:
           GH_TOKEN: ${{ github.token }}

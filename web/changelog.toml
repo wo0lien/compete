@@ -1,30 +1,21 @@
-# What changed, for members. Newest first; en and fr have the same lines.
+# What changed, for members: only the main changes of each release, newest first;
+# en and fr have the same lines. The GitHub release notes list everything (PRs, closed issues).
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
 version = "v0.1.11"
 date = "2026-10-12"
 en = [
-  "Group pages are tidier: you come first in the waiting row and your tile opens the game, and share grids show as coloured squares when you tap Show grid.",
-  "Songless categories share one card: switch between them with the chips at the top.",
-  "New link, Kick and Delete group ask for confirmation in a clear window first.",
-  "The invite link has its own Copy button; Share link opens your phone's share sheet.",
-  "Paste now only fills the box: check your result, then tap Submit.",
-  "Once everything is played for the day, the paste box folds into \"All played today\"; tap it to paste another result.",
-  "While a page loads, the button or link you tapped dims and a thin bar runs along the top.",
-  "A paste that isn't a supported result, or was already sent, shows a warning under the box instead of a new page.",
-  "Fits phones better: games to play as chips, Log out next to your name, and leaderboard tables that scroll instead of overflowing.",
+  "Group pages are clearer: you come first with a Play link, Songless categories share one card, and grids show as coloured squares.",
+  "Paste fills the box and you tap Submit; a wrong paste is flagged right under it, and the box folds away once everything is played.",
+  "New link, Kick and Delete group ask for confirmation first.",
+  "Easier on phones: games to play as chips, Copy and Share for the invite link, tables that scroll, and feedback while a page loads.",
 ]
 fr = [
-  "Pages de groupe plus claires : tu passes en premier dans la file d'attente et ta case ouvre le jeu, et les grilles s'affichent en carrés colorés quand tu touches Voir la grille.",
-  "Les catégories de Songless partagent une seule carte : passe de l'une à l'autre avec les pastilles en haut.",
-  "Nouveau lien, Exclure et Supprimer le groupe demandent d'abord une confirmation dans une fenêtre claire.",
-  "Le lien d'invitation a son propre bouton Copier ; Partager le lien ouvre le menu de partage du téléphone.",
-  "Coller remplit seulement la zone : vérifie ton résultat, puis touche Envoyer.",
-  "Quand tout est joué pour la journée, la zone de collage se replie en « Tout est joué aujourd'hui » ; touche-la pour coller un autre résultat.",
-  "Pendant qu'une page charge, le bouton ou le lien touché s'estompe et une fine barre défile en haut.",
-  "Un collage qui n'est pas un résultat pris en charge, ou déjà envoyé, affiche un avertissement sous la zone au lieu d'une nouvelle page.",
-  "Mieux adapté aux téléphones : les jeux à jouer en pastilles, « Se déconnecter » à côté de ton nom, et des tableaux du classement qui défilent au lieu de déborder.",
+  "Pages de groupe plus claires : tu passes en premier avec un lien Jouer, les catégories de Songless partagent une carte, et les grilles s'affichent en carrés colorés.",
+  "Coller remplit la zone et tu touches Envoyer ; un mauvais collage est signalé juste en dessous, et la zone se replie quand tout est joué.",
+  "Nouveau lien, Exclure et Supprimer le groupe demandent d'abord une confirmation.",
+  "Plus pratique sur téléphone : les jeux à jouer en pastilles, Copier et Partager pour le lien d'invitation, des tableaux qui défilent, et un retour visuel pendant le chargement.",
 ]
 
 [[release]]
