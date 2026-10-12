@@ -151,7 +151,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /account/delete", s.auth(s.deleteAccount))
 	mux.HandleFunc("GET /reset/{token}", s.resetForm)
 	mux.HandleFunc("POST /reset/{token}", s.limited(s.reset))
-	mux.HandleFunc("GET /manifest.webmanifest", serveAsset("manifest.webmanifest", "application/manifest+json"))
+	mux.HandleFunc("GET /manifest.webmanifest", manifest)
 	mux.HandleFunc("GET /sw.js", serveAsset("sw.js", "text/javascript; charset=utf-8"))
 	mux.HandleFunc("GET /games", s.gamesPage)
 	mux.HandleFunc("POST /lang", s.setLang)

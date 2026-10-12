@@ -188,3 +188,6 @@ reminder = "Encore à jouer aujourd'hui : {{.Games}}"
 overtaken = "{{.Name}} t'a battu sur {{.Board}} ({{.Score}})"
 everyone = "Tout le monde dans {{.Group}} a joué {{.Board}}"
 friend = "{{.Name}} a joué {{.Board}}"
+
+[manifest]
+about = "Partage tes résultats de jeux du jour avec tes amis."

@@ -188,3 +188,6 @@ reminder = "Still to play today: {{.Games}}"
 overtaken = "{{.Name}} beat you on {{.Board}} ({{.Score}})"
 everyone = "Everyone in {{.Group}} played {{.Board}}"
 friend = "{{.Name}} played {{.Board}}"
+
+[manifest]
+about = "Share your daily game results with friends."
