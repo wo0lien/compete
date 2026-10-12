@@ -5,6 +5,28 @@
     <h2><a href="{{gameURL .Game}}" target="_blank" rel="noopener">{{gameName .Game}} #{{.PuzzleID}}{{with .Variant}} · {{.}}{{end}} ↗</a></h2>
     <span class="chip">{{gameLang .Game}}</span>
   </div>
+  {{template "board-body" .}}
+</section>
+{{end}}
+{{/* card: every variant of one puzzle in one panel; JS shows the chips and one variant, without JS all variants stack */}}
+{{define "card"}}
+{{$sel := .Selected}}{{$g := .Group}}
+<section class="panel flush" data-variants>
+  <div class="panel-head">
+    <h2><a href="{{gameURL .Game}}" target="_blank" rel="noopener">{{gameName .Game}} #{{.PuzzleID}} ↗</a></h2>
+    <span class="chip">{{gameLang .Game}}</span>
+  </div>
+  <div class="variant-tabs" role="tablist" hidden>{{range $i, $b := .Boards}}<button type="button" class="variant{{if eq $i $sel}} on{{end}}" role="tab" aria-selected="{{eq $i $sel}}" data-variant="{{$i}}">{{$b.Variant}} <span class="mark" aria-hidden="true">{{if $b.Revealed}}✓{{else}}•{{end}}</span></button>{{end}}</div>
+  {{range $i, $b := .Boards}}
+  <div class="variant-panel" data-panel="{{$i}}">
+    <h3 class="variant-name">{{$b.Variant}}</h3>
+    {{template "board-body" $b}}
+    <p class="foot"><a href="/g/{{$g}}/history?game={{$b.Game}}&amp;variant={{$b.Variant}}">{{t "group.older" "Game" (print (gameName $b.Game) " · " $b.Variant)}}</a></p>
+  </div>
+  {{end}}
+</section>
+{{end}}
+{{define "board-body"}}
   {{if .Revealed}}
     {{$game := .Game}}
     {{range $i, $e := .Entries}}
@@ -36,7 +58,6 @@
       {{end}}
     </div>
   {{end}}
-</section>
 {{end}}
 {{define "race"}}
 <section class="panel">

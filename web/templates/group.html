@@ -14,9 +14,11 @@
   <button class="btn go">{{t "common.submit"}}</button>
 </form>
 <div id="paste-error" aria-live="polite"></div>
-{{range .Boards}}
+{{range .Cards}}
+  {{if eq (len .Boards) 1}}{{with index .Boards 0}}
   {{template "board" .}}
   <p class="foot"><a href="/g/{{$.Group.ID}}/history?game={{.Game}}&amp;variant={{.Variant}}">{{$name := gameName .Game}}{{with .Variant}}{{$name = print $name " · " .}}{{end}}{{t "group.older" "Game" $name}}</a></p>
+  {{end}}{{else}}{{template "card" .}}{{end}}
 {{else}}
 <section class="panel"><p>{{t "group.empty"}}</p></section>
 {{end}}

@@ -6,6 +6,7 @@ version = "v0.1.11"
 date = "2026-10-12"
 en = [
   "Group pages are tidier: you come first in the waiting row and your tile opens the game, and share grids show as coloured squares when you tap Show grid.",
+  "Songless categories share one card: switch between them with the chips at the top.",
   "New link, Kick and Delete group ask for confirmation in a clear window first.",
   "Paste now only fills the box: check your result, then tap Submit.",
   "A paste that isn't a supported result, or was already sent, shows a warning under the box instead of a new page.",
@@ -13,6 +14,7 @@ en = [
 ]
 fr = [
   "Pages de groupe plus claires : tu passes en premier dans la file d'attente et ta case ouvre le jeu, et les grilles s'affichent en carrés colorés quand tu touches Voir la grille.",
+  "Les catégories de Songless partagent une seule carte : passe de l'une à l'autre avec les pastilles en haut.",
   "Nouveau lien, Exclure et Supprimer le groupe demandent d'abord une confirmation dans une fenêtre claire.",
   "Coller remplit seulement la zone : vérifie ton résultat, puis touche Envoyer.",
   "Un collage qui n'est pas un résultat pris en charge, ou déjà envoyé, affiche un avertissement sous la zone au lieu d'une nouvelle page.",

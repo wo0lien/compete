@@ -12,6 +12,21 @@
       b.hidden = !canShare && !canCopy;
     });
     pushState(root);
+    root.querySelectorAll('[data-variants]').forEach(card => {
+      card.querySelector('[role=tablist]').hidden = false;
+      card.classList.add('tabbed');
+      showVariant(card, card.querySelector('[aria-selected=true]').dataset.variant);
+    });
+  }
+
+  // A card holding several variants of one puzzle shows one at a time.
+  function showVariant(card, i) {
+    card.querySelectorAll('[data-variant]').forEach(b => {
+      const on = b.dataset.variant === i;
+      b.setAttribute('aria-selected', on);
+      b.classList.toggle('on', on);
+    });
+    card.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== i; });
   }
 
   // Paste fills the box; the member checks it and taps Submit.
@@ -110,8 +125,9 @@
   }
 
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-paste], [data-share], [data-push-key], [data-push-off], [data-dialog], [data-close]');
+    const b = e.target.closest('[data-paste], [data-share], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant]');
     if (!b) return;
+    if (b.matches('[data-variant]')) { showVariant(b.closest('[data-variants]'), b.dataset.variant); return; }
     // confirm sheets: without JS the #id link and dialog:target show the same sheet
     if (b.matches('[data-dialog]')) { e.preventDefault(); document.querySelector(b.getAttribute('href')).showModal(); return; }
     if (b.matches('[data-close]')) { // shown by :target instead (#id in the URL): let href="#" clear it

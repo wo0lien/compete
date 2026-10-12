@@ -22,14 +22,18 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 		s.oops(w, r, err)
 		return
 	}
-	// Boards still to play first: after a submit, the next game is on top.
-	sort.SliceStable(boards, func(i, j int) bool { return !boards[i].Revealed && boards[j].Revealed })
+	cs := cards(boards)
+	for i := range cs {
+		cs[i].Group = g.ID
+	}
+	// Cards still to play first: after a submit, the next game is on top.
+	sort.SliceStable(cs, func(i, j int) bool { return cs[i].ToPlay() && !cs[j].ToPlay() })
 	race, err := s.raceData(g.ID, nil)
 	if err != nil {
 		s.oops(w, r, err)
 		return
 	}
-	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Boards": boards, "Race": race})
+	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Cards": cs, "Race": race})
 }
 
 // submit parses a pasted share text and stores its results for the current user.
