@@ -70,12 +70,21 @@
     }
   }
 
+  // busy dims the button and shows its data-busy label until done.
+  function busy(button, on) {
+    button.setAttribute('aria-busy', on);
+    if (on) [button.dataset.label, button.textContent] = [button.textContent, button.dataset.busy || button.textContent];
+    else button.textContent = button.dataset.label;
+  }
+
   async function pushOn(button) {
+    busy(button, true);
     try {
       await subscribe(button);
     } catch { // the push service or the server refused: say so, keep the button
       button.closest('[data-push]').querySelector('[data-push-error]').hidden = false;
     }
+    busy(button, false);
   }
 
   async function subscribe(button) {
@@ -91,7 +100,8 @@
     location.reload();
   }
 
-  async function pushOff() {
+  async function pushOff(button) {
+    busy(button, true);
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
     if (sub) {
@@ -107,7 +117,7 @@
     if (b.matches('[data-paste]')) paste(b);
     else if (b.matches('[data-share]')) share(b);
     else if (b.matches('[data-push-key]')) pushOn(b);
-    else pushOff();
+    else pushOff(b);
   });
   // htmx:load fires for the first page and for every swapped-in fragment.
   document.addEventListener('htmx:load', e => reveal(e.target));

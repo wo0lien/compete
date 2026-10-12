@@ -46,6 +46,10 @@ new_here = "Pas encore de compte ?"
 title = "Nouveau mot de passe"
 
 [account]
+push_turning_on = "Activation…"
+push_test = "Envoyer une notification de test"
+push_test_sent = "Test envoyé à {{.N}} appareil(s). Rien ne s'affiche ? Vérifie les réglages de notifications de ton téléphone."
+push_test_none = "Aucun appareil n'a reçu le test. Désactive puis réactive les notifications sur cet appareil."
 push_error = "Impossible d'activer les notifications. Réessaie."
 notifications = "Notifications"
 push_on = "Activer les notifications"
@@ -177,6 +181,7 @@ fail = "raté"
 away = "à {{.N}} pays"
 
 [push]
+test = "Les notifications marchent sur cet appareil 🎉"
 digest = "Nouvelles grilles : {{.Games}}"
 reminder = "Encore à jouer aujourd'hui : {{.Games}}"
 overtaken = "{{.Name}} t'a battu sur {{.Board}} ({{.Score}})"

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/wo0lien/compete/store"
@@ -71,6 +72,15 @@ func (s *Server) pushUnsubscribe(w http.ResponseWriter, r *http.Request, u store
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// pushTest sends the test notification and reports how many devices got it.
+func (s *Server) pushTest(w http.ResponseWriter, r *http.Request, u store.User) {
+	if s.Push == nil {
+		http.NotFound(w, r)
+		return
+	}
+	http.Redirect(w, r, "/account?test="+strconv.Itoa(s.Push.Test(u.ID)), http.StatusSeeOther)
 }
 
 func (s *Server) setNotifications(w http.ResponseWriter, r *http.Request, u store.User) {

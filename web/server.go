@@ -145,6 +145,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /account", s.auth(s.account))
 	mux.HandleFunc("POST /push/subscribe", s.auth(s.pushSubscribe))
 	mux.HandleFunc("POST /push/unsubscribe", s.auth(s.pushUnsubscribe))
+	mux.HandleFunc("POST /push/test", s.limited(s.auth(s.pushTest)))
 	mux.HandleFunc("POST /account/notifications", s.auth(s.setNotifications))
 	mux.HandleFunc("POST /account/pawn", s.auth(s.setPawn))
 	mux.HandleFunc("POST /account/delete", s.auth(s.deleteAccount))

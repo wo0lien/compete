@@ -46,6 +46,10 @@ new_here = "New here?"
 title = "New password"
 
 [account]
+push_turning_on = "Turning on…"
+push_test = "Send a test notification"
+push_test_sent = "Test sent to {{.N}} device(s). Nothing shows up? Check your phone's notification settings."
+push_test_none = "No device got the test. Turn notifications off and on again on this device."
 push_error = "Couldn't turn on notifications. Try again."
 notifications = "Notifications"
 push_on = "Turn on notifications"
@@ -177,6 +181,7 @@ fail = "fail"
 away = "{{.N}} away"
 
 [push]
+test = "Notifications work on this device 🎉"
 digest = "New puzzles are out: {{.Games}}"
 reminder = "Still to play today: {{.Games}}"
 overtaken = "{{.Name}} beat you on {{.Board}} ({{.Score}})"

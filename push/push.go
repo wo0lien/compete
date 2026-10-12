@@ -4,6 +4,7 @@ package push
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,6 +20,9 @@ import (
 // sendTimeout bounds one delivery: a push service that never answers must not
 // stall the timer.
 var sendTimeout = 10 * time.Second
+
+// errGone: the push service says the device unsubscribed; its row is deleted.
+var errGone = errors.New("subscription gone")
 
 // Message is the JSON payload sw.js shows.
 type Message struct {
@@ -89,20 +93,39 @@ func (n *Notifier) deliver(sub store.Subscription, m Message) error {
 	switch {
 	case resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusGone:
 		log.Printf("push user %d via %s: subscription gone, removed", sub.UserID, host)
-		return n.Store.DeleteSubscription(sub.Endpoint)
+		if err := n.Store.DeleteSubscription(sub.Endpoint); err != nil {
+			return err
+		}
+		return errGone
 	case resp.StatusCode >= 400:
 		return fmt.Errorf("push service refused: %s", resp.Status)
 	}
 	return nil
 }
 
-// sendAll delivers m to every subscription of r, logging failures.
-func (n *Notifier) sendAll(r store.Recipient, m Message) {
+// sendAll delivers m to every subscription of r, logging failures, and
+// returns how many deliveries a push service accepted.
+func (n *Notifier) sendAll(r store.Recipient, m Message) (sent int) {
 	for _, sub := range r.Subs {
-		if err := n.Send(sub, m); err != nil {
+		switch err := n.Send(sub, m); {
+		case err == nil:
+			sent++
+		case !errors.Is(err, errGone): // already logged by deliver
 			log.Printf("push to user %d: %v", r.UserID, err)
 		}
 	}
+	return sent
+}
+
+// Test sends the test message to every device of the member, whatever their
+// switches, and returns how many got it.
+func (n *Notifier) Test(userID int64) int {
+	r, err := n.Store.Recipient(userID)
+	if err != nil {
+		log.Printf("push test: %v", err)
+		return 0
+	}
+	return n.sendAll(r, Message{Title: "compete", Body: n.Text(lang(r), "push.test"), URL: "/account"})
 }
 
 // lang is the recipient's language for push texts ("" follows the browser on
