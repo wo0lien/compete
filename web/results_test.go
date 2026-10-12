@@ -39,12 +39,12 @@ func TestBoardHiddenThenRevealed(t *testing.T) { // Review Focus 1
 	if !strings.Contains(body, "Tusmo #70") || !strings.Contains(body, "hidden-tile") {
 		t.Fatalf("bob should see a hidden Tusmo board:\n%s", body)
 	}
-	if strings.Contains(body, "🟥🟥🟥⬛🟨🟨🟨⬛") || strings.Contains(body, "3/6") {
+	if strings.Contains(body, "🟥🟥🟥⬛🟨🟨🟨⬛") || strings.Contains(body, `class="sq-row"`) || strings.Contains(body, "3/6") {
 		t.Fatal("hidden board leaks alice's grid or score")
 	}
 	submit(t, ts, bob, tusmoBob)
 	_, body = get(t, bob, ts.URL+"/g/1")
-	if !strings.Contains(body, "🟥🟥🟥⬛🟨🟨🟨⬛") || !strings.Contains(body, "3/6") || !strings.Contains(body, "0:35") {
+	if !strings.Contains(body, `<div class="sq-row"><span class="sq red"></span><span class="sq red"></span><span class="sq red"></span><span class="sq miss"></span><span class="sq yellow"></span><span class="sq yellow"></span><span class="sq yellow"></span><span class="sq miss"></span></div>`) || !strings.Contains(body, "3/6") || !strings.Contains(body, "0:35") { // alice's first grid row, as squares
 		t.Fatalf("revealed board misses alice's result:\n%s", body)
 	}
 	if strings.Index(body, "alice") > strings.Index(body, "4/6") {

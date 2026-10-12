@@ -95,6 +95,16 @@ label { display: block; font-weight: 800; }
 .tile.fail { background: #FFB4AB; }
 .grid { margin: 4px 0 0; font: inherit; font-size: 12px; line-height: 1.1; letter-spacing: 1px; white-space: pre-line; }
 .hint { padding: 10px 14px 0; font-size: 14px; }
+/* share grids as palette squares, hidden until tapped */
+.squares { margin-top: 4px; }
+.squares summary { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--sky-pale); font-size: 13px; font-weight: 800; cursor: pointer; list-style: none; }
+.squares summary::-webkit-details-marker { display: none; }
+.squares[open] summary { margin-bottom: 6px; }
+.sq-row { display: flex; gap: 3px; margin-bottom: 3px; }
+.sq { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 -2px 0 rgba(16, 38, 74, .25); }
+.sq.red { background: var(--coral); } .sq.green { background: var(--grass); }
+.sq.yellow { background: var(--sun); } .sq.orange { background: #FF9F43; }
+.sq.miss { background: #8A97AD; } .sq.empty { background: var(--sky-pale); }
 /* one row of players; many players scroll sideways */
 .waiting { display: flex; gap: 14px; overflow-x: auto; padding: 12px 14px 16px; scrollbar-width: none; }
 .waiting::-webkit-scrollbar { display: none; }

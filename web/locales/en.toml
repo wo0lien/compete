@@ -96,6 +96,7 @@ fails = "Fails"
 empty = "Stats appear once a puzzle is finished (when the next one starts)."
 
 [board]
+show_grid = "Show grid"
 play = "Play ↗"
 not_played = "not played"
 hint = "Your move! Scores stay hidden until you play."

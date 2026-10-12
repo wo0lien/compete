@@ -96,6 +96,7 @@ fails = "Échecs"
 empty = "Les stats apparaissent quand une grille est terminée (au lancement de la suivante)."
 
 [board]
+show_grid = "Voir la grille"
 play = "Jouer ↗"
 not_played = "pas joué"
 hint = "À toi de jouer ! Les scores restent cachés tant que tu n'as pas joué."

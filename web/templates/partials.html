@@ -19,7 +19,7 @@
           {{with tiebreakText $game $e.Tiebreak}}<span>{{.}}</span>{{end}}
           {{else}}<span class="muted">{{t "board.not_played"}}</span>{{end}}
         </div>
-        {{with $e.Grid}}<pre class="grid">{{.}}</pre>{{end}}
+        {{with $e.Grid}}<details class="squares"><summary>{{t "board.show_grid"}}</summary>{{with squares .}}{{range .}}<div class="sq-row">{{range .}}<span class="{{.}}"></span>{{end}}</div>{{end}}{{else}}<pre class="grid">{{$e.Grid}}</pre>{{end}}</details>{{end}}
       </div>
     </div>
     {{end}}
