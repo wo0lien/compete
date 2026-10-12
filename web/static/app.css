@@ -57,7 +57,11 @@ main { display: flex; flex-direction: column; gap: 14px; padding: 0 12px 28px; }
 .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--sky-dark); }
 /* tap feedback while a request runs: htmx marks the form, app.js the push buttons */
-.htmx-request .btn, .btn.htmx-request, .btn[aria-busy="true"] { opacity: .6; pointer-events: none; }
+.htmx-request .btn, a.htmx-request, .btn[aria-busy="true"] { opacity: .6; pointer-events: none; }
+/* while any page or form is loading: a thin bar sliding along the top of the screen */
+body:has(.htmx-request)::before { content: ""; position: fixed; top: 0; left: 0; z-index: 20; width: 40%; height: 3px; background: var(--coral); animation: loading 1s ease-in-out infinite; }
+@keyframes loading { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { body:has(.htmx-request)::before { width: 100%; animation: none; } }
 .btn.go, .btn.danger { background: var(--coral); color: #fff; box-shadow: 0 5px 0 var(--coral-dark); }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
