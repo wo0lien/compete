@@ -193,3 +193,9 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 .welcome h2 { font-size: 22px; padding-right: 40px; }
 .welcome .close { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); font: 800 22px/1 Nunito, system-ui, sans-serif; cursor: pointer; }
 .welcome .actions .btn { flex: 1; }
+/* history: one line per puzzle, its winners (or why not) on the right */
+.past { padding-left: 0; list-style: none; }
+.past li { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+.past li > :last-child { margin-left: auto; }
+.winner { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; }
+.winner .pawn { width: 20px; height: 20px; }

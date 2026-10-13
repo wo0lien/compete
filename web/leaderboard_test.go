@@ -47,6 +47,11 @@ func TestLeaderboardHistoryBoardPages(t *testing.T) {
 	if !strings.Contains(body, "/g/1/board?game=tusmo&amp;variant=&amp;puzzle=71") || !strings.Contains(body, "puzzle=70") {
 		t.Fatalf("history page:\n%s", body)
 	}
+	// #71 (tomorrow's, alice only): dated, winner hidden from bob; #70 (today's): both played
+	if !strings.Contains(body, "#71</a> <span class=\"muted\">7 Oct</span>") || !strings.Contains(body, "Play it to see who won") ||
+		!strings.Contains(body, "#70</a> <span class=\"muted\">Today</span>") || !strings.Contains(body, `class="winner"`) {
+		t.Fatalf("history rows lack date or winner:\n%s", body)
+	}
 	_, body = get(t, bob, ts.URL+"/g/1/board?game=tusmo&variant=&puzzle=71")
 	if !strings.Contains(body, "hidden-tile") {
 		t.Fatal("bob has not played #71: it must be hidden")

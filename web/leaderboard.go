@@ -1,9 +1,11 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/wo0lien/compete/games"
 	"github.com/wo0lien/compete/store"
@@ -83,13 +85,34 @@ func (s *Server) history(w http.ResponseWriter, r *http.Request, u store.User) {
 		return
 	}
 	q := r.URL.Query()
-	ids, err := s.store.Puzzles(g.ID, q.Get("game"), q.Get("variant"))
+	game, variant := q.Get("game"), q.Get("variant")
+	ps, err := s.store.History(g.ID, u.ID, game, variant)
 	if err != nil {
 		s.oops(w, r, err)
 		return
 	}
+	type row struct {
+		store.Past
+		Day string // "" without a known schedule
+	}
+	gm, _ := games.ByID(game)
+	today, _ := gm.Today(variant, s.store.Now())
+	lang := langFrom(r)
+	rows := make([]row, len(ps))
+	for i, p := range ps {
+		rows[i].Past = p
+		switch day, ok := gm.Day(variant, p.ID); {
+		case !ok:
+		case p.ID == today:
+			rows[i].Day = tr(lang, "history.today")
+		case p.ID == today-1:
+			rows[i].Day = tr(lang, "history.yesterday")
+		default:
+			rows[i].Day = fmt.Sprintf("%d %s", day.Day(), strings.Fields(tr(lang, "history.months"))[day.Month()-1])
+		}
+	}
 	s.render(w, r, http.StatusOK, "history.html", map[string]any{
-		"Group": g, "Game": q.Get("game"), "Variant": q.Get("variant"), "Puzzles": ids,
+		"Group": g, "Game": game, "Variant": variant, "Puzzles": rows,
 	})
 }
 

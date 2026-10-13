@@ -2,9 +2,11 @@
 <h1>{{gameName .Game}}{{with .Variant}} · {{.}}{{end}}</h1>
 <p class="back"><a href="/g/{{.Group.ID}}">{{t "common.back_to" "Name" .Group.Name}}</a></p>
 <section class="panel">
-  <ul class="groups">
+  <ul class="groups past">
     {{$g := .Group}}{{$game := .Game}}{{$variant := .Variant}}
-    {{range .Puzzles}}<li><a href="/g/{{$g.ID}}/board?game={{$game}}&amp;variant={{$variant}}&amp;puzzle={{.}}">#{{.}}</a></li>{{else}}<li>{{t "history.empty"}}</li>{{end}}
+    {{range .Puzzles}}<li><a href="/g/{{$g.ID}}/board?game={{$game}}&amp;variant={{$variant}}&amp;puzzle={{.ID}}">#{{.ID}}</a>{{with .Day}} <span class="muted">{{.}}</span>{{end}}
+      {{if not .Revealed}}<span class="muted small">{{t "history.hidden"}}</span>{{else if .Winners}}<span class="winner">{{range $i, $w := .Winners}}{{if $i}}, {{end}}{{template "pawn" $w.Pawn}}{{$w.Username}}{{end}}</span>{{else}}<span class="muted small">{{t "history.no_winner"}}</span>{{end}}</li>
+    {{else}}<li>{{t "history.empty"}}</li>{{end}}
   </ul>
 </section>
 {{end}}

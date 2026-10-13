@@ -2,7 +2,9 @@ package store
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -133,9 +135,40 @@ func TestCurrentBoardsAndPuzzles(t *testing.T) {
 	if len(bs) != 2 || bs[0].Game != "travle" || bs[0].Variant != "usa" || bs[1].Game != "tusmo" || bs[1].PuzzleID != 70 {
 		t.Fatalf("CurrentBoards = %+v", bs)
 	}
-	ps, _ := c.s.Puzzles(c.g.ID, "tusmo", "")
-	if len(ps) != 2 || ps[0] != 70 || ps[1] != 69 {
-		t.Fatalf("Puzzles = %v, want [70 69]", ps)
+	ps, _ := c.s.History(c.g.ID, c.alice.ID, "tusmo", "")
+	if len(ps) != 2 || ps[0].ID != 70 || ps[1].ID != 69 {
+		t.Fatalf("History = %+v, want 70 then 69", ps)
+	}
+}
+
+// History names each puzzle's winners (ties share, failures never win), only
+// on puzzles the viewer played: the same rule as Board.
+func TestHistoryWinners(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), new(20)))
+	c.add(t, c.bob, res("tusmo", "", 70, new(3), new(20)))
+	c.add(t, c.carol, res("tusmo", "", 70, nil, nil))
+	c.add(t, c.bob, res("tusmo", "", 69, new(2), nil)) // alice did not play it
+	c.add(t, c.alice, res("tusmo", "", 68, nil, nil))
+	c.add(t, c.bob, res("tusmo", "", 68, nil, nil))
+	c.add(t, c.dave, res("tusmo", "", 67, new(1), nil)) // outsider
+	ps, err := c.s.History(c.g.ID, c.alice.ID, "tusmo", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := func(p Past) string {
+		var out []string
+		for _, w := range p.Winners {
+			out = append(out, w.Username)
+		}
+		return strings.Join(out, ",")
+	}
+	got := fmt.Sprint(len(ps))
+	for _, p := range ps {
+		got += fmt.Sprintf(" #%d:%v:%s", p.ID, p.Revealed, names(p))
+	}
+	if want := "3 #70:true:alice,bob #69:false: #68:true:"; got != want {
+		t.Fatalf("History = %q, want %q", got, want)
 	}
 }
 

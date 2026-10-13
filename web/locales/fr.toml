@@ -92,6 +92,11 @@ empty = "Aucun résultat pour l'instant. Colle le tien au-dessus et invite tes a
 
 [history]
 empty = "Aucune grille pour l'instant."
+today = "Aujourd'hui"
+yesterday = "Hier"
+months = "janv. févr. mars avr. mai juin juil. août sept. oct. nov. déc."
+hidden = "Joue-le pour voir qui a gagné"
+no_winner = "Personne ne l'a trouvé"
 
 [join]
 title = "Rejoindre {{.Name}} ?"

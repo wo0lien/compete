@@ -44,6 +44,20 @@ func (g Game) Today(variant string, now time.Time) (int, bool) {
 	return g.today(variant, now)
 }
 
+// Day is the calendar day puzzle id was today, from the game's schedule.
+// false: no known schedule. Numbering moves one per calendar day, so any
+// reference day gives the offset; its noon UTC is that same day in every
+// game's timezone.
+func (g Game) Day(variant string, id int) (time.Time, bool) {
+	ref := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	n, ok := g.Today(variant, ref)
+	if !ok {
+		return time.Time{}, false
+	}
+	y, m, d := ref.AddDate(0, 0, id-n).Date()
+	return time.Date(y, m, d, 0, 0, 0, 0, time.UTC), true
+}
+
 // ShowScore renders a stored score for display.
 func (g Game) ShowScore(score *int) string {
 	if score == nil {
