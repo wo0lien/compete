@@ -11,6 +11,7 @@ paste_another = "Paste another result"
 cancel = "Cancel"
 changelog = "What's new"
 paste = "Paste"
+clear = "Clear"
 today = "Today"
 leaderboard = "Leaderboard"
 settings = "Settings"
@@ -91,6 +92,11 @@ empty = "No results yet. Paste one above and invite your friends from Settings."
 
 [history]
 empty = "No puzzles yet."
+today = "Today"
+yesterday = "Yesterday"
+months = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
+hidden = "Play it to see who won"
+no_winner = "Nobody solved it"
 
 [join]
 title = "Join {{.Name}}?"

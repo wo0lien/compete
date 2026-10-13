@@ -46,3 +46,24 @@ func TestToday(t *testing.T) {
 		}
 	}
 }
+
+func TestDay(t *testing.T) {
+	for _, tc := range []struct {
+		game, variant string
+		id            int
+		want          string // "" = no schedule
+	}{
+		{"tusmo", "", 70, "2026-10-06"},
+		{"tusmo", "", 1, "2026-07-29"},
+		{"songless", "Rock", 407, "2026-10-09"},
+		{"songless", "", 444, "2026-11-15"}, // after the switch to EST
+		{"travle", "usa", 1209, "2026-10-09"},
+		{"travle", "challenge", 12, ""},
+	} {
+		g, _ := ByID(tc.game)
+		d, ok := g.Day(tc.variant, tc.id)
+		if got := d.Format(time.DateOnly); ok != (tc.want != "") || ok && got != tc.want {
+			t.Errorf("%s %q #%d: Day = %s, %v; want %q", tc.game, tc.variant, tc.id, got, ok, tc.want)
+		}
+	}
+}

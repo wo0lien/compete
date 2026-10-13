@@ -75,6 +75,7 @@ label { display: block; font-weight: 800; }
 /* share texts are several lines: a full-width box, the buttons below it */
 .paste { flex-wrap: wrap; }
 .paste textarea { flex-basis: 100%; min-height: 7.5em; }
+.paste textarea[readonly] { background: var(--sky-pale); } /* pasted: kept as the game wrote it, Clear to change it */
 .paste .btn { flex: 1; }
 /* everything played today: the paste box folds behind one line, still there for a new game or an old puzzle */
 .paste-later > summary { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; min-height: 44px; padding: 10px 14px; border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--sky-dark); cursor: pointer; list-style: none; font-weight: 800; }
@@ -192,3 +193,9 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 .welcome h2 { font-size: 22px; padding-right: 40px; }
 .welcome .close { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); font: 800 22px/1 Nunito, system-ui, sans-serif; cursor: pointer; }
 .welcome .actions .btn { flex: 1; }
+/* history: one line per puzzle, its winners (or why not) on the right */
+.past { padding-left: 0; list-style: none; }
+.past li { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+.past li > :last-child { margin-left: auto; }
+.winner { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; }
+.winner .pawn { width: 20px; height: 20px; }

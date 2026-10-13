@@ -194,26 +194,54 @@ func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	return boards, nil
 }
 
-// Puzzles lists the puzzle ids of a game/variant played in the group, newest first.
-func (s *Store) Puzzles(groupID int64, game, variant string) ([]int, error) {
+// Past is one puzzle on a group's history page.
+type Past struct {
+	ID       int
+	Revealed bool    // the viewer played it, so Winners show (Board's rule)
+	Winners  []Entry // the best result's members, ties shared; none if hidden or everyone failed
+}
+
+// History lists the puzzles of a game/variant played in the group, newest
+// first, with their winners.
+func (s *Store) History(groupID, viewerID int64, game, variant string) ([]Past, error) {
 	rows, err := s.db.Query(`
-		SELECT DISTINCT r.puzzle_id FROM results r
+		SELECT r.puzzle_id, u.id, u.username, u.pawn, r.score, r.tiebreak FROM results r
 		JOIN memberships m ON m.user_id = r.user_id AND m.group_id = ?
+		JOIN users u ON u.id = r.user_id
 		WHERE r.game = ? AND r.variant = ?
-		ORDER BY r.puzzle_id DESC`, groupID, game, variant)
+		ORDER BY r.puzzle_id DESC, r.score IS NULL, r.score, r.tiebreak IS NULL, r.tiebreak,
+		         u.username COLLATE NOCASE`, groupID, game, variant)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var ids []int
+	var ps []Past
+	var best Entry // the current puzzle's first row: rows come in rank order
 	for rows.Next() {
 		var id int
-		if err := rows.Scan(&id); err != nil {
+		var uid int64
+		var e Entry
+		if err := rows.Scan(&id, &uid, &e.Username, &e.Pawn, &e.Score, &e.Tiebreak); err != nil {
 			return nil, err
 		}
-		ids = append(ids, id)
+		if len(ps) == 0 || ps[len(ps)-1].ID != id {
+			ps = append(ps, Past{ID: id})
+			best = e
+		}
+		p := &ps[len(ps)-1]
+		if uid == viewerID {
+			p.Revealed = true
+		}
+		if e.Score != nil && eqInt(e.Score, best.Score) && eqInt(e.Tiebreak, best.Tiebreak) {
+			p.Winners = append(p.Winners, e)
+		}
 	}
-	return ids, rows.Err()
+	for i := range ps {
+		if !ps[i].Revealed {
+			ps[i].Winners = nil
+		}
+	}
+	return ps, rows.Err()
 }
 
 // recent is how far back a member's games count as theirs (ToPlay, PlayedRecently).
