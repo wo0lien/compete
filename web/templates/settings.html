@@ -52,6 +52,7 @@
   </form>
   <form method="post" action="/g/{{.Group.ID}}/games" class="stack">
     {{template "game-picker" .Picks}}
+    {{with .GamesError}}<p class="error" role="alert">{{.}}</p>{{end}}
     <button class="btn wide">{{t "common.save"}}</button>
   </form>
   <a class="btn danger" href="#confirm-delete" data-dialog hx-boost="false">{{t "settings.delete"}}</a>

@@ -287,3 +287,13 @@ func TestGamesFormOwnerOnly(t *testing.T) {
 		t.Fatal("refused saves changed the games")
 	}
 }
+
+// A refused save shows Settings again with the error by the games, not a bare message page.
+func TestGamesSaveErrorStaysOnSettings(t *testing.T) {
+	ts, alice, _ := twoPlayers(t)
+	resp, body := post(t, alice, ts.URL+"/g/1/games", url.Values{})
+	if resp.StatusCode != http.StatusUnprocessableEntity || !strings.Contains(body, `action="/g/1/games"`) ||
+		!strings.Contains(body, "Pick at least one game.") || strings.Contains(body, `value="tusmo" checked>`) {
+		t.Fatalf("empty save = %d, want Settings again with the error and nothing ticked:\n%s", resp.StatusCode, body)
+	}
+}

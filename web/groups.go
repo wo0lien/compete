@@ -124,12 +124,18 @@ func (s *Server) settings(w http.ResponseWriter, r *http.Request, u store.User) 
 	if !ok {
 		return
 	}
-	members, err := s.store.Members(g.ID)
+	ids, err := s.store.GroupGames(g.ID)
 	if err != nil {
 		s.oops(w, r, err)
 		return
 	}
-	ids, err := s.store.GroupGames(g.ID)
+	s.settingsPage(w, r, u, g, http.StatusOK, ids, "")
+}
+
+// settingsPage renders the group's settings with ticked as the games form's
+// ticks and gamesErr under it (a refused save shows what was posted).
+func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request, u store.User, g store.Group, status int, ticked []string, gamesErr string) {
+	members, err := s.store.Members(g.ID)
 	if err != nil {
 		s.oops(w, r, err)
 		return
@@ -141,9 +147,9 @@ func (s *Server) settings(w http.ResponseWriter, r *http.Request, u store.User) 
 			base = "http://" + r.Host
 		}
 	}
-	s.render(w, r, http.StatusOK, "settings.html", map[string]any{
+	s.render(w, r, status, "settings.html", map[string]any{
 		"Group": g, "Members": members, "Me": u.ID,
-		"InviteURL": base + "/join/" + g.InviteCode, "Picks": picks(ids),
+		"InviteURL": base + "/join/" + g.InviteCode, "Picks": picks(ticked), "GamesError": gamesErr,
 	})
 }
 
@@ -156,7 +162,7 @@ func (s *Server) setGames(w http.ResponseWriter, r *http.Request, u store.User) 
 	r.ParseForm()
 	err := s.store.SetGroupGames(g.ID, r.Form["game"])
 	if errors.Is(err, store.ErrNoGames) {
-		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.cant_save_games", err)
+		s.settingsPage(w, r, u, g, http.StatusUnprocessableEntity, r.Form["game"], errText(r, err))
 		return
 	}
 	if err != nil {
