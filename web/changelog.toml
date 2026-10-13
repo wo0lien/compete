@@ -3,6 +3,18 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.12"
+date = "2026-10-13"
+en = [
+  "New \"How compete works\" page: install compete on your phone, share results to it straight from Android, and turn on notifications. Newcomers get a welcome card on Home.",
+  "A pasted result goes in as the game wrote it (Clear to start over), and a game's history shows each puzzle's date and winner.",
+]
+fr = [
+  "Nouvelle page « Comment marche compete » : installe compete sur ton téléphone, partage-y tes résultats directement depuis Android et active les notifications. Les nouveaux venus ont une carte de bienvenue sur l'accueil.",
+  "Un résultat collé part tel que le jeu l'a écrit (Effacer pour recommencer), et l'historique d'un jeu montre la date et le gagnant de chaque grille.",
+]
+
+[[release]]
 version = "v0.1.11"
 date = "2026-10-12"
 en = [
