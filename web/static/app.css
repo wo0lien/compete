@@ -93,7 +93,8 @@ label { display: block; font-weight: 800; }
 /* game picker: one game per row, a real checkbox; ticked row = sky-pale, no JS */
 .game-rows { display: grid; border: 0; margin: 0; padding: 0; list-style: none; }
 .game-rows legend { font-weight: 800; margin-bottom: 6px; }
-.game-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-top: 2px dashed var(--line); cursor: pointer; }
+.game-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-top: 2px dashed var(--line); }
+label.game-row { cursor: pointer; } /* the picker; members' read-only rows are not clickable */
 .game-row:first-of-type { border-top: 0; }
 .game-row input { width: 24px; height: 24px; padding: 0; box-shadow: none; accent-color: var(--ink); flex: none; }
 .game-row b { display: block; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: 20px; }
