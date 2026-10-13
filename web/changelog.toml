@@ -3,6 +3,16 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.13"
+date = "2026-10-13"
+en = [
+  "Groups choose the games they play, when created or later in Settings, and Home's \"To play today\" now suggests your groups' games too.",
+]
+fr = [
+  "Les groupes choisissent leurs jeux, à la création ou plus tard dans les réglages, et « À jouer aujourd'hui » sur l'accueil propose aussi les jeux de tes groupes.",
+]
+
+[[release]]
 version = "v0.1.12"
 date = "2026-10-13"
 en = [
