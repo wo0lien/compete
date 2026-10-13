@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 
+	"github.com/wo0lien/compete/games"
 	"github.com/wo0lien/compete/store"
 )
 
@@ -51,11 +53,35 @@ func (s *Server) ownerFor(w http.ResponseWriter, r *http.Request, u store.User) 
 
 func settingsURL(g store.Group) string { return fmt.Sprintf("/g/%d/settings", g.ID) }
 
+// pick is one row of the game picker, ticked or not.
+type pick struct {
+	ID, Name string
+	Tags     []string
+	On       bool
+}
+
+// picks lists every supported game for the picker, ticking those in on.
+func picks(on []string) []pick {
+	var out []pick
+	for _, g := range games.All {
+		out = append(out, pick{g.ID, g.Name, g.Tags, slices.Contains(on, g.ID)})
+	}
+	return out
+}
+
+// newGroup is the New group page: a name and the games, none ticked.
+func (s *Server) newGroup(w http.ResponseWriter, r *http.Request, u store.User) {
+	s.render(w, r, http.StatusOK, "new-group.html", map[string]any{"Picks": picks(nil)})
+}
+
 func (s *Server) createGroup(w http.ResponseWriter, r *http.Request, u store.User) {
 	r.ParseForm()
 	g, err := s.store.CreateGroup(u.ID, r.FormValue("name"), r.Form["game"])
 	if errors.Is(err, store.ErrBadGroupName) || errors.Is(err, store.ErrTooManyGroups) || errors.Is(err, store.ErrNoGames) {
-		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.cant_create", err)
+		// the page again, with the error and what was typed
+		s.render(w, r, http.StatusUnprocessableEntity, "new-group.html", map[string]any{
+			"Picks": picks(r.Form["game"]), "Name": r.FormValue("name"), "Error": errText(r, err),
+		})
 		return
 	}
 	if err != nil {

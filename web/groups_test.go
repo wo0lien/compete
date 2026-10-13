@@ -202,3 +202,51 @@ func TestInviteCopyButton(t *testing.T) {
 		t.Fatalf("Share should be its own button without a copy fallback:\n%s", body)
 	}
 }
+
+// Home links to the New group page instead of an inline form.
+func TestHomeNewGroupLink(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, `<a class="btn wide" href="/groups/new">New group</a>`) || strings.Contains(body, `action="/groups"`) {
+		t.Fatalf("home should link to /groups/new, without the inline form:\n%s", body)
+	}
+}
+
+// The New group page lists every game, one per row, unticked; creating needs
+// at least one, and a refused create keeps what was typed (Review Focus 2).
+func TestNewGroupPage(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/groups/new")
+	for _, id := range []string{"tusmo", "songless", "travle"} {
+		if !strings.Contains(body, `<label class="game-row"><input type="checkbox" name="game" value="`+id+`">`) {
+			t.Errorf("new group page misses an unticked row for %s", id)
+		}
+	}
+	resp, body := post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	if resp.StatusCode != http.StatusUnprocessableEntity || !strings.Contains(body, "Pick at least one game") || !strings.Contains(body, `value="Les Potes"`) {
+		t.Fatalf("create without games = %d, want the page again with the error and the name:\n%s", resp.StatusCode, body)
+	}
+	resp, body = post(t, c, ts.URL+"/groups", url.Values{"name": {" "}, "game": {"travle"}})
+	if resp.StatusCode != http.StatusUnprocessableEntity || !strings.Contains(body, `value="travle" checked>`) {
+		t.Fatalf("blank name = %d, want the page again with travle still ticked:\n%s", resp.StatusCode, body)
+	}
+	if resp, _ := post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"chess"}}); resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("create with unknown game = %d, want 422", resp.StatusCode)
+	}
+	if resp, _ := post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"tusmo"}}); resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("create with tusmo = %d, want 303", resp.StatusCode)
+	}
+}
+
+// A new member of a Tusmo group who never played sees the Tusmo chip.
+func TestHomeSuggestsGroupGames(t *testing.T) {
+	ts, _, bob := twoPlayers(t) // group 1 plays tusmo
+	_, body := get(t, bob, ts.URL+"/")
+	if !strings.Contains(body, "To play today") || !strings.Contains(body, `>Tusmo ↗</a>`) {
+		t.Fatalf("no Tusmo chip for a new member:\n%s", body)
+	}
+}

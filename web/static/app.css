@@ -90,6 +90,15 @@ label { display: block; font-weight: 800; }
 .play-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .play-chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--coral); color: #fff; box-shadow: 0 4px 0 var(--coral-dark); font-family: "Lilita One", system-ui, sans-serif; font-size: 17px; text-decoration: none; }
 .play-chips a:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--coral-dark); }
+/* game picker: one game per row, a real checkbox; ticked row = sky-pale, no JS */
+.game-rows { display: grid; border: 0; margin: 0; padding: 0; }
+.game-rows legend { font-weight: 800; margin-bottom: 6px; }
+.game-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-top: 2px dashed var(--line); cursor: pointer; }
+.game-row:first-of-type { border-top: 0; }
+.game-row input { width: 24px; height: 24px; padding: 0; box-shadow: none; accent-color: var(--ink); flex: none; }
+.game-row b { display: block; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: 20px; }
+.game-row:has(:checked) { background: var(--sky-pale); }
+.game-row:has(:focus-visible) { outline: 3px solid var(--ink); outline-offset: -3px; }
 
 .tabs { display: flex; gap: 8px; }
 .tabs a { flex: 1; min-width: 0; padding: 12px 2px; border-radius: 12px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-align: center; text-decoration: none; font-weight: 800; }

@@ -48,11 +48,7 @@
   <ul class="groups">
     {{range .Groups}}<li><a href="/g/{{.ID}}">{{.Name}}</a></li>{{else}}<li class="muted">{{t "home.no_group"}}</li>{{end}}
   </ul>
-  <form method="post" action="/groups" class="inline-form">
-    <label for="name" class="visually-hidden">{{t "home.new_group"}}</label>
-    <input id="name" name="name" required maxlength="50" placeholder="{{t "home.new_group"}}">
-    <button class="btn">{{t "home.create"}}</button>
-  </form>
+  <a class="btn wide" href="/groups/new">{{t "groups.new"}}</a>
 </section>
 {{else}}
 <section class="panel">

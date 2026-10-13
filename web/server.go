@@ -128,6 +128,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /login", s.loginForm)
 	mux.HandleFunc("POST /login", s.limited(s.login))
 	mux.HandleFunc("POST /logout", s.logout)
+	mux.HandleFunc("GET /groups/new", s.auth(s.newGroup))
 	mux.HandleFunc("POST /groups", s.auth(s.createGroup))
 	mux.HandleFunc("GET /join/{code}", s.auth(s.joinForm))
 	mux.HandleFunc("POST /join/{code}", s.auth(s.join))
