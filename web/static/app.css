@@ -91,7 +91,7 @@ label { display: block; font-weight: 800; }
 .play-chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--coral); color: #fff; box-shadow: 0 4px 0 var(--coral-dark); font-family: "Lilita One", system-ui, sans-serif; font-size: 17px; text-decoration: none; }
 .play-chips a:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--coral-dark); }
 /* game picker: one game per row, a real checkbox; ticked row = sky-pale, no JS */
-.game-rows { display: grid; border: 0; margin: 0; padding: 0; }
+.game-rows { display: grid; border: 0; margin: 0; padding: 0; list-style: none; }
 .game-rows legend { font-weight: 800; margin-bottom: 6px; }
 .game-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-top: 2px dashed var(--line); cursor: pointer; }
 .game-row:first-of-type { border-top: 0; }

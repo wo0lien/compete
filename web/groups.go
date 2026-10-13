@@ -129,6 +129,11 @@ func (s *Server) settings(w http.ResponseWriter, r *http.Request, u store.User) 
 		s.oops(w, r, err)
 		return
 	}
+	ids, err := s.store.GroupGames(g.ID)
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
 	base := s.BaseURL
 	if base == "" {
 		base = "https://" + r.Host
@@ -138,8 +143,27 @@ func (s *Server) settings(w http.ResponseWriter, r *http.Request, u store.User) 
 	}
 	s.render(w, r, http.StatusOK, "settings.html", map[string]any{
 		"Group": g, "Members": members, "Me": u.ID,
-		"InviteURL": base + "/join/" + g.InviteCode,
+		"InviteURL": base + "/join/" + g.InviteCode, "Picks": picks(ids),
 	})
+}
+
+// setGames replaces the games the group plays (owner only).
+func (s *Server) setGames(w http.ResponseWriter, r *http.Request, u store.User) {
+	g, ok := s.ownerFor(w, r, u)
+	if !ok {
+		return
+	}
+	r.ParseForm()
+	err := s.store.SetGroupGames(g.ID, r.Form["game"])
+	if errors.Is(err, store.ErrNoGames) {
+		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.cant_save_games", err)
+		return
+	}
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
+	http.Redirect(w, r, settingsURL(g), http.StatusSeeOther)
 }
 
 func (s *Server) rename(w http.ResponseWriter, r *http.Request, u store.User) {

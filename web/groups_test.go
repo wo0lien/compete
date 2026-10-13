@@ -250,3 +250,40 @@ func TestHomeSuggestsGroupGames(t *testing.T) {
 		t.Fatalf("no Tusmo chip for a new member:\n%s", body)
 	}
 }
+
+// The owner edits the group's games from Settings; members see them as read-only rows.
+func TestSettingsGames(t *testing.T) {
+	ts, alice, bob := twoPlayers(t) // group 1 plays tusmo
+	_, body := get(t, alice, ts.URL+"/g/1/settings")
+	if !strings.Contains(body, `action="/g/1/games"`) || !strings.Contains(body, `value="tusmo" checked>`) || !strings.Contains(body, `value="travle">`) {
+		t.Fatalf("owner settings lack the games form:\n%s", body)
+	}
+	if resp, _ := post(t, alice, ts.URL+"/g/1/games", url.Values{"game": {"songless", "travle"}}); resp.StatusCode != http.StatusSeeOther || resp.Header.Get("Location") != "/g/1/settings" {
+		t.Fatalf("save games = %d → %q", resp.StatusCode, resp.Header.Get("Location"))
+	}
+	_, body = get(t, bob, ts.URL+"/g/1/settings")
+	if strings.Contains(body, `action="/g/1/games"`) || !strings.Contains(body, `<li class="game-row"><span><b>Songless</b>`) || strings.Contains(body, "<b>Tusmo</b>") {
+		t.Fatalf("member settings should show the games read-only:\n%s", body)
+	}
+}
+
+// Review Focus 2: members, outsiders and empty or forged lists change nothing.
+func TestGamesFormOwnerOnly(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	if resp, _ := post(t, bob, ts.URL+"/g/1/games", url.Values{"game": {"travle"}}); resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("member save = %d, want 403", resp.StatusCode)
+	}
+	carol := newClient(t)
+	signup(t, ts, carol, "carol")
+	if resp, _ := post(t, carol, ts.URL+"/g/1/games", url.Values{"game": {"travle"}}); resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("outsider save = %d, want 404", resp.StatusCode)
+	}
+	for _, f := range []url.Values{{}, {"game": {"chess"}}} {
+		if resp, _ := post(t, alice, ts.URL+"/g/1/games", f); resp.StatusCode != http.StatusUnprocessableEntity {
+			t.Fatalf("save %v = %d, want 422", f, resp.StatusCode)
+		}
+	}
+	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="tusmo" checked>`) {
+		t.Fatal("refused saves changed the games")
+	}
+}
