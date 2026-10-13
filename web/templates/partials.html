@@ -75,3 +75,4 @@
   <div class="legend">{{range .Racers}}<span>{{template "pawn" .Pawn}}{{.Username}} {{.Wins}}</span>{{end}}</div>
 </section>
 {{end}}
+{{define "game-picker"}}<fieldset class="game-rows"><legend>{{t "groups.games"}}</legend>{{range .}}<label class="game-row"><input type="checkbox" name="game" value="{{.ID}}"{{if .On}} checked{{end}}><span><b>{{.Name}}</b><span class="muted">{{range $i, $t := .Tags}}{{if $i}} · {{end}}{{t (print "tag." $t)}}{{end}}</span></span></label>{{end}}</fieldset>{{end}}

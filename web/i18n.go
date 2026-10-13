@@ -143,6 +143,7 @@ var errMsgs = map[error]string{
 	store.ErrBadLogin:      "err.bad_login",
 	store.ErrBadPawn:       "err.bad_pawn",
 	store.ErrBadGroupName:  "err.bad_group_name",
+	store.ErrNoGames:       "err.no_games",
 	store.ErrTooManyGroups: "err.too_many_groups",
 }
 

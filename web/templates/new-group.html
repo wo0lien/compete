@@ -1,0 +1,11 @@
+{{define "content"}}
+<h1>{{t "groups.new"}}</h1>
+<form method="post" action="/groups" class="panel stack">
+  <label for="name">{{t "groups.name"}}</label>
+  <input id="name" name="name" required maxlength="50" value="{{.Name}}">
+  {{template "game-picker" .Picks}}
+  {{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+  <button class="btn go wide">{{t "home.create"}}</button>
+  <a class="btn wide" href="/">{{t "common.cancel"}}</a>
+</form>
+{{end}}

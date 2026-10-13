@@ -18,7 +18,7 @@ func TestCreateJoinKick(t *testing.T) {
 	signup(t, ts, alice, "alice")
 	signup(t, ts, bob, "bob")
 
-	resp, _ := post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	resp, _ := post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
 	if resp.StatusCode != http.StatusSeeOther || resp.Header.Get("Location") != "/g/1" {
 		t.Fatalf("create = %d → %q", resp.StatusCode, resp.Header.Get("Location"))
 	}
@@ -70,7 +70,7 @@ func TestOwnerActions(t *testing.T) {
 	signup(t, ts, alice, "alice")
 	signup(t, ts, bob, "bob")
 	signup(t, ts, carol, "carol")
-	post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
 	gs, _ := st.GroupsOf(1)
 	old := gs[0].InviteCode
 	post(t, bob, ts.URL+"/join/"+old, nil)
@@ -133,7 +133,7 @@ func TestInviteURLUsesBaseURL(t *testing.T) {
 	defer ts.Close()
 	c := newClient(t)
 	signup(t, ts, c, "alice")
-	post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
 	if _, body := get(t, c, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="https://play.example.org/join/`) {
 		t.Fatalf("invite link ignores BaseURL:\n%s", body)
 	}
@@ -155,7 +155,7 @@ func TestSettingsConfirmSheets(t *testing.T) {
 	owner, member := newClient(t), newClient(t)
 	signup(t, ts, owner, "alice")
 	signup(t, ts, member, "bob")
-	post(t, owner, ts.URL+"/groups", url.Values{"name": {"G"}})
+	post(t, owner, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"tusmo"}})
 	gs, _ := st.GroupsOf(1)
 	post(t, member, ts.URL+"/join/"+gs[0].InviteCode, nil)
 
@@ -191,7 +191,7 @@ func TestInviteCopyButton(t *testing.T) {
 	ts, st := newTestServer(t)
 	c := newClient(t)
 	signup(t, ts, c, "alice")
-	post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}})
+	post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"tusmo"}})
 	gs, _ := st.GroupsOf(1)
 	_, body := get(t, c, ts.URL+"/g/1/settings")
 	link := regexp.QuoteMeta(gs[0].InviteCode)
@@ -200,5 +200,90 @@ func TestInviteCopyButton(t *testing.T) {
 	}
 	if !strings.Contains(body, `data-share="`) || strings.Contains(body, "data-copy-label") {
 		t.Fatalf("Share should be its own button without a copy fallback:\n%s", body)
+	}
+}
+
+// Home links to the New group page instead of an inline form.
+func TestHomeNewGroupLink(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, `<a class="btn wide" href="/groups/new">New group</a>`) || strings.Contains(body, `action="/groups"`) {
+		t.Fatalf("home should link to /groups/new, without the inline form:\n%s", body)
+	}
+}
+
+// The New group page lists every game, one per row, unticked; creating needs
+// at least one, and a refused create keeps what was typed (Review Focus 2).
+func TestNewGroupPage(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/groups/new")
+	for _, id := range []string{"tusmo", "songless", "travle"} {
+		if !strings.Contains(body, `<label class="game-row"><input type="checkbox" name="game" value="`+id+`">`) {
+			t.Errorf("new group page misses an unticked row for %s", id)
+		}
+	}
+	resp, body := post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	if resp.StatusCode != http.StatusUnprocessableEntity || !strings.Contains(body, "Pick at least one game") || !strings.Contains(body, `value="Les Potes"`) {
+		t.Fatalf("create without games = %d, want the page again with the error and the name:\n%s", resp.StatusCode, body)
+	}
+	resp, body = post(t, c, ts.URL+"/groups", url.Values{"name": {" "}, "game": {"travle"}})
+	if resp.StatusCode != http.StatusUnprocessableEntity || !strings.Contains(body, `value="travle" checked>`) {
+		t.Fatalf("blank name = %d, want the page again with travle still ticked:\n%s", resp.StatusCode, body)
+	}
+	if resp, _ := post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"chess"}}); resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("create with unknown game = %d, want 422", resp.StatusCode)
+	}
+	if resp, _ := post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"tusmo"}}); resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("create with tusmo = %d, want 303", resp.StatusCode)
+	}
+}
+
+// A new member of a Tusmo group who never played sees the Tusmo chip.
+func TestHomeSuggestsGroupGames(t *testing.T) {
+	ts, _, bob := twoPlayers(t) // group 1 plays tusmo
+	_, body := get(t, bob, ts.URL+"/")
+	if !strings.Contains(body, "To play today") || !strings.Contains(body, `>Tusmo ↗</a>`) {
+		t.Fatalf("no Tusmo chip for a new member:\n%s", body)
+	}
+}
+
+// The owner edits the group's games from Settings; members see them as read-only rows.
+func TestSettingsGames(t *testing.T) {
+	ts, alice, bob := twoPlayers(t) // group 1 plays tusmo
+	_, body := get(t, alice, ts.URL+"/g/1/settings")
+	if !strings.Contains(body, `action="/g/1/games"`) || !strings.Contains(body, `value="tusmo" checked>`) || !strings.Contains(body, `value="travle">`) {
+		t.Fatalf("owner settings lack the games form:\n%s", body)
+	}
+	if resp, _ := post(t, alice, ts.URL+"/g/1/games", url.Values{"game": {"songless", "travle"}}); resp.StatusCode != http.StatusSeeOther || resp.Header.Get("Location") != "/g/1/settings" {
+		t.Fatalf("save games = %d → %q", resp.StatusCode, resp.Header.Get("Location"))
+	}
+	_, body = get(t, bob, ts.URL+"/g/1/settings")
+	if strings.Contains(body, `action="/g/1/games"`) || !strings.Contains(body, `<li class="game-row"><span><b>Songless</b>`) || strings.Contains(body, "<b>Tusmo</b>") {
+		t.Fatalf("member settings should show the games read-only:\n%s", body)
+	}
+}
+
+// Review Focus 2: members, outsiders and empty or forged lists change nothing.
+func TestGamesFormOwnerOnly(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	if resp, _ := post(t, bob, ts.URL+"/g/1/games", url.Values{"game": {"travle"}}); resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("member save = %d, want 403", resp.StatusCode)
+	}
+	carol := newClient(t)
+	signup(t, ts, carol, "carol")
+	if resp, _ := post(t, carol, ts.URL+"/g/1/games", url.Values{"game": {"travle"}}); resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("outsider save = %d, want 404", resp.StatusCode)
+	}
+	for _, f := range []url.Values{{}, {"game": {"chess"}}} {
+		if resp, _ := post(t, alice, ts.URL+"/g/1/games", f); resp.StatusCode != http.StatusUnprocessableEntity {
+			t.Fatalf("save %v = %d, want 422", f, resp.StatusCode)
+		}
+	}
+	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="tusmo" checked>`) {
+		t.Fatal("refused saves changed the games")
 	}
 }

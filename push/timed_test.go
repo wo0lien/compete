@@ -69,3 +69,17 @@ func TestTimedPushes(t *testing.T) {
 		t.Fatalf("20:00 sent %+v, want alice ×2 and carol", *got)
 	}
 }
+
+// The digest also nudges a member about a game their group plays that they never played.
+func TestDigestIncludesGroupGames(t *testing.T) {
+	st := newTestStore(t)
+	dan, _ := st.CreateUser("dan", "correct horse")
+	st.CreateGroup(dan.ID, "Les Potes", []string{"tusmo"})
+	st.SaveSubscription(store.Subscription{Endpoint: "https://push.example/dan", P256dh: "p", Auth: "a", UserID: dan.ID})
+	n, _ := New(st, echoText, "https://example.org")
+	got := capture(n)
+	n.Tick(paris("08:00"))
+	if len(*got) != 1 || (*got)[0].endpoint != "https://push.example/dan" {
+		t.Fatalf("08:00 sent %+v, want dan's digest", *got)
+	}
+}

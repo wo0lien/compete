@@ -255,42 +255,81 @@ func (s *Store) PlayedRecently(userID int64) (bool, error) {
 	return ok, err
 }
 
-// ToPlay lists the games (ids, in games.All order) the user submitted in the
-// last 14 days and has not yet played today for at least one of those variants.
-// Games without a known schedule are left out.
+// ToPlay lists the games (ids, in games.All order) the user still has to play
+// today: their own games of the last 14 days, per variant, and every game of
+// their groups, where any variant played today counts. Games without a known
+// schedule are left out.
 func (s *Store) ToPlay(userID int64) ([]string, error) {
 	now := s.Now()
-	rows, err := s.db.Query(`SELECT DISTINCT game, variant FROM results WHERE user_id = ? AND submitted_at > ?`,
+	type key struct{ game, variant string }
+	scan := func(q string, args ...any) ([]key, error) {
+		rows, err := s.db.Query(q, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		var ks []key
+		for rows.Next() {
+			var k key
+			if err := rows.Scan(&k.game, &k.variant); err != nil {
+				return nil, err
+			}
+			ks = append(ks, k)
+		}
+		return ks, rows.Err()
+	}
+	own, err := scan(`SELECT DISTINCT game, variant FROM results WHERE user_id = ? AND submitted_at > ?`,
 		userID, now.Add(-recent).Unix())
 	if err != nil {
 		return nil, err
 	}
-	type key struct{ game, variant string }
-	var keys []key
-	for rows.Next() {
-		var k key
-		if err := rows.Scan(&k.game, &k.variant); err != nil {
-			rows.Close()
-			return nil, err
-		}
-		keys = append(keys, k)
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
+	group, err := scan(`SELECT DISTINCT gg.game, '' FROM group_games gg JOIN memberships m USING (group_id) WHERE m.user_id = ?`, userID)
+	if err != nil {
 		return nil, err
 	}
-	todo := map[string]bool{}
-	for _, k := range keys {
+	// playedToday: a result for game+variant at today's puzzle or later (a today+1 share counts too)
+	playedToday := func(k key) (bool, error) {
 		g, _ := games.ByID(k.game)
 		today, ok := g.Today(k.variant, now)
+		if !ok {
+			return false, nil
+		}
+		var played bool
+		err := s.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM results WHERE user_id = ? AND game = ? AND variant = ? AND puzzle_id >= ?)`,
+			userID, k.game, k.variant, today).Scan(&played)
+		return played, err
+	}
+	todo := map[string]bool{}
+	for _, k := range own {
+		g, _ := games.ByID(k.game)
+		if _, ok := g.Today(k.variant, now); !ok || todo[k.game] {
+			continue
+		}
+		played, err := playedToday(k)
+		if err != nil {
+			return nil, err
+		}
+		todo[k.game] = !played
+	}
+	for _, k := range group {
+		g, ok := games.ByID(k.game)
 		if !ok || todo[k.game] {
 			continue
 		}
-		var played bool // a today+1 share counts too
-		err := s.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM results WHERE user_id = ? AND game = ? AND variant = ? AND puzzle_id >= ?)`,
-			userID, k.game, k.variant, today).Scan(&played)
+		if _, ok := g.Today("", now); !ok {
+			continue
+		}
+		vs, err := scan(`SELECT DISTINCT game, variant FROM results WHERE user_id = ? AND game = ?`, userID, k.game)
 		if err != nil {
 			return nil, err
+		}
+		played := false
+		for _, v := range vs {
+			if played, err = playedToday(v); err != nil {
+				return nil, err
+			} else if played {
+				break
+			}
 		}
 		todo[k.game] = !played
 	}

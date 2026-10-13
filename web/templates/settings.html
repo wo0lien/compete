@@ -50,6 +50,10 @@
     <input id="name" name="name" value="{{.Group.Name}}" maxlength="50" required>
     <button class="btn">{{t "settings.rename"}}</button>
   </form>
+  <form method="post" action="/g/{{.Group.ID}}/games" class="stack">
+    {{template "game-picker" .Picks}}
+    <button class="btn wide">{{t "common.save"}}</button>
+  </form>
   <a class="btn danger" href="#confirm-delete" data-dialog hx-boost="false">{{t "settings.delete"}}</a>
   <dialog id="confirm-delete" class="sheet" aria-labelledby="confirm-delete-title">
     <form method="post" action="/g/{{.Group.ID}}/delete" class="stack">
@@ -62,6 +66,7 @@
   </dialog>
 </section>
 {{else}}
+<section class="panel"><h2>{{t "groups.games"}}</h2><ul class="game-rows">{{range .Picks}}{{if .On}}<li class="game-row"><span><b>{{.Name}}</b><span class="muted">{{range $i, $t := .Tags}}{{if $i}} · {{end}}{{t (print "tag." $t)}}{{end}}</span></span></li>{{end}}{{end}}</ul></section>
 <form method="post" action="/g/{{.Group.ID}}/leave"><button class="btn danger">{{t "settings.leave"}}</button></form>
 {{end}}
 {{end}}
