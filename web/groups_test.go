@@ -102,13 +102,13 @@ func TestOwnerActions(t *testing.T) {
 	}
 }
 
-// The paste forms carry a Paste button and the invite a Share/Copy button; both
-// start hidden and app.js reveals them when the browser has the API.
+// The paste forms carry a Paste button (with its Clear label, for once it has
+// pasted) and the invite a Share/Copy button; both start hidden and app.js reveals them when the browser has the API.
 func TestClipboardButtons(t *testing.T) {
 	ts, alice, _ := twoPlayers(t)
 	for _, p := range []string{"/", "/g/1"} {
 		_, body := get(t, alice, ts.URL+p)
-		if !strings.Contains(body, `<button type="button" class="btn" data-paste hidden>Paste</button>`) {
+		if !strings.Contains(body, `<button type="button" class="btn" data-paste data-clear="Clear" hidden>Paste</button>`) {
 			t.Errorf("%s has no paste button:\n%s", p, body)
 		}
 		if !regexp.MustCompile(`<script src="/static/app\.js\?v=[0-9a-f]+" defer></script>`).MatchString(body) {

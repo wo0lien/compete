@@ -55,13 +55,29 @@
     root.querySelectorAll('[data-installed]').forEach(p => { p.hidden = !installed; });
   }
 
-  // Paste fills the box; the member checks it and taps Submit.
+  // Paste fills the box; the member checks it and taps Submit. A pasted text
+  // is read-only, so it goes in as the game wrote it; the button turns into
+  // Clear, which empties the box and gives Paste back. Refused or empty
+  // clipboard: the box stays editable for a manual paste.
   async function paste(button) {
     const text = button.form.querySelector('textarea');
+    if (text.readOnly) {
+      text.value = '';
+      lock(button, text, false);
+      text.focus();
+      return;
+    }
     try {
       text.value = (await navigator.clipboard.readText()).trim();
     } catch { /* refused: fall back to a manual paste */ }
-    if (!text.value) text.focus();
+    if (text.value) lock(button, text, true);
+    else text.focus();
+  }
+
+  function lock(button, text, on) {
+    text.readOnly = on;
+    if (on) [button.dataset.label, button.textContent] = [button.textContent, button.dataset.clear];
+    else button.textContent = button.dataset.label;
   }
 
   async function share(button) {

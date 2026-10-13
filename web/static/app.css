@@ -75,6 +75,7 @@ label { display: block; font-weight: 800; }
 /* share texts are several lines: a full-width box, the buttons below it */
 .paste { flex-wrap: wrap; }
 .paste textarea { flex-basis: 100%; min-height: 7.5em; }
+.paste textarea[readonly] { background: var(--sky-pale); } /* pasted: kept as the game wrote it, Clear to change it */
 .paste .btn { flex: 1; }
 /* everything played today: the paste box folds behind one line, still there for a new game or an old puzzle */
 .paste-later > summary { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; min-height: 44px; padding: 10px 14px; border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--sky-dark); cursor: pointer; list-style: none; font-weight: 800; }
