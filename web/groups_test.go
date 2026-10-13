@@ -18,7 +18,7 @@ func TestCreateJoinKick(t *testing.T) {
 	signup(t, ts, alice, "alice")
 	signup(t, ts, bob, "bob")
 
-	resp, _ := post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	resp, _ := post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
 	if resp.StatusCode != http.StatusSeeOther || resp.Header.Get("Location") != "/g/1" {
 		t.Fatalf("create = %d → %q", resp.StatusCode, resp.Header.Get("Location"))
 	}
@@ -70,7 +70,7 @@ func TestOwnerActions(t *testing.T) {
 	signup(t, ts, alice, "alice")
 	signup(t, ts, bob, "bob")
 	signup(t, ts, carol, "carol")
-	post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
 	gs, _ := st.GroupsOf(1)
 	old := gs[0].InviteCode
 	post(t, bob, ts.URL+"/join/"+old, nil)
@@ -133,7 +133,7 @@ func TestInviteURLUsesBaseURL(t *testing.T) {
 	defer ts.Close()
 	c := newClient(t)
 	signup(t, ts, c, "alice")
-	post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}})
+	post(t, c, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
 	if _, body := get(t, c, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="https://play.example.org/join/`) {
 		t.Fatalf("invite link ignores BaseURL:\n%s", body)
 	}
@@ -155,7 +155,7 @@ func TestSettingsConfirmSheets(t *testing.T) {
 	owner, member := newClient(t), newClient(t)
 	signup(t, ts, owner, "alice")
 	signup(t, ts, member, "bob")
-	post(t, owner, ts.URL+"/groups", url.Values{"name": {"G"}})
+	post(t, owner, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"tusmo"}})
 	gs, _ := st.GroupsOf(1)
 	post(t, member, ts.URL+"/join/"+gs[0].InviteCode, nil)
 
@@ -191,7 +191,7 @@ func TestInviteCopyButton(t *testing.T) {
 	ts, st := newTestServer(t)
 	c := newClient(t)
 	signup(t, ts, c, "alice")
-	post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}})
+	post(t, c, ts.URL+"/groups", url.Values{"name": {"G"}, "game": {"tusmo"}})
 	gs, _ := st.GroupsOf(1)
 	_, body := get(t, c, ts.URL+"/g/1/settings")
 	link := regexp.QuoteMeta(gs[0].InviteCode)

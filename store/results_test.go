@@ -28,7 +28,7 @@ func newCrew(t *testing.T) crew {
 	s := newStore(t)
 	c := crew{s: s, alice: mustUser(t, s, "alice"), bob: mustUser(t, s, "bob"),
 		carol: mustUser(t, s, "carol"), dave: mustUser(t, s, "dave")}
-	c.g, _ = s.CreateGroup(c.alice.ID, "Friends")
+	c.g, _ = s.CreateGroup(c.alice.ID, "Friends", []string{"tusmo"})
 	s.JoinByCode(c.bob.ID, c.g.InviteCode)
 	s.JoinByCode(c.carol.ID, c.g.InviteCode)
 	return c
@@ -302,7 +302,7 @@ func TestBoardWaitingViewerFirst(t *testing.T) {
 func TestBoardWaitingAlone(t *testing.T) {
 	s := newStore(t)
 	u := mustUser(t, s, "solo")
-	g, _ := s.CreateGroup(u.ID, "Me")
+	g, _ := s.CreateGroup(u.ID, "Me", []string{"tusmo"})
 	b, err := s.Board(g.ID, u.ID, "tusmo", "", 70)
 	if err != nil || len(b.Entries) != 1 || !b.Entries[0].Me {
 		t.Fatalf("entries = %+v, err %v; want only the viewer", b.Entries, err)

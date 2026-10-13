@@ -17,7 +17,7 @@ func crew(t *testing.T) (*store.Store, *Notifier, *[]sent, map[string]store.User
 		us[name] = u
 		st.SaveSubscription(store.Subscription{Endpoint: "https://push.example/" + name, P256dh: "p", Auth: "a", UserID: u.ID})
 	}
-	g, _ := st.CreateGroup(us["alice"].ID, "Les Potes")
+	g, _ := st.CreateGroup(us["alice"].ID, "Les Potes", []string{"tusmo"})
 	st.JoinByCode(us["bob"].ID, g.InviteCode)
 	st.JoinByCode(us["carol"].ID, g.InviteCode)
 	n, _ := New(st, echoText, "https://example.org")

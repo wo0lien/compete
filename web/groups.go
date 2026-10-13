@@ -52,7 +52,8 @@ func (s *Server) ownerFor(w http.ResponseWriter, r *http.Request, u store.User) 
 func settingsURL(g store.Group) string { return fmt.Sprintf("/g/%d/settings", g.ID) }
 
 func (s *Server) createGroup(w http.ResponseWriter, r *http.Request, u store.User) {
-	g, err := s.store.CreateGroup(u.ID, r.FormValue("name"))
+	r.ParseForm()
+	g, err := s.store.CreateGroup(u.ID, r.FormValue("name"), r.Form["game"])
 	if errors.Is(err, store.ErrBadGroupName) || errors.Is(err, store.ErrTooManyGroups) {
 		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.cant_create", err)
 		return

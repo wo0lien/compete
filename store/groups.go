@@ -57,7 +57,7 @@ func checkGroupCap(tx *sql.Tx, userID int64) error {
 	return nil
 }
 
-func (s *Store) CreateGroup(ownerID int64, name string) (Group, error) {
+func (s *Store) CreateGroup(ownerID int64, name string, gameIDs []string) (Group, error) {
 	name, err := cleanGroupName(name)
 	if err != nil {
 		return Group{}, err

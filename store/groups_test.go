@@ -10,7 +10,7 @@ import (
 func TestCreateAndJoin(t *testing.T) {
 	s := newStore(t)
 	alice, bob := mustUser(t, s, "alice"), mustUser(t, s, "bob")
-	g, err := s.CreateGroup(alice.ID, "  Friends ")
+	g, err := s.CreateGroup(alice.ID, "  Friends ", []string{"tusmo"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestCreateAndJoin(t *testing.T) {
 func TestOutsidersSeeNothing(t *testing.T) {
 	s := newStore(t)
 	alice, carol := mustUser(t, s, "alice"), mustUser(t, s, "carol")
-	g, _ := s.CreateGroup(alice.ID, "Friends")
+	g, _ := s.CreateGroup(alice.ID, "Friends", []string{"tusmo"})
 	if _, err := s.GroupFor(carol.ID, g.ID); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("GroupFor(non-member) err = %v, want ErrNotFound", err)
 	}
@@ -50,7 +50,7 @@ func TestOutsidersSeeNothing(t *testing.T) {
 func TestRegenerateCodeKillsOldLink(t *testing.T) {
 	s := newStore(t)
 	alice, bob := mustUser(t, s, "alice"), mustUser(t, s, "bob")
-	g, _ := s.CreateGroup(alice.ID, "Friends")
+	g, _ := s.CreateGroup(alice.ID, "Friends", []string{"tusmo"})
 	code, err := s.RegenerateCode(g.ID)
 	if err != nil || code == g.InviteCode {
 		t.Fatalf("RegenerateCode = %q, %v", code, err)
@@ -66,7 +66,7 @@ func TestRegenerateCodeKillsOldLink(t *testing.T) {
 func TestRemoveMemberNeverRemovesOwner(t *testing.T) {
 	s := newStore(t)
 	alice, bob := mustUser(t, s, "alice"), mustUser(t, s, "bob")
-	g, _ := s.CreateGroup(alice.ID, "Friends")
+	g, _ := s.CreateGroup(alice.ID, "Friends", []string{"tusmo"})
 	s.JoinByCode(bob.ID, g.InviteCode)
 	if err := s.RemoveMember(g.ID, bob.ID); err != nil {
 		t.Fatal(err)
@@ -83,7 +83,7 @@ func TestRemoveMemberNeverRemovesOwner(t *testing.T) {
 func TestRenameAndDelete(t *testing.T) {
 	s := newStore(t)
 	alice := mustUser(t, s, "alice")
-	g, _ := s.CreateGroup(alice.ID, "Friends")
+	g, _ := s.CreateGroup(alice.ID, "Friends", []string{"tusmo"})
 	if err := s.RenameGroup(g.ID, "   "); !errors.Is(err, ErrBadGroupName) {
 		t.Fatalf("blank rename err = %v, want ErrBadGroupName", err)
 	}
@@ -102,8 +102,8 @@ func TestRenameAndDelete(t *testing.T) {
 func TestDeleteUserDeletesOnlyOwnedGroups(t *testing.T) {
 	s := newStore(t)
 	alice, bob := mustUser(t, s, "alice"), mustUser(t, s, "bob")
-	owned, _ := s.CreateGroup(alice.ID, "Alice's")
-	other, _ := s.CreateGroup(bob.ID, "Bob's")
+	owned, _ := s.CreateGroup(alice.ID, "Alice's", []string{"tusmo"})
+	other, _ := s.CreateGroup(bob.ID, "Bob's", []string{"tusmo"})
 	s.JoinByCode(bob.ID, owned.InviteCode)
 	s.JoinByCode(alice.ID, other.InviteCode)
 	if err := s.DeleteUser(alice.ID); err != nil {
@@ -121,14 +121,14 @@ func TestGroupCap(t *testing.T) {
 	s := newStore(t)
 	alice, bob := mustUser(t, s, "alice"), mustUser(t, s, "bob")
 	for i := range MaxGroupsPerUser {
-		if _, err := s.CreateGroup(alice.ID, fmt.Sprint("g", i)); err != nil {
+		if _, err := s.CreateGroup(alice.ID, fmt.Sprint("g", i), []string{"tusmo"}); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if _, err := s.CreateGroup(alice.ID, "one more"); !errors.Is(err, ErrTooManyGroups) {
+	if _, err := s.CreateGroup(alice.ID, "one more", []string{"tusmo"}); !errors.Is(err, ErrTooManyGroups) {
 		t.Fatalf("create over cap err = %v", err)
 	}
-	g, _ := s.CreateGroup(bob.ID, "Bob's")
+	g, _ := s.CreateGroup(bob.ID, "Bob's", []string{"tusmo"})
 	if _, err := s.JoinByCode(alice.ID, g.InviteCode); !errors.Is(err, ErrTooManyGroups) {
 		t.Fatalf("join over cap err = %v", err)
 	}
@@ -139,7 +139,7 @@ func TestGroupCap(t *testing.T) {
 func TestConcurrentJoins(t *testing.T) {
 	s := newStore(t)
 	owner := mustUser(t, s, "owner")
-	g, _ := s.CreateGroup(owner.ID, "Friends")
+	g, _ := s.CreateGroup(owner.ID, "Friends", []string{"tusmo"})
 	var users []User
 	for i := range 15 {
 		users = append(users, mustUser(t, s, fmt.Sprint("user", i)))
