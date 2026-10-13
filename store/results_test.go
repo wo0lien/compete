@@ -267,8 +267,9 @@ func TestToPlay(t *testing.T) {
 	// submitted_at is the real insert time: pin it, then move the clock 15 days on.
 	c.s.db.Exec("UPDATE results SET submitted_at = ?", fixtureDay.Unix())
 	c.s.Now = func() time.Time { return fixtureDay.Add(15 * 24 * time.Hour) }
-	if got, _ := c.s.ToPlay(c.alice.ID); len(got) != 0 {
-		t.Fatalf("stale games: ToPlay = %v, want none", got)
+	// her own games are stale; the group's Tusmo still counts
+	if got, _ := c.s.ToPlay(c.alice.ID); !reflect.DeepEqual(got, []string{"tusmo"}) {
+		t.Fatalf("stale games: ToPlay = %v, want only the group's [tusmo]", got)
 	}
 }
 
@@ -318,5 +319,35 @@ func TestPlayedRecently(t *testing.T) {
 	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
 	if ok, err := c.s.PlayedRecently(c.alice.ID); err != nil || !ok {
 		t.Fatalf("after a result: PlayedRecently = %v, %v", ok, err)
+	}
+}
+
+// Group games are suggested even if never played; any variant played today
+// counts; one chip per game across groups (Review Focus 1, 3, 4).
+func TestToPlayGroupGames(t *testing.T) {
+	c := newCrew(t) // alice, bob, carol in "Friends", which plays tusmo
+	other, _ := c.s.CreateGroup(c.bob.ID, "Other", []string{"tusmo", "travle"})
+	c.s.JoinByCode(c.dave.ID, other.InviteCode)
+	c.s.db.Exec(`INSERT INTO group_games(group_id, game) VALUES (?, 'gone')`, other.ID)
+
+	// dave never played anything: both group games
+	if got, _ := c.s.ToPlay(c.dave.ID); !reflect.DeepEqual(got, []string{"tusmo", "travle"}) {
+		t.Fatalf("dave = %v, want [tusmo travle]", got)
+	}
+	// bob is in both groups: tusmo once
+	if got, _ := c.s.ToPlay(c.bob.ID); !reflect.DeepEqual(got, []string{"tusmo", "travle"}) {
+		t.Fatalf("bob = %v, want [tusmo travle]", got)
+	}
+	// dave plays today's Tusmo and today's French Travle map: nothing left
+	travle, _ := games.ByID("travle")
+	fra, _ := travle.Today("fra", fixtureDay)
+	c.add(t, c.dave, res("tusmo", "", 70, new(3), nil), res("travle", "fra", fra, new(1), nil))
+	if got, _ := c.s.ToPlay(c.dave.ID); len(got) != 0 {
+		t.Fatalf("dave after playing = %v, want none", got)
+	}
+	// an own game outside any group still shows (alice: songless yesterday)
+	c.add(t, c.alice, res("songless", "All", 403, new(2), nil))
+	if got, _ := c.s.ToPlay(c.alice.ID); !reflect.DeepEqual(got, []string{"tusmo", "songless"}) {
+		t.Fatalf("alice = %v, want [tusmo songless]", got)
 	}
 }
