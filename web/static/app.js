@@ -10,8 +10,9 @@
     root.querySelectorAll('[data-share]').forEach(b => { b.hidden = !canShare; });
     root.querySelectorAll('[data-copy]').forEach(b => { b.hidden = !canCopy; });
     pushState(root);
+    installState(root);
     root.querySelectorAll('[data-variants]').forEach(card => {
-      card.querySelector('[role=tablist]').hidden = false;
+      card.querySelectorAll('[role=tablist], [data-tabs-note]').forEach(el => { el.hidden = false; });
       card.classList.add('tabbed');
       showVariant(card, card.querySelector('[aria-selected=true]').dataset.variant);
     });
@@ -24,7 +25,20 @@
       b.setAttribute('aria-selected', on);
       b.classList.toggle('on', on);
     });
-    card.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== i; });
+    // a panel may belong to several variants: data-panel="a b"
+    card.querySelectorAll('[data-panel]').forEach(p => { p.hidden = !p.dataset.panel.split(' ').includes(i); });
+  }
+
+  // Install (/help): Chrome and Edge offer a prompt we can open from our own
+  // button; elsewhere only the manual steps show. Installed: a note instead.
+  let installPrompt = null;
+  let installed = !!window.matchMedia?.('(display-mode: standalone)').matches;
+  addEventListener('beforeinstallprompt', e => { installPrompt = e; installState(document); });
+  addEventListener('appinstalled', () => { installPrompt = null; installed = true; installState(document); });
+
+  function installState(root) {
+    root.querySelectorAll('[data-install]').forEach(b => { b.hidden = installed || !installPrompt; });
+    root.querySelectorAll('[data-installed]').forEach(p => { p.hidden = !installed; });
   }
 
   // Paste fills the box; the member checks it and taps Submit.
@@ -122,8 +136,15 @@
   }
 
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant]');
+    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant], [data-install]');
     if (!b) return;
+    if (b.matches('[data-install]')) { // a prompt opens once: the button waits for the browser's next offer
+      const p = installPrompt;
+      installPrompt = null;
+      installState(document);
+      p?.prompt().catch(() => { /* already used or refused */ });
+      return;
+    }
     if (b.matches('[data-variant]')) { showVariant(b.closest('[data-variants]'), b.dataset.variant); return; }
     // confirm sheets: without JS the #id link and dialog:target show the same sheet
     if (b.matches('[data-dialog]')) { e.preventDefault(); document.querySelector(b.getAttribute('href')).showModal(); return; }
