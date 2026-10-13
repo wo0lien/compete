@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/wo0lien/compete/games"
 )
 
 // MaxGroupsPerUser caps memberships so one account can't bloat a public instance.
@@ -16,6 +18,7 @@ const MaxGroupsPerUser = 20
 var (
 	ErrBadGroupName  = errors.New("group name must be 1-50 characters")
 	ErrTooManyGroups = fmt.Errorf("you can be in at most %d groups", MaxGroupsPerUser)
+	ErrNoGames       = errors.New("pick at least one supported game")
 )
 
 type Group struct {
@@ -62,6 +65,10 @@ func (s *Store) CreateGroup(ownerID int64, name string, gameIDs []string) (Group
 	if err != nil {
 		return Group{}, err
 	}
+	gameIDs, err = cleanGames(gameIDs)
+	if err != nil {
+		return Group{}, err
+	}
 	tx, err := s.db.Begin()
 	if err != nil {
 		return Group{}, err
@@ -81,7 +88,83 @@ func (s *Store) CreateGroup(ownerID int64, name string, gameIDs []string) (Group
 	if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role) VALUES (?, ?, 'owner')", g.ID, ownerID); err != nil {
 		return Group{}, err
 	}
+	if err := insertGames(tx, g.ID, gameIDs); err != nil {
+		return Group{}, err
+	}
 	return g, tx.Commit()
+}
+
+// cleanGames keeps known game ids, deduplicated; an empty list or an unknown id is refused.
+func cleanGames(ids []string) ([]string, error) {
+	seen := map[string]bool{}
+	var out []string
+	for _, id := range ids {
+		if _, ok := games.ByID(id); !ok {
+			return nil, ErrNoGames
+		}
+		if !seen[id] {
+			seen[id] = true
+			out = append(out, id)
+		}
+	}
+	if len(out) == 0 {
+		return nil, ErrNoGames
+	}
+	return out, nil
+}
+
+func insertGames(tx *sql.Tx, groupID int64, ids []string) error {
+	for _, id := range ids {
+		if _, err := tx.Exec("INSERT INTO group_games(group_id, game) VALUES (?, ?)", groupID, id); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// GroupGames lists the games group plays, in games.All order. Ids no longer
+// supported are skipped.
+func (s *Store) GroupGames(groupID int64) ([]string, error) {
+	rows, err := s.db.Query("SELECT game FROM group_games WHERE group_id = ?", groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	has := map[string]bool{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		has[id] = true
+	}
+	var out []string
+	for _, g := range games.All {
+		if has[g.ID] {
+			out = append(out, g.ID)
+		}
+	}
+	return out, rows.Err()
+}
+
+// SetGroupGames replaces the games group plays.
+func (s *Store) SetGroupGames(groupID int64, ids []string) error {
+	ids, err := cleanGames(ids)
+	if err != nil {
+		return err
+	}
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec("DELETE FROM group_games WHERE group_id = ?", groupID); err != nil {
+		return err
+	}
+	if err := insertGames(tx, groupID, ids); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // GroupByCode looks up an invite without joining, for the "Join X?" confirm page.

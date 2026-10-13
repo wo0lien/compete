@@ -54,7 +54,7 @@ func settingsURL(g store.Group) string { return fmt.Sprintf("/g/%d/settings", g.
 func (s *Server) createGroup(w http.ResponseWriter, r *http.Request, u store.User) {
 	r.ParseForm()
 	g, err := s.store.CreateGroup(u.ID, r.FormValue("name"), r.Form["game"])
-	if errors.Is(err, store.ErrBadGroupName) || errors.Is(err, store.ErrTooManyGroups) {
+	if errors.Is(err, store.ErrBadGroupName) || errors.Is(err, store.ErrTooManyGroups) || errors.Is(err, store.ErrNoGames) {
 		s.messageErr(w, r, http.StatusUnprocessableEntity, "msg.cant_create", err)
 		return
 	}

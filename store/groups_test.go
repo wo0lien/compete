@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -155,5 +156,55 @@ func TestConcurrentJoins(t *testing.T) {
 		if err := <-errs; err != nil {
 			t.Error(err)
 		}
+	}
+}
+
+// A group needs at least one supported game; they come back in games.All order (Review Focus 2).
+func TestCreateGroupGames(t *testing.T) {
+	s := newStore(t)
+	alice := mustUser(t, s, "alice")
+	for _, bad := range [][]string{nil, {}, {"chess"}, {"tusmo", "chess"}} {
+		if _, err := s.CreateGroup(alice.ID, "G", bad); !errors.Is(err, ErrNoGames) {
+			t.Errorf("CreateGroup(%v) err = %v, want ErrNoGames", bad, err)
+		}
+	}
+	if gs, _ := s.GroupsOf(alice.ID); len(gs) != 0 {
+		t.Fatalf("refused creates left groups: %v", gs)
+	}
+	g, err := s.CreateGroup(alice.ID, "G", []string{"travle", "tusmo", "tusmo"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := s.GroupGames(g.ID); !reflect.DeepEqual(got, []string{"tusmo", "travle"}) {
+		t.Fatalf("GroupGames = %v, want [tusmo travle]", got)
+	}
+}
+
+func TestSetGroupGames(t *testing.T) {
+	s := newStore(t)
+	alice := mustUser(t, s, "alice")
+	g, _ := s.CreateGroup(alice.ID, "G", []string{"tusmo"})
+	if err := s.SetGroupGames(g.ID, []string{"songless", "travle"}); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := s.GroupGames(g.ID); !reflect.DeepEqual(got, []string{"songless", "travle"}) {
+		t.Fatalf("after set = %v", got)
+	}
+	if err := s.SetGroupGames(g.ID, nil); !errors.Is(err, ErrNoGames) {
+		t.Fatalf("empty set err = %v", err)
+	}
+	if got, _ := s.GroupGames(g.ID); len(got) != 2 {
+		t.Fatalf("refused set changed the list: %v", got)
+	}
+}
+
+// Review Focus 3: a game later removed from compete is ignored, not an error.
+func TestGroupGamesSkipsUnknown(t *testing.T) {
+	s := newStore(t)
+	alice := mustUser(t, s, "alice")
+	g, _ := s.CreateGroup(alice.ID, "G", []string{"tusmo"})
+	s.db.Exec(`INSERT INTO group_games(group_id, game) VALUES (?, 'gone')`, g.ID)
+	if got, err := s.GroupGames(g.ID); err != nil || !reflect.DeepEqual(got, []string{"tusmo"}) {
+		t.Fatalf("GroupGames = %v, %v", got, err)
 	}
 }
