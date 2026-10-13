@@ -155,6 +155,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /manifest.webmanifest", manifest)
 	mux.HandleFunc("GET /sw.js", serveAsset("sw.js", "text/javascript; charset=utf-8"))
 	mux.HandleFunc("GET /games", s.gamesPage)
+	mux.HandleFunc("GET /help", s.helpPage)
 	mux.HandleFunc("POST /lang", s.setLang)
 }
 

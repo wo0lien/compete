@@ -169,3 +169,26 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 .foot { text-align: center; }
 .version { padding: 0 0 20px; font-size: 13px; opacity: .7; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* /help: illustrated steps; the platform panels and their extra sections share one variant switcher */
+.help { display: flex; flex-direction: column; gap: 14px; }
+.help .variant-name { padding: 0; }
+.platforms { display: flex; flex-wrap: wrap; gap: 8px; }
+.steps, .mini { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.steps li, .mini li { display: flex; align-items: center; gap: 10px; }
+.steps p, .mini p { flex: 1; min-width: 0; }
+.steps b { display: block; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: 17px; }
+.steps .art { width: 76px; height: 60px; flex: none; }
+.ill { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto; }
+.ill.bell { max-width: 200px; }
+.callout { padding: 10px 12px; border-radius: 12px; background: var(--sky-pale); font-size: 15px; }
+.callout.warn { background: #FFF1BF; }
+.key { display: inline-block; min-width: 22px; padding: 0 6px; border-radius: 6px; background: var(--sky-pale); box-shadow: 0 2px 0 var(--line); text-align: center; font-weight: 800; }
+.key svg { vertical-align: -2px; }
+.small { font-size: 14px; }
+.strong { font-weight: 800; }
+/* Home welcome card: shown once per browser by app.js */
+.welcome { position: relative; }
+.welcome h2 { font-size: 22px; padding-right: 40px; }
+.welcome .close { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); font: 800 22px/1 Nunito, system-ui, sans-serif; cursor: pointer; }
+.welcome .actions .btn { flex: 1; }
