@@ -165,7 +165,6 @@ music = "musique"
 words = "mots"
 
 [msg]
-cant_save_games = "Impossible d'enregistrer les jeux"
 not_found = "Introuvable"
 group_not_found = "Ce groupe n'existe pas, ou tu n'en fais pas partie."
 owner_only = "Réservé au créateur"

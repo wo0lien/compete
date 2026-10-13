@@ -165,7 +165,6 @@ music = "music"
 words = "words"
 
 [msg]
-cant_save_games = "Can't save the games"
 not_found = "Not found"
 group_not_found = "This group doesn't exist or you're not in it."
 owner_only = "Owner only"
