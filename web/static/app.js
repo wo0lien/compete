@@ -11,6 +11,7 @@
     root.querySelectorAll('[data-copy]').forEach(b => { b.hidden = !canCopy; });
     pushState(root);
     installState(root);
+    root.querySelectorAll('[data-welcome]').forEach(card => { card.hidden = welcomeClosed || welcomed(); });
     root.querySelectorAll('[data-variants]').forEach(card => {
       card.querySelectorAll('[role=tablist], [data-tabs-note]').forEach(el => { el.hidden = false; });
       card.classList.add('tabbed');
@@ -27,6 +28,18 @@
     });
     // a panel may belong to several variants: data-panel="a b"
     card.querySelectorAll('[data-panel]').forEach(p => { p.hidden = !p.dataset.panel.split(' ').includes(i); });
+  }
+
+  // The Home welcome card shows until dismissed on this browser. Storage can
+  // throw (private mode, blocked site data): then it shows, and closes until the next full load.
+  let welcomeClosed = false;
+  function welcomed() {
+    try { return localStorage.getItem('welcomed') === '1'; } catch { return false; }
+  }
+  function welcomeDone(b) {
+    welcomeClosed = true;
+    try { localStorage.setItem('welcomed', '1'); } catch { /* not remembered */ }
+    b.closest('[data-welcome]').hidden = true;
   }
 
   // Install (/help): Chrome and Edge offer a prompt we can open from our own
@@ -136,8 +149,9 @@
   }
 
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant], [data-install]');
+    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant], [data-install], [data-welcome-done]');
     if (!b) return;
+    if (b.matches('[data-welcome-done]')) { welcomeDone(b); return; } // the Show me how link still navigates
     if (b.matches('[data-install]')) { // a prompt opens once: the button waits for the browser's next offer
       const p = installPrompt;
       installPrompt = null;

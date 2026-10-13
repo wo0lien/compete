@@ -48,3 +48,17 @@ func TestHelpPage(t *testing.T) {
 		}
 	}
 }
+
+// Members get the welcome card (app.js shows it until dismissed); everyone gets the foot link to /help.
+func TestHomeWelcome(t *testing.T) {
+	ts, _ := newTestServer(t)
+	c := newClient(t)
+	if _, body := get(t, c, ts.URL+"/"); strings.Contains(body, "data-welcome") || !strings.Contains(body, `<a href="/help">How compete works</a>`) {
+		t.Fatalf("logged out: want the foot link, no card:\n%s", body)
+	}
+	signup(t, ts, c, "alice")
+	_, body := get(t, c, ts.URL+"/")
+	if !strings.Contains(body, `class="panel welcome" data-welcome hidden`) || !strings.Contains(body, `href="/help" class="btn go" data-welcome-done`) {
+		t.Fatalf("member: no hidden welcome card linking to /help:\n%s", body)
+	}
+}

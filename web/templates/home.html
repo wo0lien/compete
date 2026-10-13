@@ -1,5 +1,32 @@
 {{define "content"}}
 {{if .User}}
+{{/* first visit on this browser: app.js shows the card until it is dismissed (localStorage) */}}
+<section class="panel welcome" data-welcome hidden aria-labelledby="welcome-title">
+  <button type="button" class="close" data-welcome-done aria-label="{{t "home.welcome_close"}}">×</button>
+  <h2 id="welcome-title">{{t "home.welcome_title"}}</h2>
+  <svg viewBox="0 0 320 104" width="100%" role="img" aria-label="{{t "home.welcome_ill"}}">
+    <path d="M34 62 C 80 22, 120 96, 170 56 S 250 26, 290 58" fill="none" stroke="#2B8EC2" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10"></path>
+    <circle cx="34" cy="62" r="17" fill="#E6F6FD" stroke="#10264A" stroke-width="2"></circle>
+    <circle cx="118" cy="66" r="17" fill="#E6F6FD" stroke="#10264A" stroke-width="2"></circle>
+    <circle cx="202" cy="46" r="17" fill="#E6F6FD" stroke="#10264A" stroke-width="2"></circle>
+    <circle cx="290" cy="58" r="19" fill="#FFD54A" stroke="#10264A" stroke-width="2"></circle>
+    <rect x="26" y="54" width="7" height="7" rx="2" fill="#FF6B5B"></rect><rect x="35" y="54" width="7" height="7" rx="2" fill="#FFD54A"></rect><rect x="26" y="63" width="7" height="7" rx="2" fill="#FF6B5B"></rect><rect x="35" y="63" width="7" height="7" rx="2" fill="#FF6B5B"></rect>
+    <path d="M118 74v-14 M111 66l7-7 7 7" fill="none" stroke="#10264A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+    <rect x="193" y="37" width="18" height="18" rx="3" fill="#fff" stroke="#10264A" stroke-width="2"></rect><path d="M197 43h10 M197 48h7" stroke="#10264A" stroke-width="2" stroke-linecap="round"></path>
+    <path d="M290 46l3.5 7.5 8 .8-6 5.4 1.8 8-7.3-4.2-7.3 4.2 1.8-8-6-5.4 8-.8z" fill="#fff" stroke="#10264A" stroke-width="1.5" stroke-linejoin="round"></path>
+    <g transform="translate(22 14)" fill="{{.User.Pawn}}" stroke="#10264A" stroke-width="1.5">{{template "meeple"}}</g>
+    <g transform="translate(190 0) scale(.8)" fill="#FF6B5B" stroke="#10264A" stroke-width="1.8">{{template "meeple"}}</g>
+    <g font-family="Nunito, system-ui, sans-serif" font-weight="800" font-size="13" fill="#10264A" text-anchor="middle">
+      <text x="34" y="98">{{t "home.welcome_play"}}</text><text x="118" y="100">{{t "home.welcome_share"}}</text><text x="202" y="80">{{t "home.welcome_paste"}}</text><text x="290" y="96">{{t "home.welcome_compare"}}</text>
+    </g>
+  </svg>
+  <p>{{t "home.welcome_text"}}</p>
+  <p class="muted small">{{t "home.welcome_tip"}}</p>
+  <div class="actions">
+    <a href="/help" class="btn go" data-welcome-done>{{t "home.welcome_how"}}</a>
+    <button type="button" class="btn" data-welcome-done>{{t "home.welcome_ok"}}</button>
+  </div>
+</section>
 {{if .AllPlayed}}<details class="paste-later"><summary><span class="done"><span class="tick" aria-hidden="true">✓</span> {{t "common.all_played"}}</span> <span class="again">{{t "common.paste_another"}}</span></summary>{{end}}
 <form method="post" action="/results" class="paste">
   <label for="text" class="visually-hidden">{{t "common.paste_label"}}</label>
@@ -34,5 +61,5 @@
   <p class="actions"><a class="btn go" href="/signup">{{t "common.signup"}}</a> <a class="btn" href="/login">{{t "common.login"}}</a></p>
 </section>
 {{end}}
-<p class="foot"><a href="/games">{{t "common.supported_games"}}</a></p>
+<p class="foot"><a href="/help">{{t "help.title"}}</a> · <a href="/games">{{t "common.supported_games"}}</a></p>
 {{end}}

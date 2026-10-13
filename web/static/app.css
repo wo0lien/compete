@@ -187,3 +187,8 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 .key svg { vertical-align: -2px; }
 .small { font-size: 14px; }
 .strong { font-weight: 800; }
+/* Home welcome card: shown once per browser by app.js */
+.welcome { position: relative; }
+.welcome h2 { font-size: 22px; padding-right: 40px; }
+.welcome .close { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); font: 800 22px/1 Nunito, system-ui, sans-serif; cursor: pointer; }
+.welcome .actions .btn { flex: 1; }
