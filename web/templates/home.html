@@ -1,8 +1,8 @@
 {{define "content"}}
 {{if .User}}
-{{/* first visit on this browser: app.js shows the card until it is dismissed (localStorage) */}}
+{{/* app.js shows the card until Got it on this browser (localStorage); × only hides it until the next full load */}}
 <section class="panel welcome" data-welcome hidden aria-labelledby="welcome-title">
-  <button type="button" class="close" data-welcome-done aria-label="{{t "home.welcome_close"}}">×</button>
+  <button type="button" class="close" data-welcome-hide aria-label="{{t "home.welcome_close"}}">×</button>
   <h2 id="welcome-title">{{t "home.welcome_title"}}</h2>
   <svg viewBox="0 0 320 104" width="100%" role="img" aria-label="{{t "home.welcome_ill"}}">
     <path d="M34 62 C 80 22, 120 96, 170 56 S 250 26, 290 58" fill="none" stroke="#2B8EC2" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10"></path>
@@ -23,7 +23,7 @@
   <p>{{t "home.welcome_text"}}</p>
   <p class="muted small">{{t "home.welcome_tip"}}</p>
   <div class="actions">
-    <a href="/help" class="btn go" data-welcome-done>{{t "home.welcome_how"}}</a>
+    <a href="/help" class="btn go">{{t "home.welcome_how"}}</a>
     <button type="button" class="btn" data-welcome-done>{{t "home.welcome_ok"}}</button>
   </div>
 </section>

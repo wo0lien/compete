@@ -30,15 +30,16 @@
     card.querySelectorAll('[data-panel]').forEach(p => { p.hidden = !p.dataset.panel.split(' ').includes(i); });
   }
 
-  // The Home welcome card shows until dismissed on this browser. Storage can
-  // throw (private mode, blocked site data): then it shows, and closes until the next full load.
+  // The Home welcome card shows until Got it on this browser; × only hides it
+  // until the next full load. Storage can throw (private mode, blocked site
+  // data): then Got it works like ×.
   let welcomeClosed = false;
   function welcomed() {
     try { return localStorage.getItem('welcomed') === '1'; } catch { return false; }
   }
-  function welcomeDone(b) {
+  function welcomeHide(b, remember) {
     welcomeClosed = true;
-    try { localStorage.setItem('welcomed', '1'); } catch { /* not remembered */ }
+    if (remember) try { localStorage.setItem('welcomed', '1'); } catch { /* not remembered */ }
     b.closest('[data-welcome]').hidden = true;
   }
 
@@ -149,9 +150,9 @@
   }
 
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant], [data-install], [data-welcome-done]');
+    const b = e.target.closest('[data-paste], [data-share], [data-copy], [data-push-key], [data-push-off], [data-dialog], [data-close], [data-variant], [data-install], [data-welcome-done], [data-welcome-hide]');
     if (!b) return;
-    if (b.matches('[data-welcome-done]')) { welcomeDone(b); return; } // the Show me how link still navigates
+    if (b.matches('[data-welcome-done], [data-welcome-hide]')) { welcomeHide(b, b.matches('[data-welcome-done]')); return; }
     if (b.matches('[data-install]')) { // a prompt opens once: the button waits for the browser's next offer
       const p = installPrompt;
       installPrompt = null;
