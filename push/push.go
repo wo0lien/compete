@@ -29,6 +29,10 @@ type Message struct {
 	Title string `json:"title"`
 	Body  string `json:"body"`
 	URL   string `json:"url"`
+	// Urgent wakes a dozing Android phone (RFC 8030 "high"): the timed pushes,
+	// which are useless late, and the test, which must behave like them.
+	// Social pings stay "normal" and may be batched.
+	Urgent bool `json:"-"`
 }
 
 type Notifier struct {
@@ -73,11 +77,16 @@ func (n *Notifier) deliver(sub store.Subscription, m Message) error {
 	if err != nil {
 		return err
 	}
+	urgency := webpush.UrgencyNormal
+	if m.Urgent {
+		urgency = webpush.UrgencyHigh
+	}
 	resp, err := webpush.SendNotification(payload, &webpush.Subscription{
 		Endpoint: sub.Endpoint, Keys: webpush.Keys{P256dh: sub.P256dh, Auth: sub.Auth},
 	}, &webpush.Options{
 		Subscriber: n.Subscriber, VAPIDPublicKey: n.publicKey, VAPIDPrivateKey: n.privateKey,
-		TTL: int((12 * time.Hour).Seconds()), Urgency: webpush.UrgencyNormal,
+		// short TTL: a push stuck past its moment is dropped, not shown late
+		TTL: int((2 * time.Hour).Seconds()), Urgency: urgency,
 		HTTPClient: &http.Client{Timeout: sendTimeout},
 	})
 	if err != nil {
@@ -125,7 +134,7 @@ func (n *Notifier) Test(userID int64) int {
 		log.Printf("push test: %v", err)
 		return 0
 	}
-	return n.sendAll(r, Message{Title: "compete", Body: n.Text(lang(r), "push.test"), URL: "/account"})
+	return n.sendAll(r, Message{Title: "compete", Body: n.Text(lang(r), "push.test"), URL: "/account", Urgent: true})
 }
 
 // lang is the recipient's language for push texts ("" follows the browser on
