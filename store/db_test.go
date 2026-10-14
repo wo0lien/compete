@@ -33,8 +33,8 @@ func TestOpenMigratesOnceAndEnablesForeignKeys(t *testing.T) {
 		var version, fk int
 		s.db.QueryRow("PRAGMA user_version").Scan(&version)
 		s.db.QueryRow("PRAGMA foreign_keys").Scan(&fk)
-		if version != 5 || fk != 1 {
-			t.Fatalf("user_version=%d foreign_keys=%d, want 5 1", version, fk)
+		if version != 6 || fk != 1 {
+			t.Fatalf("user_version=%d foreign_keys=%d, want 6 1", version, fk)
 		}
 		s.Close()
 	}
@@ -56,7 +56,7 @@ func TestMigrateSeedsGroupGames(t *testing.T) {
 	s.AddResults(alice.ID, "raw", []games.Result{{Game: "songless", Variant: "Rock", PuzzleID: 404, Score: new(1)}})
 	s.db.Exec(`UPDATE results SET submitted_at = unixepoch() - 20*86400 WHERE game = 'songless'`) // too old
 	// back to schema v4, as a production DB before this release
-	if _, err := s.db.Exec(`DROP TABLE group_games; PRAGMA user_version = 4`); err != nil {
+	if _, err := s.db.Exec(`DROP TABLE group_games; DROP TABLE seasons; ALTER TABLE groups DROP COLUMN season_days; PRAGMA user_version = 4`); err != nil {
 		t.Fatal(err)
 	}
 	s.Close()
