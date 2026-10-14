@@ -85,7 +85,7 @@ func (s *Store) CreateGroup(ownerID int64, name string, gameIDs []string) (Group
 	if g.ID, err = res.LastInsertId(); err != nil {
 		return Group{}, err
 	}
-	if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role) VALUES (?, ?, 'owner')", g.ID, ownerID); err != nil {
+	if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role, joined_at) VALUES (?, ?, 'owner', ?)", g.ID, ownerID, s.Now().Unix()); err != nil {
 		return Group{}, err
 	}
 	if err := insertGames(tx, g.ID, gameIDs); err != nil {
@@ -198,7 +198,7 @@ func (s *Store) JoinByCode(userID int64, code string) (Group, error) {
 		if err := checkGroupCap(tx, userID); err != nil {
 			return Group{}, err
 		}
-		if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role) VALUES (?, ?, 'member')", g.ID, userID); err != nil {
+		if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role, joined_at) VALUES (?, ?, 'member', ?)", g.ID, userID, s.Now().Unix()); err != nil {
 			return Group{}, err
 		}
 	}

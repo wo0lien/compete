@@ -11,3 +11,6 @@ CREATE TABLE seasons (
   winners   TEXT,                      -- JSON array of user ids, set when decided
   UNIQUE (group_id, number)
 );
+
+-- One running season per group: two first reads can't both open season 1.
+CREATE UNIQUE INDEX seasons_running ON seasons(group_id) WHERE end_day IS NULL;

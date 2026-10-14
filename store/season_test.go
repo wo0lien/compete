@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/wo0lien/compete/games"
 )
 
 // N = ceil(days × games × (1 + 3/4 × (members − 1))), at least 1.
@@ -132,21 +134,71 @@ func TestSeasonCounting(t *testing.T) {
 	}
 }
 
-// Review Focus 1: a new member starts at 0 and must play open puzzles before they count early.
+// Review Focus 1 + review I1: a member counts on puzzles from the day they
+// joined; earlier puzzles don't count them as beaten.
 func TestSeasonJoinMidSeason(t *testing.T) {
 	c := newCrew(t)
 	mustSeason(t, c)
-	for _, u := range []User{c.alice, c.bob, c.carol} {
+	for _, u := range []User{c.alice, c.bob, c.carol} { // a three-way tie: 1 each
 		c.add(t, u, res("tusmo", "", 70, new(3), nil))
 	}
-	c.s.JoinByCode(c.dave.ID, c.g.InviteCode)
-	se := mustSeason(t, c)
-	if got := points3(t, se); got["dave"] != 0 || got["alice"] != 0 {
-		t.Fatalf("dave joined before #70 closed: %v, want #70 waiting for dave", got)
-	}
 	c.s.Now = func() time.Time { return day(1) }
-	if got := points3(t, mustSeason(t, c)); got["alice"] != 2 || got["dave"] != 0 {
-		t.Fatalf("closed #70: %v, want 1 + dave beaten for each player", got)
+	c.s.JoinByCode(c.dave.ID, c.g.InviteCode)
+	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, map[string]int{"alice": 1, "bob": 1, "carol": 1, "dave": 0}) {
+		t.Fatalf("dave joined after #70: %v, want #70 unchanged", got)
+	}
+	c.add(t, c.alice, res("tusmo", "", 71, new(2), nil))
+	c.add(t, c.bob, res("tusmo", "", 71, new(3), nil))
+	c.add(t, c.carol, res("tusmo", "", 71, new(4), nil))
+	if got := points3(t, mustSeason(t, c)); got["alice"] != 1 {
+		t.Fatalf("open #71 without dave: alice %d, want #71 waiting for dave", got["alice"])
+	}
+	c.s.Now = func() time.Time { return day(2) }
+	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, map[string]int{"alice": 5, "bob": 4, "carol": 3, "dave": 0}) {
+		t.Fatalf("closed #71: %v, want dave beaten by all", got)
+	}
+}
+
+// Review I2: one puzzle per game a day: Travle's world map, Songless's [All].
+func TestSeasonOneVariantPerGame(t *testing.T) {
+	c := newCrew(t)
+	c.s.SetGroupGames(c.g.ID, []string{"songless", "travle"})
+	mustSeason(t, c)
+	travle, _ := games.ByID("travle")
+	fra, _ := travle.Today("fra", fixtureDay)
+	c.add(t, c.alice, res("songless", "All", 404, new(2), nil), res("songless", "Rock", 404, new(1), nil),
+		res("travle", "", 1392, new(0), nil), res("travle", "fra", fra, new(0), nil))
+	c.s.Now = func() time.Time { return day(1) }
+	if got := points3(t, mustSeason(t, c)); got["alice"] != 6 {
+		t.Fatalf("alice %d, want 3 for Songless [All] + 3 for Travle's world map", got["alice"])
+	}
+}
+
+// Review I3: a result pasted after its puzzle closed doesn't score: its board
+// was already visible, and deciding a season can't depend on when it's read.
+func TestSeasonLatePasteDoesNotScore(t *testing.T) {
+	c := newCrew(t)
+	mustSeason(t, c)
+	c.add(t, c.alice, res("tusmo", "", 70, new(3), nil))
+	c.s.Now = func() time.Time { return day(1) }
+	c.add(t, c.carol, res("tusmo", "", 70, new(1), nil)) // the next day, once #70's board is out
+	if got := points3(t, mustSeason(t, c)); got["alice"] != 3 || got["carol"] != 0 {
+		t.Fatalf("late paste: %v, want alice 3 (carol as not played), carol 0", got)
+	}
+}
+
+// Review C1: two first reads racing to open season 1 leave one running season.
+func TestStartSeasonOnce(t *testing.T) {
+	c := newCrew(t)
+	for range 2 {
+		if err := c.s.startSeason(c.g.ID, "2026-10-06", 18); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var n int
+	c.s.db.QueryRow("SELECT COUNT(*) FROM seasons WHERE group_id = ? AND end_day IS NULL", c.g.ID).Scan(&n)
+	if n != 1 {
+		t.Fatalf("%d running seasons, want 1", n)
 	}
 }
 
@@ -236,4 +288,34 @@ func (s *Store) runningSeasonID(t *testing.T, groupID int64) int64 {
 		t.Fatal(err)
 	}
 	return id
+}
+
+// better ranks like the boards: lower score, fails last, then lower tiebreak,
+// missing tiebreak last.
+func TestBetter(t *testing.T) {
+	for _, c := range []struct {
+		as, at, bs, bt *int
+		want           bool
+	}{
+		{new(2), nil, new(3), nil, true},
+		{new(3), nil, new(2), nil, false},
+		{new(6), nil, nil, nil, true}, // a fail ranks last
+		{nil, nil, new(6), nil, false},
+		{new(3), new(40), new(3), new(65), true}, // same score: faster wins
+		{new(3), new(40), new(3), nil, true},     // missing tiebreak last
+		{new(3), nil, new(3), new(40), false},
+		{new(3), new(40), new(3), new(40), false}, // a tie is not better
+		{nil, new(2), nil, new(3), true},          // fails: closer wins (Travle "away")
+	} {
+		if got := better(c.as, c.at, c.bs, c.bt); got != c.want {
+			t.Errorf("better(%v,%v vs %v,%v) = %v, want %v", deref(c.as), deref(c.at), deref(c.bs), deref(c.bt), got, c.want)
+		}
+	}
+}
+
+func deref(p *int) any {
+	if p == nil {
+		return nil
+	}
+	return *p
 }

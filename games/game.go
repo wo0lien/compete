@@ -31,9 +31,12 @@ type Game struct {
 	// one URL (Songless categories), so they share a card. Otherwise each
 	// variant is its own game (Travle maps) with its own card.
 	VariantsInOneCard bool
-	Parse             func(text string) []Result                      // nil = not this game
-	show              func(score int) string                          // nil = ScoreFmt
-	today             func(variant string, now time.Time) (int, bool) // nil = no known schedule
+	// MainVariant is the one variant the season race scores, so each game is
+	// one puzzle a day ("" = the plain puzzle; Songless: "All").
+	MainVariant string
+	Parse       func(text string) []Result                      // nil = not this game
+	show        func(score int) string                          // nil = ScoreFmt
+	today       func(variant string, now time.Time) (int, bool) // nil = no known schedule
 }
 
 // Today is the number of today's puzzle for variant at now, from the game's
