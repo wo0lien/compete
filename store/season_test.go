@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 )
 
 // N = ceil(days × games × (1 + 3/4 × (members − 1))), at least 1.
@@ -79,4 +80,160 @@ func TestWalk(t *testing.T) {
 	if got := winners(map[int64]int{3: 8, 1: 8, 2: 5}); !reflect.DeepEqual(got, []int64{1, 3}) {
 		t.Fatalf("co-winners = %v, want [1 3]", got)
 	}
+}
+
+// day d of the fixture week at noon UTC: day(0) = 2026-10-06, Tusmo #70.
+func day(d int) time.Time { return fixtureDay.Add(time.Duration(d) * 24 * time.Hour) }
+
+func points3(t *testing.T, se Season) map[string]int {
+	t.Helper()
+	out := map[string]int{}
+	for _, r := range se.Racers {
+		out[r.Username] = r.Points
+	}
+	return out
+}
+
+func mustSeason(t *testing.T, c crew) Season {
+	t.Helper()
+	se, err := c.s.CurrentSeason(c.g.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return se
+}
+
+// Season 1 starts on the first read; an open puzzle counts once everyone
+// played it, off-list games and outsiders never count.
+func TestSeasonCounting(t *testing.T) {
+	c := newCrew(t)
+	se := mustSeason(t, c)
+	if se.Number != 1 || se.Start != "2026-10-06" || se.N != 18 || len(se.Racers) != 3 {
+		t.Fatalf("first read = %+v, want season 1 from 2026-10-06, N 18, 3 racers", se)
+	}
+	c.add(t, c.alice, res("tusmo", "", 70, new(2), nil), res("songless", "All", 404, new(1), nil))
+	c.add(t, c.bob, res("tusmo", "", 70, new(4), nil))
+	c.add(t, c.dave, res("tusmo", "", 70, new(1), nil))
+	if got := points3(t, mustSeason(t, c)); got["alice"] != 0 || got["bob"] != 0 {
+		t.Fatalf("open #70, carol to play: %v, want nothing counted", got)
+	}
+	c.add(t, c.carol, res("tusmo", "", 70, nil, nil)) // fail: everyone played
+	se = mustSeason(t, c)
+	if got := points3(t, se); !reflect.DeepEqual(got, map[string]int{"alice": 3, "bob": 2, "carol": 1}) {
+		t.Fatalf("all played #70: %v", got)
+	}
+	if se.Racers[0].Username != "alice" || se.Racers[0].Pawn == "" {
+		t.Fatalf("racers not sorted by points: %+v", se.Racers)
+	}
+	c.add(t, c.alice, res("tusmo", "", 71, new(3), nil))
+	c.s.Now = func() time.Time { return day(2) } // #71 closed
+	if got := points3(t, mustSeason(t, c)); got["alice"] != 6 {
+		t.Fatalf("closed #71 alone: alice %d, want 3+3", got["alice"])
+	}
+}
+
+// Review Focus 1: a new member starts at 0 and must play open puzzles before they count early.
+func TestSeasonJoinMidSeason(t *testing.T) {
+	c := newCrew(t)
+	mustSeason(t, c)
+	for _, u := range []User{c.alice, c.bob, c.carol} {
+		c.add(t, u, res("tusmo", "", 70, new(3), nil))
+	}
+	c.s.JoinByCode(c.dave.ID, c.g.InviteCode)
+	se := mustSeason(t, c)
+	if got := points3(t, se); got["dave"] != 0 || got["alice"] != 0 {
+		t.Fatalf("dave joined before #70 closed: %v, want #70 waiting for dave", got)
+	}
+	c.s.Now = func() time.Time { return day(1) }
+	if got := points3(t, mustSeason(t, c)); got["alice"] != 2 || got["dave"] != 0 {
+		t.Fatalf("closed #70: %v, want 1 + dave beaten for each player", got)
+	}
+}
+
+// Review Focus 2: removing a game drops its points; N stays frozen.
+func TestSeasonGamesChangeKeepsN(t *testing.T) {
+	c := newCrew(t)
+	if err := c.s.SetGroupGames(c.g.ID, []string{"tusmo", "songless"}); err != nil {
+		t.Fatal(err)
+	}
+	n := mustSeason(t, c).N
+	c.add(t, c.alice, res("songless", "All", 404, new(1), nil))
+	c.s.Now = func() time.Time { return day(1) }
+	if got := points3(t, mustSeason(t, c)); got["alice"] != 3 {
+		t.Fatalf("songless counted: alice %d, want 3", got["alice"])
+	}
+	c.s.SetGroupGames(c.g.ID, []string{"tusmo"})
+	se := mustSeason(t, c)
+	if se.N != n || points3(t, se)["alice"] != 0 {
+		t.Fatalf("after removing songless: N %d (want %d), alice %d (want 0)", se.N, n, points3(t, se)["alice"])
+	}
+}
+
+// A season runs to its final day, is decided once that day is over, freezes
+// its co-winners, and the next one starts the day after.
+func TestSeasonLifecycle(t *testing.T) {
+	c := newCrew(t)
+	c.s.SetSeasonDays(c.g.ID, 3) // N = 8
+	mustSeason(t, c)
+	// Review Focus 5: a game variant without a schedule never counts nor blocks.
+	c.s.SetGroupGames(c.g.ID, []string{"tusmo", "travle"})
+	c.add(t, c.alice, res("travle", "challenge", 12, new(0), nil))
+	for id := 70; id <= 73; id++ { // alice and bob tie every day, carol fails: 2 each a day
+		c.s.Now = func() time.Time { return day(id - 70) } // AddResults refuses puzzles not out yet
+		c.add(t, c.alice, res("tusmo", "", id, new(3), nil))
+		c.add(t, c.bob, res("tusmo", "", id, new(3), nil))
+		if id != 72 { // carol skips #72 (still beaten), and pastes it late below
+			c.add(t, c.carol, res("tusmo", "", id, nil, nil))
+		}
+	}
+	c.s.Now = func() time.Time { return day(3) } // 2026-10-09: #73 played by all, day not over
+	se := mustSeason(t, c)
+	if se.Number != 1 || se.FinalDay != "2026-10-09" || points3(t, se)["alice"] != 8 {
+		t.Fatalf("final day = %+v, want season 1 on its final day 2026-10-09 with alice 8", se)
+	}
+	c.s.Now = func() time.Time { return day(4) }
+	c.add(t, c.alice, res("tusmo", "", 74, new(1), nil)) // the next day, alone
+	c.s.Now = func() time.Time { return day(5) }         // 2026-10-11: #74 closed, 2026-10-09 over
+	se = mustSeason(t, c)
+	if se.Number != 2 || se.Start != "2026-10-10" || se.FinalDay != "" || se.N != seasonN(3, 2, 3) {
+		t.Fatalf("after the final day = %+v, want season 2 from 2026-10-10", se)
+	}
+	if want := []Winner{{1, []string{"alice", "bob"}}}; !reflect.DeepEqual(se.Past, want) {
+		t.Fatalf("past = %+v, want %+v", se.Past, want)
+	}
+	if got := points3(t, se); got["alice"] != 3 {
+		t.Fatalf("#74 carries into season 2: alice %d, want 3", got["alice"])
+	}
+	// Review Focus 3: a late paste for a frozen day changes nothing.
+	c.add(t, c.carol, res("tusmo", "", 72, new(1), nil))
+	if again := mustSeason(t, c); !reflect.DeepEqual(again.Past, se.Past) || points3(t, again)["carol"] != 0 {
+		t.Fatalf("late paste moved things: %+v", again)
+	}
+}
+
+// Review Focus 4: a season is closed once, however many readers race to close it.
+func TestCloseSeasonOnce(t *testing.T) {
+	c := newCrew(t)
+	se := mustSeason(t, c)
+	id := c.s.runningSeasonID(t, c.g.ID)
+	for range 2 {
+		if err := c.s.closeSeason(c.g.ID, id, se.Number, "2026-10-06", []int64{c.alice.ID}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var n int
+	c.s.db.QueryRow("SELECT COUNT(*) FROM seasons WHERE group_id = ?", c.g.ID).Scan(&n)
+	if n != 2 {
+		t.Fatalf("%d seasons after two closes, want 2", n)
+	}
+}
+
+// runningSeasonID is a test hook: the id of the group's running season.
+func (s *Store) runningSeasonID(t *testing.T, groupID int64) int64 {
+	t.Helper()
+	var id int64
+	if err := s.db.QueryRow("SELECT id FROM seasons WHERE group_id = ? AND end_day IS NULL", groupID).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	return id
 }

@@ -71,7 +71,8 @@ func (s *Store) Leaderboard(groupID int64) ([]GameStats, error) {
 
 type Racer struct {
 	Username, Pawn string
-	Wins           int
+	Wins           int // old all-time race; removed with Race in the web switch
+	Points         int // the running season's points
 }
 
 // Race counts, for every member, wins on closed puzzles of the given games
