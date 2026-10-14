@@ -137,6 +137,7 @@ func (s *Server) setLang(w http.ResponseWriter, r *http.Request) {
 // errMsgs maps store validation errors (English, for logs and the CLI) to
 // message IDs shown to users.
 var errMsgs = map[error]string{
+	store.ErrSeasonDays:    "settings.season_invalid",
 	store.ErrUsernameTaken: "err.username_taken",
 	store.ErrBadUsername:   "err.bad_username",
 	store.ErrWeakPassword:  "err.weak_password",

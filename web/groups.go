@@ -140,6 +140,11 @@ func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request, u store.Us
 		s.oops(w, r, err)
 		return
 	}
+	days, err := s.store.SeasonDays(g.ID)
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
 	base := s.BaseURL
 	if base == "" {
 		base = "https://" + r.Host
@@ -150,6 +155,7 @@ func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request, u store.Us
 	s.render(w, r, status, "settings.html", map[string]any{
 		"Group": g, "Members": members, "Me": u.ID,
 		"InviteURL": base + "/join/" + g.InviteCode, "Picks": picks(ticked), "GamesError": gamesErr,
+		"SeasonDays": days, "SeasonLengths": []int{3, 7, 14},
 	})
 }
 
@@ -163,6 +169,25 @@ func (s *Server) setGames(w http.ResponseWriter, r *http.Request, u store.User) 
 	err := s.store.SetGroupGames(g.ID, r.Form["game"])
 	if errors.Is(err, store.ErrNoGames) {
 		s.settingsPage(w, r, u, g, http.StatusUnprocessableEntity, r.Form["game"], errText(r, err))
+		return
+	}
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
+	http.Redirect(w, r, settingsURL(g), http.StatusSeeOther)
+}
+
+// setSeason sets the length the next seasons are sized for (owner only).
+func (s *Server) setSeason(w http.ResponseWriter, r *http.Request, u store.User) {
+	g, ok := s.ownerFor(w, r, u)
+	if !ok {
+		return
+	}
+	days, _ := strconv.Atoi(r.FormValue("days"))
+	err := s.store.SetSeasonDays(g.ID, days)
+	if errors.Is(err, store.ErrSeasonDays) {
+		http.Error(w, errText(r, err), http.StatusUnprocessableEntity)
 		return
 	}
 	if err != nil {

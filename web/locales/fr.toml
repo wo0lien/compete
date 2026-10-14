@@ -154,6 +154,12 @@ group_name = "Nom du groupe"
 rename = "Renommer"
 delete = "Supprimer le groupe"
 leave = "Quitter le groupe"
+season_length = "Durée d'une saison"
+season_3 = "Courte (environ 3 jours)"
+season_7 = "Normale (environ une semaine)"
+season_14 = "Longue (environ 2 semaines)"
+season_next = "S'applique à partir de la prochaine saison."
+season_invalid = "Choisis courte, normale ou longue."
 
 [submit]
 title = "Envoyer un résultat"
