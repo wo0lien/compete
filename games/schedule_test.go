@@ -38,6 +38,9 @@ func TestToday(t *testing.T) {
 		{"travle", "usaca", "2026-10-09T12:00:00Z", 179, true},
 		{"travle", "challenge", "2026-10-09T12:00:00Z", 0, false},
 		{"travle", "atlantis", "2026-10-09T12:00:00Z", 0, false},
+		{"fermi", "", "2026-10-14T12:00:00Z", 80, true}, // shared No. 80 on 2026-10-14
+		{"fermi", "", "2026-10-14T03:59:59Z", 79, true}, // 23:59 in New York (EDT)
+		{"fermi", "", "2026-10-14T04:00:00Z", 80, true},
 	} {
 		g, _ := ByID(tc.game)
 		got, ok := g.Today(tc.variant, at(tc.now))

@@ -17,6 +17,11 @@ func TestShowScoreAndTiebreak(t *testing.T) {
 		{songless, nil, nil, "X/5", ""},
 		{travle, new(0), nil, "+0", ""},
 		{travle, nil, new(3), "fail", "3 away"},
+		{fermi, new(100), nil, "1.00×", ""}, // hundredths, 3 significant digits like the game
+		{fermi, new(275), nil, "2.75×", ""},
+		{fermi, new(2680), nil, "26.8×", ""},
+		{fermi, new(62500), nil, "625×", ""},
+		{fermi, new(125000), nil, "1250×", ""},
 	}
 	for _, c := range cases {
 		if got := c.game.ShowScore(c.score); got != c.wantS {
@@ -34,10 +39,10 @@ func TestTags(t *testing.T) {
 			t.Errorf("%s has no tags", g.ID)
 		}
 	}
-	if got, want := AllTags(), []string{"english", "french", "geography", "music", "words"}; !reflect.DeepEqual(got, want) {
+	if got, want := AllTags(), []string{"english", "french", "geography", "music", "numbers", "words"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("AllTags = %v, want %v", got, want)
 	}
-	if got, want := WithTag("english"), []string{"songless", "travle"}; !reflect.DeepEqual(got, want) {
+	if got, want := WithTag("english"), []string{"songless", "travle", "fermi"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("WithTag(english) = %v, want %v", got, want)
 	}
 	if got := WithTag("nope"); len(got) != 0 {

@@ -24,7 +24,7 @@ type Game struct {
 	ID, Name, URL string
 	Lang          string   // the game's language, BCP 47 ("fr", "en")
 	Tags          []string // topics for filtering: "words", "music", "geography", "french"…
-	ScoreFmt      string   // formats a score, e.g. "%d/6"
+	ScoreFmt      string   // formats a score, e.g. "%d/6"; ignored when show is set
 	Fail          string   // shown for a failed result, e.g. "X/6"
 	TiebreakKind  string   // "time" (seconds), "away" (countries short) or ""
 	// VariantsInOneCard: the variants are parts of one daily puzzle played at
@@ -32,6 +32,7 @@ type Game struct {
 	// variant is its own game (Travle maps) with its own card.
 	VariantsInOneCard bool
 	Parse             func(text string) []Result                      // nil = not this game
+	show              func(score int) string                          // nil = ScoreFmt
 	today             func(variant string, now time.Time) (int, bool) // nil = no known schedule
 }
 
@@ -62,6 +63,9 @@ func (g Game) Day(variant string, id int) (time.Time, bool) {
 func (g Game) ShowScore(score *int) string {
 	if score == nil {
 		return g.Fail
+	}
+	if g.show != nil {
+		return g.show(*score)
 	}
 	return fmt.Sprintf(g.ScoreFmt, *score)
 }
@@ -110,7 +114,7 @@ func WithTag(tag string) []string {
 }
 
 // All lists the supported games, in matching order.
-var All = []Game{tusmo, songless, travle}
+var All = []Game{tusmo, songless, travle, fermi}
 
 // normalizer cleans share text pasted from any platform: some keyboards append
 // U+FE0F to ⬛/⬜, Windows/iOS paste CRLF, copies can carry a BOM, zero-width
