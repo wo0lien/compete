@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 )
 
@@ -34,5 +35,48 @@ func TestSeasonDays(t *testing.T) {
 	}
 	if err := c.s.SetSeasonDays(c.g.ID, 5); !errors.Is(err, ErrSeasonDays) {
 		t.Fatalf("set 5 = %v, want ErrSeasonDays", err)
+	}
+}
+
+// 1 for playing + 1 per member strictly beaten; non-players are beaten.
+func TestPoints(t *testing.T) {
+	for _, c := range []struct {
+		name    string
+		ranks   map[int64]int
+		members int
+		want    map[int64]int
+	}{
+		{"spec: alice 2/6, bob 4/6, carol absent", map[int64]int{1: 1, 2: 2}, 3, map[int64]int{1: 3, 2: 2}},
+		{"tie beats nobody between them", map[int64]int{1: 1, 2: 1}, 3, map[int64]int{1: 2, 2: 2}},
+		{"everyone played, fail last", map[int64]int{1: 1, 2: 2, 3: 3}, 3, map[int64]int{1: 3, 2: 2, 3: 1}},
+		{"alone in a trio", map[int64]int{1: 1}, 3, map[int64]int{1: 3}},
+		{"solo group", map[int64]int{1: 1}, 1, map[int64]int{1: 1}},
+	} {
+		if got := points(c.ranks, c.members); !reflect.DeepEqual(got, c.want) {
+			t.Errorf("%s: points = %v, want %v", c.name, got, c.want)
+		}
+	}
+}
+
+func TestWalk(t *testing.T) {
+	ps := []scored{
+		{"2026-10-07", map[int64]int{1: 3, 2: 1}},
+		{"2026-10-06", map[int64]int{1: 3, 2: 2}},
+		{"2026-10-08", map[int64]int{1: 3, 2: 2}}, // day 3: alice reaches 9
+		{"2026-10-08", map[int64]int{2: 7}},       // same day: bob overtakes, 12
+		{"2026-10-09", map[int64]int{1: 3}},       // after the final day: next season
+	}
+	totals, final := walk(ps, 8)
+	if final != "2026-10-08" || !reflect.DeepEqual(totals, map[int64]int{1: 9, 2: 12}) {
+		t.Fatalf("walk = %v, %q; want {1:9 2:12}, 2026-10-08", totals, final)
+	}
+	if got := winners(totals); !reflect.DeepEqual(got, []int64{2}) {
+		t.Fatalf("winners = %v, want bob (overtook on the final day)", got)
+	}
+	if _, final := walk(ps[:2], 8); final != "" {
+		t.Fatalf("final = %q before anyone reaches N", final)
+	}
+	if got := winners(map[int64]int{3: 8, 1: 8, 2: 5}); !reflect.DeepEqual(got, []int64{1, 3}) {
+		t.Fatalf("co-winners = %v, want [1 3]", got)
 	}
 }
