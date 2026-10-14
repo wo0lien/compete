@@ -48,9 +48,9 @@ func (s *Store) AddResults(userID int64, raw string, rs []games.Result) ([]games
 			detail = string(b)
 		}
 		res, err := tx.Exec(`
-			INSERT INTO results(user_id, game, variant, puzzle_id, score, tiebreak, detail, raw)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`,
-			userID, r.Game, r.Variant, r.PuzzleID, r.Score, r.Tiebreak, detail, raw)
+			INSERT INTO results(user_id, game, variant, puzzle_id, score, tiebreak, detail, raw, submitted_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`,
+			userID, r.Game, r.Variant, r.PuzzleID, r.Score, r.Tiebreak, detail, raw, s.Now().Unix())
 		if err != nil {
 			return nil, err
 		}

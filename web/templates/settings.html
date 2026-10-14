@@ -55,6 +55,13 @@
     {{with .GamesError}}<p class="error" role="alert">{{.}}</p>{{end}}
     <button class="btn wide">{{t "common.save"}}</button>
   </form>
+  <form method="post" action="/g/{{.Group.ID}}/season" class="stack">
+    <fieldset><legend>{{t "settings.season_length"}}</legend>
+      {{$d := .SeasonDays}}{{range .SeasonLengths}}<label><input type="radio" name="days" value="{{.}}"{{if eq . $d}} checked{{end}}> {{t (print "settings.season_" .)}}</label>{{end}}
+    </fieldset>
+    <p class="muted">{{t "settings.season_next"}}</p>
+    <button class="btn wide">{{t "common.save"}}</button>
+  </form>
   <a class="btn danger" href="#confirm-delete" data-dialog hx-boost="false">{{t "settings.delete"}}</a>
   <dialog id="confirm-delete" class="sheet" aria-labelledby="confirm-delete-title">
     <form method="post" action="/g/{{.Group.ID}}/delete" class="stack">

@@ -124,6 +124,9 @@ start = "start"
 [race]
 title = "The race"
 start = "GO"
+season = "Season {{.Number}} · finish at {{.N}} points"
+final_day = "{{.Name}} crossed the finish! Last day: the others can still catch up."
+past = "Season {{.Number}} · 🏆"
 
 [settings]
 new_link_title = "Make a new invite link?"
@@ -151,6 +154,12 @@ group_name = "Group name"
 rename = "Rename"
 delete = "Delete group"
 leave = "Leave group"
+season_length = "Season length"
+season_3 = "Short (about 3 days)"
+season_7 = "Normal (about a week)"
+season_14 = "Long (about 2 weeks)"
+season_next = "Applies from the next season."
+season_invalid = "Pick short, normal or long."
 
 [submit]
 title = "Submit a result"

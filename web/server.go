@@ -135,6 +135,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /g/{id}/settings", s.auth(s.settings))
 	mux.HandleFunc("POST /g/{id}/rename", s.auth(s.rename))
 	mux.HandleFunc("POST /g/{id}/games", s.auth(s.setGames))
+	mux.HandleFunc("POST /g/{id}/season", s.auth(s.setSeason))
 	mux.HandleFunc("POST /g/{id}/code", s.auth(s.newCode))
 	mux.HandleFunc("POST /g/{id}/kick/{uid}", s.auth(s.kick))
 	mux.HandleFunc("POST /g/{id}/leave", s.auth(s.leave))

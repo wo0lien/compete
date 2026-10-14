@@ -297,3 +297,24 @@ func TestGamesSaveErrorStaysOnSettings(t *testing.T) {
 		t.Fatalf("empty save = %d, want Settings again with the error and nothing ticked:\n%s", resp.StatusCode, body)
 	}
 }
+
+// The owner picks the season length; members can't; other values are refused.
+func TestSettingsSeasonLength(t *testing.T) {
+	ts, alice, bob := twoPlayers(t)
+	_, body := get(t, alice, ts.URL+"/g/1/settings")
+	if !strings.Contains(body, `action="/g/1/season"`) || !strings.Contains(body, `value="7" checked>`) {
+		t.Fatalf("owner settings lack the season form:\n%s", body)
+	}
+	if resp, _ := post(t, alice, ts.URL+"/g/1/season", url.Values{"days": {"14"}}); resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("save 14 = %d", resp.StatusCode)
+	}
+	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="14" checked>`) {
+		t.Fatal("14 not saved")
+	}
+	if resp, _ := post(t, alice, ts.URL+"/g/1/season", url.Values{"days": {"5"}}); resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("save 5 = %d, want 422", resp.StatusCode)
+	}
+	if resp, _ := post(t, bob, ts.URL+"/g/1/season", url.Values{"days": {"3"}}); resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("member save = %d, want 403", resp.StatusCode)
+	}
+}
