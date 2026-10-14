@@ -124,6 +124,9 @@ start = "start"
 [race]
 title = "The race"
 start = "GO"
+season = "Season {{.Number}} · finish at {{.N}} points"
+final_day = "{{.Name}} crossed the finish! Last day: the others can still catch up."
+past = "Season {{.Number}} · 🏆"
 
 [settings]
 new_link_title = "Make a new invite link?"

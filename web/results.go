@@ -34,7 +34,7 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 			allPlayed = allPlayed && b.Revealed
 		}
 	}
-	race, err := s.raceData(g.ID, nil)
+	race, err := s.raceData(g.ID)
 	if err != nil {
 		s.oops(w, r, err)
 		return

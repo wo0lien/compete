@@ -9,9 +9,12 @@ import (
 	"github.com/wo0lien/compete/store"
 )
 
+// Pawns stand at points × 8 / N, below ★ until they reach N.
 func TestTrack(t *testing.T) {
-	racers := []store.Racer{{Username: "lou", Pawn: "#a", Wins: 8}, {Username: "mika", Pawn: "#b", Wins: 4}, {Username: "sam", Pawn: "#c", Wins: 0}}
-	cells := track(racers)
+	se := store.Season{N: 40, Racers: []store.Racer{
+		{Pawn: "#a", Points: 40}, {Pawn: "#b", Points: 39}, {Pawn: "#c", Points: 20}, {Pawn: "#d", Points: 0}, {Pawn: "#e", Points: 55},
+	}}
+	cells := track(se)
 	if len(cells) != 9 || cells[0].Label != "GO" || cells[8].Label != "★" {
 		t.Fatalf("cells = %+v", cells)
 	}
@@ -21,11 +24,8 @@ func TestTrack(t *testing.T) {
 			where[p] = i
 		}
 	}
-	if want := map[string]int{"#a": 8, "#b": 4, "#c": 0}; !reflect.DeepEqual(where, want) {
+	if want := map[string]int{"#a": 8, "#b": 7, "#c": 4, "#d": 0, "#e": 8}; !reflect.DeepEqual(where, want) {
 		t.Fatalf("positions = %v, want %v", where, want)
-	}
-	if got := track([]store.Racer{{Pawn: "#a"}}); len(got[0].Pawns) != 1 {
-		t.Fatal("with no wins everyone stays on GO")
 	}
 }
 
@@ -38,6 +38,9 @@ func TestLeaderboardHistoryBoardPages(t *testing.T) {
 	_, body := get(t, bob, ts.URL+"/g/1/leaderboard")
 	if !strings.Contains(body, "class=\"track\"") || !strings.Contains(body, "Tusmo") || !strings.Contains(body, "music") {
 		t.Fatalf("leaderboard page:\n%s", body)
+	}
+	if !strings.Contains(body, "Season 1") {
+		t.Fatalf("leaderboard lacks the season header:\n%s", body)
 	}
 	_, body = get(t, bob, ts.URL+"/g/1/leaderboard?tag=music")
 	if strings.Contains(body, "<td>alice</td>") {

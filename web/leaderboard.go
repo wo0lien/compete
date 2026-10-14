@@ -16,36 +16,32 @@ type trackCell struct {
 	Pawns        []string // pawn colors standing on this cell
 }
 
-// track lays racers on 9 cells, GO to ★. Positions are scaled to the leader so
-// the track never grows; the legend shows the real win counts.
-func track(racers []store.Racer) []trackCell {
+// track lays the season's racers on 9 cells, GO to ★. Positions are absolute:
+// points × 8 / N, and only those who reached N stand on ★.
+func track(se store.Season) []trackCell {
 	cells := make([]trackCell, 9)
 	for i := range cells {
 		cells[i].Label = strconv.Itoa(i)
 	}
 	cells[0].Label, cells[0].Class = "GO", "start"
 	cells[8].Label, cells[8].Class = "★", "goal"
-	most := 0
-	for _, r := range racers {
-		most = max(most, r.Wins)
-	}
-	for _, r := range racers {
-		pos := 0
-		if most > 0 {
-			pos = r.Wins * 8 / most
+	for _, r := range se.Racers {
+		pos := 8
+		if r.Points < se.N {
+			pos = min(r.Points*8/se.N, 7)
 		}
 		cells[pos].Pawns = append(cells[pos].Pawns, r.Pawn)
 	}
 	return cells
 }
 
-// raceData builds the "race" partial's input for a game filter (nil = all games).
-func (s *Server) raceData(groupID int64, gameIDs []string) (map[string]any, error) {
-	racers, err := s.store.Race(groupID, gameIDs)
+// raceData builds the "race" partial's input: the group's running season.
+func (s *Server) raceData(groupID int64) (map[string]any, error) {
+	se, err := s.store.CurrentSeason(groupID)
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"Track": track(racers), "Racers": racers, "GroupID": groupID}, nil
+	return map[string]any{"Track": track(se), "Season": se, "GroupID": groupID}, nil
 }
 
 func (s *Server) leaderboard(w http.ResponseWriter, r *http.Request, u store.User) {
@@ -61,7 +57,7 @@ func (s *Server) leaderboard(w http.ResponseWriter, r *http.Request, u store.Use
 			ids = []string{} // unknown tag: nothing matches
 		}
 	}
-	race, err := s.raceData(g.ID, ids)
+	race, err := s.raceData(g.ID)
 	if err != nil {
 		s.oops(w, r, err)
 		return

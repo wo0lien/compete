@@ -2,7 +2,6 @@ package store
 
 import (
 	"database/sql"
-	"encoding/json"
 )
 
 type Stat struct {
@@ -71,39 +70,5 @@ func (s *Store) Leaderboard(groupID int64) ([]GameStats, error) {
 
 type Racer struct {
 	Username, Pawn string
-	Wins           int // old all-time race; removed with Race in the web switch
 	Points         int // the running season's points
-}
-
-// Race counts, for every member, wins on closed puzzles of the given games
-// (nil = all games). It feeds the race track.
-func (s *Store) Race(groupID int64, gameIDs []string) ([]Racer, error) {
-	var filter any // NULL = every game
-	if gameIDs != nil {
-		b, err := json.Marshal(gameIDs)
-		if err != nil {
-			return nil, err
-		}
-		filter = string(b)
-	}
-	rows, err := s.db.Query(closedRanked+`
-		SELECT u.username, u.pawn, COALESCE(SUM(ranked.rk = 1 AND ranked.score IS NOT NULL), 0) AS wins
-		FROM memberships m JOIN users u ON u.id = m.user_id
-		LEFT JOIN ranked ON ranked.user_id = m.user_id
-		WHERE m.group_id = ?1
-		GROUP BY u.id
-		ORDER BY wins DESC, u.username COLLATE NOCASE`, groupID, filter)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var out []Racer
-	for rows.Next() {
-		var r Racer
-		if err := rows.Scan(&r.Username, &r.Pawn, &r.Wins); err != nil {
-			return nil, err
-		}
-		out = append(out, r)
-	}
-	return out, rows.Err()
 }

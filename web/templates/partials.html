@@ -64,6 +64,8 @@
 {{define "race"}}
 <section class="panel">
   <h2>{{t "race.title"}}</h2>
+  <p class="muted">{{t "race.season" "Number" .Season.Number "N" .Season.N}}</p>
+  {{with .Season.FinalDay}}{{$top := index $.Season.Racers 0}}<p class="hint">{{t "race.final_day" "Name" $top.Username}}</p>{{end}}
   <div class="track">
     {{range .Track}}
     <div>
@@ -72,7 +74,8 @@
     </div>
     {{end}}
   </div>
-  <div class="legend">{{range .Racers}}<span>{{template "pawn" .Pawn}}{{.Username}} {{.Wins}}</span>{{end}}</div>
+  <div class="legend">{{range .Season.Racers}}<span>{{template "pawn" .Pawn}}{{.Username}} {{.Points}}</span>{{end}}</div>
+  {{with .Season.Past}}<ul class="legend past">{{range .}}<li>{{t "race.past" "Number" .Number}} {{range $i, $n := .Usernames}}{{if $i}}, {{end}}{{$n}}{{end}}</li>{{end}}</ul>{{end}}
 </section>
 {{end}}
 {{define "game-picker"}}<fieldset class="game-rows"><legend>{{t "groups.games"}}</legend>{{range .}}<label class="game-row"><input type="checkbox" name="game" value="{{.ID}}"{{if .On}} checked{{end}}><span><b>{{.Name}}</b><span class="muted">{{range $i, $t := .Tags}}{{if $i}} · {{end}}{{t (print "tag." $t)}}{{end}}</span></span></label>{{end}}</fieldset>{{end}}
