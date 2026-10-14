@@ -162,6 +162,7 @@ english = "anglais"
 french = "français"
 geography = "géographie"
 music = "musique"
+numbers = "nombres"
 words = "mots"
 
 [msg]
