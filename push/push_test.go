@@ -123,3 +123,30 @@ func TestTestCountsLiveDevices(t *testing.T) {
 		t.Fatalf("subs = %d, want the gone one removed", len(r.Subs))
 	}
 }
+
+// Timed pushes go out "high" so Android delivers them through Doze; social
+// pings stay "normal".
+func TestDeliverUrgency(t *testing.T) {
+	st := newTestStore(t)
+	u, _ := st.CreateUser("alice", "correct horse")
+	got := make(chan string, 1)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got <- r.Header.Get("Urgency")
+		w.WriteHeader(http.StatusCreated)
+	}))
+	defer srv.Close()
+	p, a := deviceKeys(t)
+	n, _ := New(st, echoText, "https://example.org")
+	sub := store.Subscription{Endpoint: srv.URL + "/x", P256dh: p, Auth: a, UserID: u.ID}
+	for _, c := range []struct {
+		urgent bool
+		want   string
+	}{{true, "high"}, {false, "normal"}} {
+		if err := n.Send(sub, Message{Title: "compete", Urgent: c.urgent}); err != nil {
+			t.Fatal(err)
+		}
+		if h := <-got; h != c.want {
+			t.Errorf("Urgent=%v sent Urgency %q, want %q", c.urgent, h, c.want)
+		}
+	}
+}

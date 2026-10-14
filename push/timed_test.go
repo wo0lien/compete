@@ -52,8 +52,8 @@ func TestTimedPushes(t *testing.T) {
 	}
 	n.Tick(paris("08:00"))
 	want := []sent{
-		{"https://push.example/alice", Message{"compete", "fr:push.digest", "/"}},
-		{"https://push.example/alice-laptop", Message{"compete", "fr:push.digest", "/"}},
+		{"https://push.example/alice", Message{"compete", "fr:push.digest", "/", true}},
+		{"https://push.example/alice-laptop", Message{"compete", "fr:push.digest", "/", true}},
 	}
 	if !reflect.DeepEqual(*got, want) {
 		t.Fatalf("08:00 sent %+v, want %+v", *got, want)

@@ -4,7 +4,7 @@ self.addEventListener('fetch', () => {});
 self.addEventListener('push', e => {
   const m = e.data ? e.data.json() : {};
   e.waitUntil(self.registration.showNotification(m.title || 'compete', {
-    body: m.body, icon: '/static/icon-192.png', data: { url: m.url || '/' },
+    body: m.body, data: { url: m.url || '/' },
   }));
 });
 

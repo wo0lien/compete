@@ -66,6 +66,6 @@ func (n *Notifier) timed(kind string, local time.Time) {
 			names = append(names, game.Name)
 		}
 		l := lang(r)
-		n.sendAll(r, Message{Title: "compete", Body: n.Text(l, "push."+kind, "Games", strings.Join(names, ", ")), URL: "/"})
+		n.sendAll(r, Message{Title: "compete", Body: n.Text(l, "push."+kind, "Games", strings.Join(names, ", ")), URL: "/", Urgent: true})
 	}
 }
