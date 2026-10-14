@@ -6,10 +6,12 @@
 version = "v0.1.14"
 date = "2026-10-14"
 en = [
+  "The race now runs in seasons: points for every puzzle you play and every friend you beat, first to the finish line wins the season. Owners pick the season length in Settings.",
   "New game: Fermi, the daily estimation game (fermi.gg).",
   "The morning and evening reminders now arrive on time on Android, even when the phone is asleep.",
 ]
 fr = [
+  "La course se joue en saisons : des points pour chaque grille jouée et chaque ami battu, le premier à la ligne d'arrivée gagne la saison. Le propriétaire choisit la durée dans les réglages.",
   "Nouveau jeu : Fermi, le jeu d'estimation quotidien (fermi.gg).",
   "Les rappels du matin et du soir arrivent désormais à l'heure sur Android, même quand le téléphone est en veille.",
 ]
