@@ -6,9 +6,11 @@
 version = "v0.1.14"
 date = "2026-10-14"
 en = [
+  "New game: Fermi, the daily estimation game (fermi.gg).",
   "The morning and evening reminders now arrive on time on Android, even when the phone is asleep.",
 ]
 fr = [
+  "Nouveau jeu : Fermi, le jeu d'estimation quotidien (fermi.gg).",
   "Les rappels du matin et du soir arrivent désormais à l'heure sur Android, même quand le téléphone est en veille.",
 ]
 
