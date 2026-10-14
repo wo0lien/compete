@@ -3,6 +3,16 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.14"
+date = "2026-10-14"
+en = [
+  "The morning and evening reminders now arrive on time on Android, even when the phone is asleep.",
+]
+fr = [
+  "Les rappels du matin et du soir arrivent désormais à l'heure sur Android, même quand le téléphone est en veille.",
+]
+
+[[release]]
 version = "v0.1.13"
 date = "2026-10-13"
 en = [
