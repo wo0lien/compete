@@ -3,6 +3,16 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.16"
+date = "2026-10-15"
+en = [
+  "The race names everyone who crossed the finish on the final day, and Fermi grids keep guesses that were far off.",
+]
+fr = [
+  "La course nomme tous ceux qui ont passé la ligne le dernier jour, et les grilles Fermi gardent les estimations très éloignées.",
+]
+
+[[release]]
 version = "v0.1.15"
 date = "2026-10-15"
 en = [

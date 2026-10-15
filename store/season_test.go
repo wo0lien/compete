@@ -243,6 +243,9 @@ func TestSeasonLifecycle(t *testing.T) {
 	if se.Number != 1 || se.FinalDay != "2026-10-09" || points3(t, se)["alice"] != 8 {
 		t.Fatalf("final day = %+v, want season 1 on its final day 2026-10-09 with alice 8", se)
 	}
+	if want := []string{"alice", "bob"}; !reflect.DeepEqual(se.Finishers, want) {
+		t.Fatalf("finishers = %v, want both who reached N", se.Finishers)
+	}
 	c.s.Now = func() time.Time { return day(4) }
 	c.add(t, c.alice, res("tusmo", "", 74, new(1), nil)) // the next day, alone
 	c.s.Now = func() time.Time { return day(5) }         // 2026-10-11: #74 closed, 2026-10-09 over
@@ -260,6 +263,24 @@ func TestSeasonLifecycle(t *testing.T) {
 	c.add(t, c.carol, res("tusmo", "", 72, new(1), nil))
 	if again := mustSeason(t, c); !reflect.DeepEqual(again.Past, se.Past) || points3(t, again)["carol"] != 0 {
 		t.Fatalf("late paste moved things: %+v", again)
+	}
+	// A deleted winner stays on the podium, nameless.
+	if err := c.s.DeleteUser(c.bob.ID); err != nil {
+		t.Fatal(err)
+	}
+	if want := []Winner{{1, []string{"", "alice"}}}; !reflect.DeepEqual(mustSeason(t, c).Past, want) {
+		t.Fatalf("past after bob left = %+v, want %+v", mustSeason(t, c).Past, want)
+	}
+}
+
+// Season 1 starts on the newest puzzle day of the group's games, not the UTC
+// date: at 00:30 in Paris Travle is on the 7th while UTC is still the 6th.
+func TestSeasonStartDay(t *testing.T) {
+	c := newCrew(t)
+	c.s.SetGroupGames(c.g.ID, []string{"travle", "songless"})
+	c.s.Now = func() time.Time { return time.Date(2026, 10, 6, 22, 30, 0, 0, time.UTC) }
+	if se := mustSeason(t, c); se.Start != "2026-10-07" {
+		t.Fatalf("start = %s, want 2026-10-07", se.Start)
 	}
 }
 

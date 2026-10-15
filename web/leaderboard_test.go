@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
@@ -93,5 +94,21 @@ func TestLeaderboardTableWrapped(t *testing.T) {
 	_, body := get(t, bob, ts.URL+"/g/1/leaderboard")
 	if !strings.Contains(body, `<div class="table-wrap"><table>`) {
 		t.Fatalf("stats table not wrapped:\n%s", body)
+	}
+}
+
+// The final-day banner names every finisher; a deleted past winner gets a label.
+func TestRaceBannerAndDeletedWinner(t *testing.T) {
+	_, st := newTestServer(t)
+	s := New(st, false, false)
+	se := store.Season{Number: 2, N: 8, FinalDay: "2026-10-09", Finishers: []string{"alice", "bob"},
+		Racers: []store.Racer{{Username: "alice", Points: 9}, {Username: "bob", Points: 8}},
+		Past:   []store.Winner{{Number: 1, Usernames: []string{"", "carol"}}}}
+	rec := httptest.NewRecorder()
+	s.render(rec, httptest.NewRequest("GET", "/", nil), http.StatusOK, "group.html",
+		map[string]any{"Fragment": "race", "Track": track(se), "Season": se, "FinalNames": "alice, bob"})
+	body := rec.Body.String()
+	if !strings.Contains(body, "alice, bob crossed the finish!") || !strings.Contains(body, "deleted account, carol") {
+		t.Fatalf("race partial:\n%s", body)
 	}
 }

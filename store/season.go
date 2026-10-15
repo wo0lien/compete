@@ -1,6 +1,7 @@
 package store
 
 import (
+	"cmp"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -103,12 +104,13 @@ func winners(totals map[int64]int) []int64 {
 
 // Season is a group's running race: first to N points (see the spec, #54).
 type Season struct {
-	Number   int
-	N        int
-	Start    string   // YYYY-MM-DD
-	FinalDay string   // "" until someone reaches N
-	Racers   []Racer  // every member, points desc then username
-	Past     []Winner // last 3 decided seasons, newest first
+	Number    int
+	N         int
+	Start     string   // YYYY-MM-DD
+	FinalDay  string   // "" until someone reaches N
+	Finishers []string // usernames at N or more, in Racers order
+	Racers    []Racer  // every member, points desc then username
+	Past      []Winner // last 3 decided seasons, newest first
 }
 
 // Winner is a decided season and who won it (co-winners on a tie).
@@ -132,7 +134,7 @@ func (s *Store) CurrentSeason(groupID int64) (Season, error) {
 		if err != nil {
 			return Season{}, err
 		}
-		id, se, err := s.runningSeason(groupID, now, len(ids), len(members))
+		id, se, err := s.runningSeason(groupID, now, ids, len(members))
 		if err != nil {
 			return Season{}, err
 		}
@@ -157,13 +159,18 @@ func (s *Store) CurrentSeason(groupID int64) (Season, error) {
 			}
 			return strings.Compare(strings.ToLower(a.Username), strings.ToLower(b.Username))
 		})
+		for _, r := range se.Racers {
+			if r.Points >= se.N {
+				se.Finishers = append(se.Finishers, r.Username)
+			}
+		}
 		se.Past, err = s.pastWinners(groupID)
 		return se, err
 	}
 }
 
 // runningSeason loads the open season, starting the first one today if none.
-func (s *Store) runningSeason(groupID int64, now time.Time, nGames, members int) (int64, Season, error) {
+func (s *Store) runningSeason(groupID int64, now time.Time, gameIDs []string, members int) (int64, Season, error) {
 	var id int64
 	var se Season
 	q := "SELECT id, number, start_day, n FROM seasons WHERE group_id = ? AND end_day IS NULL"
@@ -175,11 +182,25 @@ func (s *Store) runningSeason(groupID int64, now time.Time, nGames, members int)
 	if err != nil {
 		return 0, se, err
 	}
-	if err := s.startSeason(groupID, now.UTC().Format(time.DateOnly), seasonN(days, nGames, members)); err != nil {
+	if err := s.startSeason(groupID, newestDay(gameIDs, now), seasonN(days, len(gameIDs), members)); err != nil {
 		return 0, se, err
 	}
 	err = s.db.QueryRow(q, groupID).Scan(&id, &se.Number, &se.Start, &se.N)
 	return id, se, err
+}
+
+// newestDay is the latest day among the games' current puzzles (the UTC date
+// without a scheduled game), so no puzzle closed before the season counts.
+func newestDay(gameIDs []string, now time.Time) string {
+	out := ""
+	for _, id := range gameIDs {
+		g, _ := games.ByID(id)
+		if today, ok := g.Today(g.MainVariant, now); ok {
+			d, _ := g.Day(g.MainVariant, today)
+			out = max(out, d.Format(time.DateOnly))
+		}
+	}
+	return cmp.Or(out, now.UTC().Format(time.DateOnly))
 }
 
 // startSeason opens the group's next season. OR IGNORE: a concurrent first
@@ -195,9 +216,14 @@ func (s *Store) startSeason(groupID int64, start string, n int) error {
 // A result scores only if pasted before its puzzle closed; a member counts on
 // puzzles from the day they joined. A puzzle counts once closed, or earlier
 // when every member it counts has played.
-// ponytail: reads every result of the group's games, all time; filter by
-// submitted_at once groups have years of history.
 func (s *Store) counted(groupID int64, start string, now time.Time) ([]scored, error) {
+	// A puzzle of day start opens at the earliest at UTC+14, the day before in
+	// UTC: results pasted earlier belong to older puzzles.
+	from, err := time.Parse(time.DateOnly, start)
+	if err != nil {
+		return nil, err
+	}
+
 	joined := map[int64]string{} // member → day they joined
 	mrows, err := s.db.Query("SELECT user_id, joined_at FROM memberships WHERE group_id = ?", groupID)
 	if err != nil {
@@ -220,7 +246,8 @@ func (s *Store) counted(groupID int64, start string, now time.Time) ([]scored, e
 		SELECT r.game, r.variant, r.puzzle_id, r.user_id, r.score, r.tiebreak, r.submitted_at
 		FROM results r
 		JOIN memberships m ON m.user_id = r.user_id AND m.group_id = ?1
-		JOIN group_games gg ON gg.game = r.game AND gg.group_id = ?1`, groupID)
+		JOIN group_games gg ON gg.game = r.game AND gg.group_id = ?1
+		WHERE r.submitted_at >= ?2`, groupID, from.AddDate(0, 0, -1).Unix())
 	if err != nil {
 		return nil, err
 	}
@@ -359,10 +386,11 @@ func (s *Store) closeSeason(groupID, id int64, number int, final string, won []i
 	return tx.Commit()
 }
 
-// pastWinners lists the last 3 decided seasons, newest first.
+// pastWinners lists the last 3 decided seasons, newest first; a deleted
+// winner is "".
 func (s *Store) pastWinners(groupID int64) ([]Winner, error) {
 	rows, err := s.db.Query(`
-		SELECT se.number, u.username FROM seasons se, json_each(se.winners) w JOIN users u ON u.id = w.value
+		SELECT se.number, COALESCE(u.username, '') FROM seasons se, json_each(se.winners) w LEFT JOIN users u ON u.id = w.value
 		WHERE se.group_id = ? AND se.end_day IS NOT NULL
 		  AND se.number > (SELECT MAX(number) FROM seasons WHERE group_id = ?) - 4
 		ORDER BY se.number DESC, u.username COLLATE NOCASE`, groupID, groupID)
