@@ -125,7 +125,9 @@ start = "départ"
 title = "La course"
 start = "Départ"
 season = "Saison {{.Number}} · arrivée à {{.N}} points"
-final_day = "{{.Name}} a passé la ligne ! Dernier jour : les autres peuvent encore le rattraper."
+final_day = "{{.Name}} a passé la ligne ! Dernier jour : les autres peuvent encore revenir."
+final_day_tie = "{{.Names}} ont passé la ligne ! Dernier jour : les autres peuvent encore revenir."
+deleted = "compte supprimé"
 past = "Saison {{.Number}} · 🏆"
 
 [settings]

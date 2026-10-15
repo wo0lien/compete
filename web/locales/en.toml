@@ -126,6 +126,8 @@ title = "The race"
 start = "GO"
 season = "Season {{.Number}} · finish at {{.N}} points"
 final_day = "{{.Name}} crossed the finish! Last day: the others can still catch up."
+final_day_tie = "{{.Names}} crossed the finish! Last day: the others can still catch up."
+deleted = "deleted account"
 past = "Season {{.Number}} · 🏆"
 
 [settings]

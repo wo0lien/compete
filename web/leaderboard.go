@@ -42,7 +42,7 @@ func (s *Server) raceData(groupID int64) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"Track": track(se), "Season": se, "GroupID": groupID}, nil
+	return map[string]any{"Track": track(se), "Season": se, "FinalNames": strings.Join(se.Finishers, ", "), "GroupID": groupID}, nil
 }
 
 func (s *Server) leaderboard(w http.ResponseWriter, r *http.Request, u store.User) {
