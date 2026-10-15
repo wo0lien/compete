@@ -59,6 +59,7 @@
     <fieldset class="game-rows"><legend>{{t "settings.season_length"}}</legend>
       {{$d := .SeasonDays}}{{range .SeasonLengths}}<label class="game-row"><input type="radio" name="days" value="{{.}}"{{if eq . $d}} checked{{end}}> {{t (print "settings.season_" .)}}</label>{{end}}
     </fieldset>
+    {{with .SeasonError}}<p class="error" role="alert">{{.}}</p>{{end}}
     <p class="muted">{{t "settings.season_next"}}</p>
     <button class="btn wide">{{t "common.save"}}</button>
   </form>

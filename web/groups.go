@@ -129,12 +129,12 @@ func (s *Server) settings(w http.ResponseWriter, r *http.Request, u store.User) 
 		s.oops(w, r, err)
 		return
 	}
-	s.settingsPage(w, r, u, g, http.StatusOK, ids, "")
+	s.settingsPage(w, r, u, g, http.StatusOK, ids, "", "")
 }
 
 // settingsPage renders the group's settings with ticked as the games form's
-// ticks and gamesErr under it (a refused save shows what was posted).
-func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request, u store.User, g store.Group, status int, ticked []string, gamesErr string) {
+// ticks, gamesErr and seasonErr under their forms (a refused save shows what was posted).
+func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request, u store.User, g store.Group, status int, ticked []string, gamesErr, seasonErr string) {
 	members, err := s.store.Members(g.ID)
 	if err != nil {
 		s.oops(w, r, err)
@@ -154,7 +154,7 @@ func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request, u store.Us
 	}
 	s.render(w, r, status, "settings.html", map[string]any{
 		"Group": g, "Members": members, "Me": u.ID,
-		"InviteURL": base + "/join/" + g.InviteCode, "Picks": picks(ticked), "GamesError": gamesErr,
+		"InviteURL": base + "/join/" + g.InviteCode, "Picks": picks(ticked), "GamesError": gamesErr, "SeasonError": seasonErr,
 		"SeasonDays": days, "SeasonLengths": []int{3, 7, 14},
 	})
 }
@@ -168,7 +168,7 @@ func (s *Server) setGames(w http.ResponseWriter, r *http.Request, u store.User) 
 	r.ParseForm()
 	err := s.store.SetGroupGames(g.ID, r.Form["game"])
 	if errors.Is(err, store.ErrNoGames) {
-		s.settingsPage(w, r, u, g, http.StatusUnprocessableEntity, r.Form["game"], errText(r, err))
+		s.settingsPage(w, r, u, g, http.StatusUnprocessableEntity, r.Form["game"], errText(r, err), "")
 		return
 	}
 	if err != nil {
@@ -187,7 +187,12 @@ func (s *Server) setSeason(w http.ResponseWriter, r *http.Request, u store.User)
 	days, _ := strconv.Atoi(r.FormValue("days"))
 	err := s.store.SetSeasonDays(g.ID, days)
 	if errors.Is(err, store.ErrSeasonDays) {
-		http.Error(w, errText(r, err), http.StatusUnprocessableEntity)
+		ids, gerr := s.store.GroupGames(g.ID)
+		if gerr != nil {
+			s.oops(w, r, gerr)
+			return
+		}
+		s.settingsPage(w, r, u, g, http.StatusUnprocessableEntity, ids, "", errText(r, err))
 		return
 	}
 	if err != nil {
