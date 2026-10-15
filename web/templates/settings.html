@@ -56,8 +56,8 @@
     <button class="btn wide">{{t "common.save"}}</button>
   </form>
   <form method="post" action="/g/{{.Group.ID}}/season" class="stack">
-    <fieldset><legend>{{t "settings.season_length"}}</legend>
-      {{$d := .SeasonDays}}{{range .SeasonLengths}}<label><input type="radio" name="days" value="{{.}}"{{if eq . $d}} checked{{end}}> {{t (print "settings.season_" .)}}</label>{{end}}
+    <fieldset class="game-rows"><legend>{{t "settings.season_length"}}</legend>
+      {{$d := .SeasonDays}}{{range .SeasonLengths}}<label class="game-row"><input type="radio" name="days" value="{{.}}"{{if eq . $d}} checked{{end}}> {{t (print "settings.season_" .)}}</label>{{end}}
     </fieldset>
     <p class="muted">{{t "settings.season_next"}}</p>
     <button class="btn wide">{{t "common.save"}}</button>

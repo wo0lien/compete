@@ -27,6 +27,14 @@ func TestTrack(t *testing.T) {
 	if want := map[string]int{"#a": 8, "#b": 7, "#c": 4, "#d": 0, "#e": 8}; !reflect.DeepEqual(where, want) {
 		t.Fatalf("positions = %v, want %v", where, want)
 	}
+	// Cells show the points needed to stand on them, so the legend matches the track.
+	var labels []string
+	for _, c := range track(store.Season{N: 53})[1:8] {
+		labels = append(labels, c.Label)
+	}
+	if want := []string{"7", "14", "20", "27", "34", "40", "47"}; !reflect.DeepEqual(labels, want) {
+		t.Fatalf("labels = %v, want %v", labels, want)
+	}
 }
 
 func TestLeaderboardHistoryBoardPages(t *testing.T) {

@@ -17,11 +17,12 @@ type trackCell struct {
 }
 
 // track lays the season's racers on 9 cells, GO to ★. Positions are absolute:
-// points × 8 / N, and only those who reached N stand on ★.
+// points × 8 / N, and only those who reached N stand on ★. Each cell is labeled
+// with the fewest points that stand on it, ⌈i × N / 8⌉.
 func track(se store.Season) []trackCell {
 	cells := make([]trackCell, 9)
 	for i := range cells {
-		cells[i].Label = strconv.Itoa(i)
+		cells[i].Label = strconv.Itoa((i*se.N + 7) / 8)
 	}
 	cells[0].Label, cells[0].Class = "GO", "start"
 	cells[8].Label, cells[8].Class = "★", "goal"
