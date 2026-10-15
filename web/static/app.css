@@ -163,6 +163,7 @@ label.game-row { cursor: pointer; } /* the picker; members' read-only rows are n
 .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; font-weight: 800; }
 .legend span { display: flex; align-items: center; gap: 4px; }
 .legend .pawn { width: 16px; height: 16px; }
+.legend.past { margin: 0; padding: 0; list-style: none; }
 
 /* a stats table never pushes the page wider: it scrolls inside its panel */
 .table-wrap { overflow-x: auto; margin: 0 -4px; }

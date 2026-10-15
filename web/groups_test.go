@@ -311,8 +311,9 @@ func TestSettingsSeasonLength(t *testing.T) {
 	if _, body := get(t, alice, ts.URL+"/g/1/settings"); !strings.Contains(body, `value="14" checked>`) {
 		t.Fatal("14 not saved")
 	}
-	if resp, _ := post(t, alice, ts.URL+"/g/1/season", url.Values{"days": {"5"}}); resp.StatusCode != http.StatusUnprocessableEntity {
-		t.Fatalf("save 5 = %d, want 422", resp.StatusCode)
+	if resp, body := post(t, alice, ts.URL+"/g/1/season", url.Values{"days": {"5"}}); resp.StatusCode != http.StatusUnprocessableEntity ||
+		!strings.Contains(body, `action="/g/1/season"`) || !strings.Contains(body, "Pick short, normal or long.") {
+		t.Fatalf("save 5 = %d, want 422 with the settings page and its error:\n%s", resp.StatusCode, body)
 	}
 	if resp, _ := post(t, bob, ts.URL+"/g/1/season", url.Values{"days": {"3"}}); resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("member save = %d, want 403", resp.StatusCode)
