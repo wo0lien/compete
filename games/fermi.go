@@ -10,8 +10,8 @@ import (
 
 var (
 	fermiHead  = regexp.MustCompile(`^Fermi · No\. (\d+)`)
-	fermiScore = regexp.MustCompile(`(?m)^(\d+(?:\.\d+)?)× score`)
-	fermiRow   = regexp.MustCompile(`(?m)^\d\d +\d+(?:\.\d+)?×$`)
+	fermiScore = regexp.MustCompile(`(?m)^(\d[\d,]*(?:\.\d+)?)× score`)
+	fermiRow   = regexp.MustCompile(`(?m)^\d\d +\d[\d,]*(?:\.\d+)?×$`) // big misses print 354,294×
 )
 
 var fermi = Game{ID: "fermi", Name: "Fermi", URL: "https://fermi.gg", Lang: "en",
@@ -19,7 +19,7 @@ var fermi = Game{ID: "fermi", Name: "Fermi", URL: "https://fermi.gg", Lang: "en"
 	today: daily("America/New_York", "2026-07-27")}
 
 // parseFermi: the score is how far off the guesses were, as a multiple of the
-// answers (geometric mean of the three, ≥ 1×), stored in hundredths. Fermi
+// answers (geometric mean of the three, each capped at 1000×; ≥ 1×), stored in hundredths. Fermi
 // shows 3 significant digits, so hundredths keep every digit.
 func parseFermi(text string) []Result {
 	h := fermiHead.FindStringSubmatch(text)
@@ -27,7 +27,7 @@ func parseFermi(text string) []Result {
 	if h == nil || s == nil {
 		return nil
 	}
-	f, _ := strconv.ParseFloat(s[1], 64) // regexp-validated
+	f, _ := strconv.ParseFloat(strings.ReplaceAll(s[1], ",", ""), 64) // regexp-validated
 	grid := strings.Join(fermiRow.FindAllString(text, -1), "\n")
 	return []Result{{Game: "fermi", PuzzleID: atoi(h[1]), Score: new(int(math.Round(f * 100))), Detail: map[string]any{"grid": grid}}}
 }
