@@ -3,6 +3,16 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.15"
+date = "2026-10-15"
+en = [
+  "The race track now shows points on each square, matching the scores under it, and the season length picker in Settings is easier to tap on a phone.",
+]
+fr = [
+  "La piste de la course affiche maintenant les points sur chaque case, comme les scores en dessous, et le choix de la durée de saison dans les réglages se touche plus facilement sur téléphone.",
+]
+
+[[release]]
 version = "v0.1.14"
 date = "2026-10-14"
 en = [
