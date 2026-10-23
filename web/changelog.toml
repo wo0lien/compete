@@ -3,6 +3,16 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.17"
+date = "2026-10-24"
+en = [
+  "A group's page shows only the games it plays, and pawns no longer step back when someone joins.",
+]
+fr = [
+  "La page d'un groupe n'affiche que ses jeux, et les pions ne reculent plus quand quelqu'un rejoint le groupe.",
+]
+
+[[release]]
 version = "v0.1.16"
 date = "2026-10-15"
 en = [
