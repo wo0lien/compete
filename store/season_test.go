@@ -143,19 +143,34 @@ func TestSeasonJoinMidSeason(t *testing.T) {
 		c.add(t, u, res("tusmo", "", 70, new(3), nil))
 	}
 	c.s.Now = func() time.Time { return day(1) }
-	c.s.JoinByCode(c.dave.ID, c.g.InviteCode)
-	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, map[string]int{"alice": 1, "bob": 1, "carol": 1, "dave": 0}) {
-		t.Fatalf("dave joined after #70: %v, want #70 unchanged", got)
-	}
 	c.add(t, c.alice, res("tusmo", "", 71, new(2), nil))
 	c.add(t, c.bob, res("tusmo", "", 71, new(3), nil))
 	c.add(t, c.carol, res("tusmo", "", 71, new(4), nil))
-	if got := points3(t, mustSeason(t, c)); got["alice"] != 1 {
-		t.Fatalf("open #71 without dave: alice %d, want #71 waiting for dave", got["alice"])
+	want := map[string]int{"alice": 4, "bob": 3, "carol": 2} // #71 counts early: all three played
+	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, want) {
+		t.Fatalf("open #71, all played: %v, want %v", got, want)
+	}
+	// Joining counts from the next day: today's puzzles neither wait for dave
+	// nor score him as beaten, so nobody's pawn steps back.
+	c.s.JoinByCode(c.dave.ID, c.g.InviteCode)
+	want["dave"] = 0
+	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, want) {
+		t.Fatalf("dave joined on #71's day: %v, want %v", got, want)
 	}
 	c.s.Now = func() time.Time { return day(2) }
-	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, map[string]int{"alice": 5, "bob": 4, "carol": 3, "dave": 0}) {
-		t.Fatalf("closed #71: %v, want dave beaten by all", got)
+	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, want) {
+		t.Fatalf("closed #71: %v, want %v (dave not beaten on his join day)", got, want)
+	}
+	c.add(t, c.alice, res("tusmo", "", 72, new(2), nil))
+	c.add(t, c.bob, res("tusmo", "", 72, new(3), nil))
+	c.add(t, c.carol, res("tusmo", "", 72, new(4), nil))
+	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, want) {
+		t.Fatalf("open #72 without dave: %v, want #72 waiting for dave", got)
+	}
+	c.s.Now = func() time.Time { return day(3) }
+	want = map[string]int{"alice": 8, "bob": 6, "carol": 4, "dave": 0}
+	if got := points3(t, mustSeason(t, c)); !reflect.DeepEqual(got, want) {
+		t.Fatalf("closed #72: %v, want %v (dave beaten by all)", got, want)
 	}
 }
 

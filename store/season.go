@@ -214,7 +214,8 @@ func (s *Store) startSeason(groupID int64, start string, n int) error {
 // counted returns the puzzles that count in a season starting on start: one
 // per game a day (its MainVariant), of the group's games, on or after start.
 // A result scores only if pasted before its puzzle closed; a member counts on
-// puzzles from the day they joined. A puzzle counts once closed, or earlier
+// puzzles from the day after they joined, so joining doesn't take points back
+// (from the start if they were in by then). A puzzle counts once closed, or earlier
 // when every member it counts has played.
 func (s *Store) counted(groupID int64, start string, now time.Time) ([]scored, error) {
 	// A puzzle of day start opens at the earliest at UTC+14, the day before in
@@ -303,9 +304,11 @@ func (s *Store) counted(groupID int64, start string, now time.Time) ([]scored, e
 			}
 			ranks[e.user] = rk
 		}
-		members := len(ranks) // who played, plus who was in the group that day
+		members := len(ranks) // who played, plus who was in the group before that day
 		for u, j := range joined {
-			if _, played := ranks[u]; !played && j <= day {
+			// ponytail: a join on the start day itself still counts that day, so it can
+			// take early points back; track early-counted puzzles if that ever matters.
+			if _, played := ranks[u]; !played && (j < day || j <= start) {
 				members++
 			}
 		}
