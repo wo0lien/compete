@@ -24,7 +24,7 @@ func twoPlayers(t *testing.T) (*httptest.Server, *http.Client, *http.Client) {
 	alice, bob := newClient(t), newClient(t)
 	signup(t, ts, alice, "alice")
 	signup(t, ts, bob, "bob")
-	post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
+	post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo", "songless"}})
 	gs, _ := st.GroupsOf(1)
 	post(t, bob, ts.URL+"/join/"+gs[0].InviteCode, nil)
 	return ts, alice, bob

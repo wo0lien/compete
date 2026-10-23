@@ -150,7 +150,7 @@ func eqInt(a, b *int) bool {
 	return a == nil && b == nil || a != nil && b != nil && *a == *b
 }
 
-// CurrentBoards returns, for each game/variant played in the group, the board of
+// CurrentBoards returns, for each game/variant of the group's games played in it, the board of
 // today's puzzle, from the game's schedule: it shows before anyone has played it.
 // Without a schedule, "current" is the newest puzzle_id among members' results.
 // A newer id than today's (today+1, a player already past midnight) wins; one
@@ -159,6 +159,7 @@ func (s *Store) CurrentBoards(groupID, viewerID int64) ([]Board, error) {
 	rows, err := s.db.Query(`
 		SELECT r.game, r.variant, MAX(r.puzzle_id) FROM results r
 		JOIN memberships m ON m.user_id = r.user_id AND m.group_id = ?
+		JOIN group_games gg ON gg.group_id = m.group_id AND gg.game = r.game
 		GROUP BY r.game, r.variant ORDER BY r.game, r.variant`, groupID)
 	if err != nil {
 		return nil, err
