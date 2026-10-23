@@ -124,10 +124,12 @@ func TestRevealIsPerVariant(t *testing.T) { // Review Focus 4
 
 func TestCurrentBoardsAndPuzzles(t *testing.T) {
 	c := newCrew(t)
+	c.s.SetGroupGames(c.g.ID, []string{"tusmo", "travle"})
 	c.add(t, c.bob, res("tusmo", "", 69, new(3), nil))
 	c.add(t, c.carol, res("tusmo", "", 70, new(3), nil))
 	c.add(t, c.bob, res("travle", "usa", 1205, new(0), nil))
-	c.add(t, c.dave, res("tusmo", "", 71, new(1), nil)) // outsider must not move "current"
+	c.add(t, c.dave, res("tusmo", "", 71, new(1), nil))       // outsider must not move "current"
+	c.add(t, c.bob, res("songless", "All", 404, new(3), nil)) // not a game of the group: no board
 	bs, err := c.s.CurrentBoards(c.g.ID, c.alice.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -239,6 +241,7 @@ func TestFuturePuzzle(t *testing.T) {
 // A variant without a schedule keeps "newest id seen".
 func TestCurrentBoardUnscheduled(t *testing.T) {
 	c := newCrew(t)
+	c.s.SetGroupGames(c.g.ID, []string{"travle"})
 	c.add(t, c.alice, res("travle", "challenge", 139, new(0), nil))
 	c.add(t, c.bob, res("travle", "challenge", 140, new(1), nil))
 	bs, _ := c.s.CurrentBoards(c.g.ID, c.alice.ID)
