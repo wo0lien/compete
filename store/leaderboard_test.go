@@ -12,6 +12,8 @@ func TestLeaderboardCountsClosedPuzzlesOnly(t *testing.T) { // Review Focus 5
 	c.add(t, c.bob, res("tusmo", "", 70, new(3), nil), res("tusmo", "", 71, new(4), nil))
 	c.add(t, c.dave, res("tusmo", "", 70, new(1), nil))         // outsider: must not steal alice's win
 	c.add(t, c.carol, res("songless", "All", 404, new(1), nil)) // only an open puzzle: no stats yet
+	// not a game of the group: no stats at all
+	c.add(t, c.bob, res("travle", "usa", 1, new(0), nil), res("travle", "usa", 2, new(0), nil))
 
 	got, err := c.s.Leaderboard(c.g.ID)
 	if err != nil {
