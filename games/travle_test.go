@@ -12,6 +12,16 @@ func TestTravleFixtures(t *testing.T) {
 	checkFixture(t, "travle/fail.txt", []Result{{
 		Game: "travle", PuzzleID: 1392, Tiebreak: new(3), Detail: map[string]any{"grid": "🟥🟥🟥🟥🟥🟥🟥🟧✅✅"},
 	}})
+	// Perfect beats +0: every guess was the next country of the best route.
+	checkFixture(t, "travle/perfect.txt", []Result{{
+		Game: "travle", PuzzleID: 1412, Score: new(-1), Detail: map[string]any{"grid": "✅✅✅"},
+	}})
+	if got := travle.ShowScore(new(-1)); got != "Perfect" {
+		t.Errorf("ShowScore(-1) = %q, want Perfect", got)
+	}
+	if got := travle.ShowScore(new(0)); got != "+0" {
+		t.Errorf("ShowScore(0) = %q, want +0", got)
+	}
 }
 
 // Assumed variant format (#travle_<code>); replace with a real fixture once one is shared.

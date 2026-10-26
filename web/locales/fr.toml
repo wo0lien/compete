@@ -218,6 +218,7 @@ already_submitted = "Déjà envoyé : {{.Board}}"
 
 [score]
 fail = "raté"
+perfect = "parfait"
 away = "à {{.N}} pays"
 
 [push]

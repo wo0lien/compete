@@ -160,11 +160,14 @@ func errText(r *http.Request, err error) string {
 }
 
 // scoreText shows a score; games keep language-neutral formats ("3/6", "+2"),
-// only Travle's failed result is a word.
+// only failed results and Travle's Perfect are words.
 func scoreText(lang, id string, score *int) string {
 	g, _ := games.ByID(id)
 	if score == nil && g.Fail == "fail" {
 		return tr(lang, "score.fail")
+	}
+	if id == "travle" && *score < 0 {
+		return tr(lang, "score.perfect")
 	}
 	return g.ShowScore(score)
 }
