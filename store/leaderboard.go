@@ -19,14 +19,13 @@ type GameStats struct {
 	Stats         []Stat
 }
 
-// closedRanked ranks every result of group ?1 on closed puzzles only (older than
-// the newest puzzle per game/variant). ?2 is NULL for all games, or a JSON array
-// of game ids to keep.
+// closedRanked ranks every result of group ? on the group's games, closed puzzles
+// only (older than the newest puzzle per game/variant).
 const closedRanked = `
 	WITH gr AS (
 		SELECT r.user_id, r.game, r.variant, r.puzzle_id, r.score, r.tiebreak
-		FROM results r JOIN memberships m ON m.user_id = r.user_id AND m.group_id = ?1
-		WHERE ?2 IS NULL OR r.game IN (SELECT value FROM json_each(?2))
+		FROM results r JOIN memberships m ON m.user_id = r.user_id AND m.group_id = ?
+		JOIN group_games gg ON gg.group_id = m.group_id AND gg.game = r.game
 	),
 	cur AS (SELECT game, variant, MAX(puzzle_id) AS open_id FROM gr GROUP BY game, variant),
 	ranked AS (
@@ -48,7 +47,7 @@ func (s *Store) Leaderboard(groupID int64) ([]GameStats, error) {
 		FROM ranked JOIN users u ON u.id = ranked.user_id
 		GROUP BY ranked.game, ranked.variant, ranked.user_id
 		ORDER BY ranked.game, ranked.variant, wins DESC, avg_score IS NULL, avg_score,
-		         u.username COLLATE NOCASE`, groupID, nil)
+		         u.username COLLATE NOCASE`, groupID)
 	if err != nil {
 		return nil, err
 	}
