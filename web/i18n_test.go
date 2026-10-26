@@ -232,3 +232,13 @@ func TestFrenchConfirmWording(t *testing.T) {
 		t.Fatalf("French wording: %q / %q / %q", title, back, link)
 	}
 }
+
+// Travle's Perfect is a word, translated like a fail; other scores stay "+N".
+func TestTravlePerfectText(t *testing.T) {
+	if got := scoreText("fr", "travle", new(-1)); got != "parfait" {
+		t.Fatalf("scoreText(fr, Perfect) = %q, want parfait", got)
+	}
+	if got := scoreText("fr", "travle", new(0)); got != "+0" {
+		t.Fatalf("scoreText(fr, +0) = %q, want +0", got)
+	}
+}

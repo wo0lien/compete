@@ -1,31 +1,44 @@
 package games
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
 )
 
-var travleRe = regexp.MustCompile(`^#travle(?:_(\w+))? #(\d+) (?:\+(\d+)|\((\d+) away\))`)
+var travleRe = regexp.MustCompile(`^#travle(?:_(\w+))? #(\d+) (?:\+(\d+)( \(Perfect\))?|\((\d+) away\))`)
 
 var travle = Game{ID: "travle", Name: "Travle", URL: "https://travle.earth", Lang: "en",
-	Tags: []string{"geography", "english"}, ScoreFmt: "+%d", Fail: "fail", TiebreakKind: "away", Parse: parseTravle,
+	Tags: []string{"geography", "english"}, Fail: "fail", TiebreakKind: "away", Parse: parseTravle, show: showTravle,
 	today: travleToday}
 
-// parseTravle: "+N" is a win with N guesses over the optimal path; "(N away)"
-// is a fail N countries short, which ranks fails by closeness.
+// parseTravle: "+N" is a win with N guesses over the optimal path, and
+// "+0 (Perfect)" (each guess the next country of the route) is stored as -1 to
+// rank above +0; "(N away)" is a fail N countries short, which ranks fails by
+// closeness.
 func parseTravle(text string) []Result {
 	m := travleRe.FindStringSubmatch(text)
 	if m == nil {
 		return nil
 	}
 	r := Result{Game: "travle", Variant: m[1], PuzzleID: atoi(m[2]), Detail: map[string]any{"grid": gridOf(text)}}
-	if m[3] != "" {
+	switch {
+	case m[4] != "":
+		r.Score = new(-1)
+	case m[3] != "":
 		r.Score = new(atoi(m[3]))
-	} else {
-		r.Tiebreak = new(atoi(m[4]))
+	default:
+		r.Tiebreak = new(atoi(m[5]))
 	}
 	return []Result{r}
+}
+
+func showTravle(score int) string {
+	if score < 0 {
+		return "Perfect"
+	}
+	return fmt.Sprintf("+%d", score)
 }
 
 // Travle resets at each player's own midnight; Paris stands in for everyone.

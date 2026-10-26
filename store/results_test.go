@@ -111,6 +111,17 @@ func TestBoardOrdersTiebreakThenFails(t *testing.T) {
 	}
 }
 
+// Travle's Perfect is stored as -1, so it ranks above a plain +0.
+func TestBoardPerfectBeatsZero(t *testing.T) {
+	c := newCrew(t)
+	c.add(t, c.alice, res("travle", "challenge", 140, new(0), nil))
+	c.add(t, c.bob, res("travle", "challenge", 140, new(-1), nil))
+	b, _ := c.s.Board(c.g.ID, c.alice.ID, "travle", "challenge", 140)
+	if got := names(b); got[0] != "bob" || got[1] != "alice" {
+		t.Fatalf("order = %v, want [bob alice]", got)
+	}
+}
+
 func TestRevealIsPerVariant(t *testing.T) { // Review Focus 4
 	c := newCrew(t)
 	c.add(t, c.bob, res("songless", "All", 404, new(1), nil), res("songless", "Rock", 404, new(1), nil))

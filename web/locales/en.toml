@@ -218,6 +218,7 @@ already_submitted = "Already submitted {{.Board}}"
 
 [score]
 fail = "fail"
+perfect = "perfect"
 away = "{{.N}} away"
 
 [push]
