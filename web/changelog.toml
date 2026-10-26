@@ -3,6 +3,16 @@
 # release.yml refuses a vX.Y.Z tag without its entry here.
 
 [[release]]
+version = "v0.1.18"
+date = "2026-10-26"
+en = [
+  "A perfect Travle (every country in the best order) now ranks above every other win, and the leaderboard lists only the group's games.",
+]
+fr = [
+  "Un Travle parfait (chaque pays dans le meilleur ordre) passe désormais devant toutes les autres victoires, et le classement n'affiche que les jeux du groupe.",
+]
+
+[[release]]
 version = "v0.1.17"
 date = "2026-10-24"
 en = [
