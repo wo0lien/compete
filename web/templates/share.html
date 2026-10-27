@@ -12,6 +12,7 @@
 <section class="panel brag">
   <span class="medal big"><img src="{{badgeImg $b.Kind}}" alt="{{t "badges.alt_lonely"}}"></span>
   <h1>{{t (print "badge." $b.Kind ".title")}}</h1>
+  <p class="quote">{{t (print "badge." $b.Kind ".quote")}}</p>
   <p class="who">{{template "pawn" $b.Pawn}}{{$b.Username}} · {{$b.GroupName}} · {{date $b.Day}}</p>
   <p>{{t (print "badge." $b.Kind ".quip") "Group" $b.GroupName "Day" (date $b.Day)}}</p>
 </section>

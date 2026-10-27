@@ -11,13 +11,14 @@ import (
 	"github.com/wo0lien/compete/store"
 )
 
-// badgeKind is how a badge kind looks; its title and quip are the messages
-// badge.<ID>.title and badge.<ID>.quip.
+// badgeKind is how a badge kind looks; its name, quote and quip are the
+// messages badge.<ID>.title, .quote and .quip. Its link preview picture is
+// badges/<ID>-og-<lang>.png, one per UI language.
 type badgeKind struct {
-	ID, Image, OGImage string // static paths, for asset()
+	ID, Image string // Image: static path, for asset()
 }
 
-var badgeKinds = []badgeKind{{store.KindLonely, "badges/lonely.svg", "badges/lonely-og.png"}}
+var badgeKinds = []badgeKind{{store.KindLonely, "badges/lonely.svg"}}
 
 func kindOf(id string) badgeKind {
 	for _, k := range badgeKinds {
@@ -73,11 +74,11 @@ func (s *Server) sharePage(w http.ResponseWriter, r *http.Request) {
 		data["Member"] = err == nil
 	}
 	lang, base := cmp.Or(b.Lang, langs[0].String()), s.baseURL(r)
-	title := tr(lang, "badge."+b.Kind+".short") // chat apps cut long titles
+	title := tr(lang, "badge."+b.Kind+".title")
 	data["OG"] = map[string]string{
 		"Title":       tr(lang, "badges.og_title", "Name", b.Username, "Title", title),
 		"Description": tr(lang, "badge."+b.Kind+".quip", "Group", b.GroupName, "Day", shortDate(lang, b.Day)),
-		"Image":       base + "/static/" + kindOf(b.Kind).OGImage,
+		"Image":       base + "/static/badges/" + kindOf(b.Kind).ID + "-og-" + lang + ".png",
 		"URL":         base + "/b/" + b.Token,
 	}
 	s.render(w, r, http.StatusOK, "share.html", data)

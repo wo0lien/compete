@@ -305,8 +305,8 @@ new = "New group"
 name = "Group name"
 
 [badge.lonely]
-title = "À vaincre sans péril, on triomphe sans gloire"
-short = "À vaincre sans péril…"
+title = "Lonely victory"
+quote = "To win without risk is to triumph without glory."
 quip = "The only one in {{.Group}} to play on {{.Day}}. Gold medal, empty stands."
 
 [badges]

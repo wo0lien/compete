@@ -253,5 +253,6 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 /* the share page: one big medallion card */
 .brag { align-items: center; text-align: center; gap: 12px; padding: 24px 18px 20px; }
 .medal.big { width: 130px; height: 130px; margin: 10px 0 18px; border-width: 4px; box-shadow: 0 0 0 7px var(--sun), 0 0 0 10px var(--ink), 0 8px 0 8px var(--ink); }
-.brag h1 { font-size: 26px; line-height: 1.15; }
+.brag h1 { font-size: 28px; line-height: 1.15; }
+.brag .quote { margin-top: -6px; font-style: italic; }
 .brag .who { display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; }

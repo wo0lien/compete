@@ -6,10 +6,10 @@
 version = "v0.1.19"
 date = "2026-10-27"
 en = [
-  "Badges! Be the only one of your group to play on a day and earn « À vaincre sans péril… ». See everyone's badges in the new Badges tab and brag with a link.",
+  "Badges! Be the only one of your group to play on a day and earn « Lonely victory ». See everyone's badges in the new Badges tab and brag with a link.",
 ]
 fr = [
-  "Des badges ! Sois le ou la seul·e de ton groupe à jouer un jour et gagne « À vaincre sans péril… ». Retrouve les badges de tous dans le nouvel onglet Badges et frime avec un lien.",
+  "Des badges ! Sois le ou la seul·e de ton groupe à jouer un jour et gagne « Victoire solitaire ». Retrouve les badges de tous dans le nouvel onglet Badges et frime avec un lien.",
 ]
 
 [[release]]

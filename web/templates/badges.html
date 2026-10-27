@@ -8,7 +8,7 @@
     {{range .Shelf}}<span class="slot">
       <span class="medal{{if not .N}} locked{{end}}"><img src="{{badgeImg .Kind}}" alt=""></span>
       {{if .N}}<span class="count">×{{.N}}</span>{{end}}
-      <span>{{t (print "badge." .Kind ".short")}}</span>
+      <span>{{t (print "badge." .Kind ".title")}}</span>
     </span>{{end}}
   </div>
 </section>
@@ -20,7 +20,7 @@
   <ul class="hist">
     {{range .}}{{$url := print $.Base "/b/" .Token}}<li>
       {{template "medal" .Kind}}
-      <div class="grow"><a href="/b/{{.Token}}"><b>{{t (print "badge." .Kind ".short")}}</b></a><time datetime="{{.Day}}">{{date .Day}}</time></div>
+      <div class="grow"><a href="/b/{{.Token}}"><b>{{t (print "badge." .Kind ".title")}}</b></a><time datetime="{{.Day}}">{{date .Day}}</time></div>
       <button type="button" class="pill" data-share="{{$url}}" hidden>{{t "settings.share_link"}}</button>
       <button type="button" class="pill" data-copy="{{$url}}" data-copied="{{t "settings.copied"}}" hidden>{{t "settings.copy"}}</button>
     </li>{{end}}

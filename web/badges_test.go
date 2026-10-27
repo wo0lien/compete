@@ -44,7 +44,7 @@ func TestBadgesTab(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("badges tab = %d", resp.StatusCode)
 	}
-	for _, want := range []string{"À vaincre sans péril…", "×1", "/static/badges/lonely.svg", `href="/b/`, `aria-current="page">Badges`, "medal locked", "Tue 6 Oct"} {
+	for _, want := range []string{"Lonely victory", "×1", "/static/badges/lonely.svg", `href="/b/`, `aria-current="page">Badges`, "medal locked", "Tue 6 Oct"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("badges tab lacks %q", want)
 		}
@@ -85,7 +85,7 @@ func TestShortDate(t *testing.T) {
 func TestTodayNewsRow(t *testing.T) {
 	ts, _, alice, bob := badgeGroup(t)
 	_, body := get(t, alice, ts.URL+"/g/1")
-	if !strings.Contains(body, `class="news-row" href="/g/1/badges"`) || !strings.Contains(body, "À vaincre sans péril, on triomphe sans gloire") {
+	if !strings.Contains(body, `class="news-row" href="/g/1/badges"`) || !strings.Contains(body, "Lonely victory") {
 		t.Fatal("alice's Today lacks the new-badge row")
 	}
 	if _, body := get(t, bob, ts.URL+"/g/1"); strings.Contains(body, "news-row") {
@@ -134,9 +134,9 @@ func TestShareLoggedOutOG(t *testing.T) {
 		t.Fatalf("share = %d, want 200 without login", resp.StatusCode)
 	}
 	for _, want := range []string{
-		`<meta property="og:title" content="alice a gagné « À vaincre sans péril… »">`,
+		`<meta property="og:title" content="alice a gagné « Victoire solitaire »">`,
 		`<meta property="og:description" content="Seul·e à jouer le mar. 6 oct. dans Les Potes. Médaille d&#39;or, tribunes vides.">`,
-		`<meta property="og:image" content="` + ts.URL + `/static/badges/lonely-og.png">`,
+		`<meta property="og:image" content="` + ts.URL + `/static/badges/lonely-og-fr.png">`,
 		`<meta property="og:url" content="` + ts.URL + `/b/` + token + `">`,
 		`<meta name="twitter:card" content="summary_large_image">`,
 		`href="/login?next=%2fb%2f` + token + `"`,
@@ -200,11 +200,19 @@ func TestBadgeErrorKeepsPagesUp(t *testing.T) {
 	}
 }
 
-// The preview title uses the short quote: chat apps cut long titles.
-func TestShareOGTitleShort(t *testing.T) {
+// The badge has a name per language; the quote is its subtitle, the same
+// reference in each language (Corneille, Le Cid).
+func TestShareNameAndQuote(t *testing.T) {
 	ts, st, _, _ := badgeGroup(t)
 	_, body := get(t, newClient(t), ts.URL+"/b/"+shareToken(t, st))
-	if !strings.Contains(body, `<meta property="og:title" content="alice earned « À vaincre sans péril… »">`) {
-		t.Error("og:title should use the short quote")
+	for _, want := range []string{
+		`<meta property="og:title" content="alice earned « Lonely victory »">`,
+		`<meta property="og:image" content="` + ts.URL + `/static/badges/lonely-og-en.png">`,
+		"<h1>Lonely victory</h1>",
+		"To win without risk is to triumph without glory.",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("share page lacks %s", want)
+		}
 	}
 }
