@@ -104,3 +104,67 @@ func TestHomeGroupPill(t *testing.T) {
 		t.Fatal("after opening Badges, Home still shows news")
 	}
 }
+
+func shareToken(t *testing.T, st *store.Store) string {
+	t.Helper()
+	if err := st.AwardBadges(1); err != nil {
+		t.Fatal(err)
+	}
+	bs, _ := st.BadgesOf(1, 1)
+	if len(bs) != 1 {
+		t.Fatalf("alice badges = %v, want 1", bs)
+	}
+	return bs[0].Token
+}
+
+// Review Focus 3: WhatsApp fetches the link with no cookie and no language.
+func TestShareLoggedOutOG(t *testing.T) {
+	ts, st, _, _ := badgeGroup(t)
+	st.SetLang(1, "fr")
+	token := shareToken(t, st)
+	resp, err := http.Get(ts.URL + "/b/" + token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := readAll(t, resp)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("share = %d, want 200 without login", resp.StatusCode)
+	}
+	for _, want := range []string{
+		`<meta property="og:title" content="alice a gagné « À vaincre sans péril, on triomphe sans gloire »">`,
+		`<meta property="og:description" content="Seul·e à jouer le mar. 6 oct. dans Les Potes. Médaille d&#39;or, tribunes vides.">`,
+		`<meta property="og:image" content="` + ts.URL + `/static/badges/lonely-og.png">`,
+		`<meta property="og:url" content="` + ts.URL + `/b/` + token + `">`,
+		`<meta name="twitter:card" content="summary_large_image">`,
+		`href="/login?next=%2fb%2f` + token + `"`,
+		"/static/badges/lonely.svg",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("share page lacks %s", want)
+		}
+	}
+	if strings.Contains(body, `href="/g/1`) {
+		t.Error("logged-out viewer gets a group link")
+	}
+}
+
+func TestShareMemberAndOutsider(t *testing.T) {
+	ts, st, _, bob := badgeGroup(t)
+	token := shareToken(t, st)
+	if _, body := get(t, bob, ts.URL+"/b/"+token); !strings.Contains(body, `href="/g/1/badges"`) {
+		t.Error("member lacks the link to the group's badges")
+	}
+	dave := newClient(t)
+	signup(t, ts, dave, "dave")
+	_, body := get(t, dave, ts.URL+"/b/"+token)
+	if strings.Contains(body, `href="/g/1`) || !strings.Contains(body, `class="btn go wide" href="/"`) {
+		t.Error("outsider should get Home, not the group")
+	}
+}
+
+func TestShareUnknownToken(t *testing.T) {
+	ts, _, _, _ := badgeGroup(t)
+	if resp, _ := get(t, newClient(t), ts.URL+"/b/nope"); resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("unknown token = %d, want 404", resp.StatusCode)
+	}
+}

@@ -148,6 +148,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /g/{id}/leaderboard", s.auth(s.leaderboard))
 	mux.HandleFunc("GET /g/{id}/history", s.auth(s.history))
 	mux.HandleFunc("GET /g/{id}/badges", s.auth(s.badgesPage))
+	mux.HandleFunc("GET /b/{token}", s.sharePage)
 	mux.HandleFunc("GET /g/{id}/board", s.auth(s.onePuzzle))
 	mux.HandleFunc("GET /account", s.auth(s.account))
 	mux.HandleFunc("POST /push/subscribe", s.auth(s.pushSubscribe))

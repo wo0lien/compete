@@ -1,6 +1,8 @@
 package web
 
 import (
+	"cmp"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -45,6 +47,39 @@ func (s *Server) baseURL(r *http.Request) string {
 		return "https://" + r.Host
 	}
 	return "http://" + r.Host
+}
+
+// sharePage is a badge's public page (/b/{token}): the brag link. It needs
+// no login, since chat apps fetch it for their preview without cookies; the
+// preview tags speak the earner's language, the page the viewer's.
+func (s *Server) sharePage(w http.ResponseWriter, r *http.Request) {
+	b, err := s.store.BadgeByToken(r.PathValue("token"))
+	if errors.Is(err, store.ErrNotFound) {
+		s.message(w, r, http.StatusNotFound, "msg.not_found", "badges.not_found")
+		return
+	}
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
+	data := map[string]any{"Badge": b, "Next": "/b/" + b.Token}
+	if u, ok := userFrom(r); ok {
+		_, err := s.store.GroupFor(u.ID, b.GroupID)
+		if err != nil && !errors.Is(err, store.ErrNotFound) {
+			s.oops(w, r, err)
+			return
+		}
+		data["Member"] = err == nil
+	}
+	lang, base := cmp.Or(b.Lang, langs[0].String()), s.baseURL(r)
+	title := tr(lang, "badge."+b.Kind+".title")
+	data["OG"] = map[string]string{
+		"Title":       tr(lang, "badges.og_title", "Name", b.Username, "Title", title),
+		"Description": tr(lang, "badge."+b.Kind+".quip", "Group", b.GroupName, "Day", shortDate(lang, b.Day)),
+		"Image":       base + "/static/" + kindOf(b.Kind).OGImage,
+		"URL":         base + "/b/" + b.Token,
+	}
+	s.render(w, r, http.StatusOK, "share.html", data)
 }
 
 // news is a member's unseen badges in a group, with the minis to draw: up
