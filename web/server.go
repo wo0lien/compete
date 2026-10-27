@@ -255,6 +255,15 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		s.oops(w, r, err)
 		return
 	}
+	ids := make([]int64, len(groups))
+	for i, g := range groups {
+		ids[i] = g.ID
+	}
+	nw, err := s.awardNews(u, ids, 2)
+	if err != nil {
+		s.oops(w, r, err)
+		return
+	}
 	// nothing left today (and not a new member): the paste box folds away
-	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "ToPlay": toPlay, "AllPlayed": played && len(toPlay) == 0})
+	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "News": nw, "ToPlay": toPlay, "AllPlayed": played && len(toPlay) == 0})
 }

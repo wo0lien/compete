@@ -317,6 +317,11 @@ none = "no badge yet"
 yours = "Your badges"
 yours_hint = "Newest first · share one to brag"
 yours_empty = "None yet. Be the only one to play on a day…"
+new_one = "New badge!"
+new_many = "{{.Count}} new badges!"
+since = "Since {{.Day}} · tap to see and share"
+pill_one = "New badge"
+pill_many = "{{.Count}} new"
 
 # group page tabs: four share a phone-width row, so labels stay short
 [tabs]

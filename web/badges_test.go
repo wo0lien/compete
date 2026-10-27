@@ -78,3 +78,29 @@ func TestShortDate(t *testing.T) {
 		t.Errorf("fr = %q", got)
 	}
 }
+
+func TestTodayNewsRow(t *testing.T) {
+	ts, _, alice, bob := badgeGroup(t)
+	_, body := get(t, alice, ts.URL+"/g/1")
+	if !strings.Contains(body, `class="news-row" href="/g/1/badges"`) || !strings.Contains(body, "À vaincre sans péril, on triomphe sans gloire") {
+		t.Fatal("alice's Today lacks the new-badge row")
+	}
+	if _, body := get(t, bob, ts.URL+"/g/1"); strings.Contains(body, "news-row") {
+		t.Fatal("bob sees alice's badge as his news")
+	}
+}
+
+func TestHomeGroupPill(t *testing.T) {
+	ts, st, alice, _ := badgeGroup(t)
+	_, body := get(t, alice, ts.URL+"/")
+	if !strings.Contains(body, `<a class="group-row" href="/g/1/badges">`) || !strings.Contains(body, "news-pill") {
+		t.Fatal("Home lacks the group's news pill linking to its badges")
+	}
+	later := st.Now().Add(time.Second)
+	st.Now = func() time.Time { return later }
+	get(t, alice, ts.URL+"/g/1/badges")
+	_, body = get(t, alice, ts.URL+"/")
+	if strings.Contains(body, "news-pill") || !strings.Contains(body, `<a class="group-row" href="/g/1">`) {
+		t.Fatal("after opening Badges, Home still shows news")
+	}
+}

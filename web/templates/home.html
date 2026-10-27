@@ -45,8 +45,12 @@
 {{end}}
 <section class="panel">
   <h2>{{t "home.your_groups"}}</h2>
-  <ul class="groups">
-    {{range .Groups}}<li><a href="/g/{{.ID}}">{{.Name}}</a></li>{{else}}<li class="muted">{{t "home.no_group"}}</li>{{end}}
+  <ul class="group-rows">
+    {{range .Groups}}{{$n := index $.News .ID}}<li><a class="group-row" href="/g/{{.ID}}{{if $n.Count}}/badges{{end}}">
+      <span class="name">{{.Name}}</span>
+      {{if $n.Count}}<span class="news-pill"><span class="minis">{{range $n.Minis}}{{template "medal" .}}{{end}}</span>{{if eq $n.Count 1}}{{t "badges.pill_one"}}{{else}}{{t "badges.pill_many" "Count" $n.Count}}{{end}}</span>{{end}}
+      <span class="go" aria-hidden="true">›</span>
+    </a></li>{{else}}<li class="muted">{{t "home.no_group"}}</li>{{end}}
   </ul>
   <a class="btn wide" href="/groups/new">{{t "groups.new"}}</a>
 </section>

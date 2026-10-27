@@ -230,3 +230,23 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 .hist .grow a { text-decoration: none; }
 .hist time { display: block; font-size: 13px; opacity: .7; }
 .pill { flex: none; min-height: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--sky-pale); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+/* new badges: one sun row on Today, a pill on Home's group rows */
+.minis { display: flex; flex: none; }
+.minis .medal { width: 36px; height: 36px; box-shadow: 0 0 0 2px #fff; }
+.minis .medal + .medal { margin-left: -14px; }
+.medal.more { display: grid; place-items: center; background: #fff; font-size: 13px; font-weight: 800; }
+.news-row { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 12px; border-radius: 16px; background: var(--sun); box-shadow: 0 5px 0 var(--sun-dark); text-decoration: none; }
+.news-row .txt { flex: 1; min-width: 0; line-height: 1.2; }
+.news-row .txt b { display: block; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: 17px; }
+.news-row .txt span { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.go { flex: none; font-size: 24px; font-weight: 800; }
+/* Home's groups: whole rows to tap, not underlined links */
+.group-rows { list-style: none; margin: 0 -14px; padding: 0; }
+.group-rows li + li { border-top: 2px dashed var(--line); }
+.group-rows li.muted { padding: 8px 14px; }
+.group-row { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 10px 8px 14px; text-decoration: none; }
+.group-row .name { flex: 1; min-width: 0; font-family: "Lilita One", system-ui, sans-serif; font-size: 20px; overflow-wrap: anywhere; }
+.group-row .go { opacity: .6; }
+.news-pill { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 999px; background: var(--sun); box-shadow: 0 2px 0 var(--sun-dark); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.news-pill .medal { width: 28px; height: 28px; }
+.news-pill .medal + .medal { margin-left: -12px; }

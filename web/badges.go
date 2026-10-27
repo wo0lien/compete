@@ -47,6 +47,41 @@ func (s *Server) baseURL(r *http.Request) string {
 	return "http://" + r.Host
 }
 
+// news is a member's unseen badges in a group, with the minis to draw: up
+// to max medallions, then "+More".
+type news struct {
+	store.Unseen
+	Minis []string // kinds, one per medallion
+	More  int
+}
+
+func newsOf(u store.Unseen, max int) news {
+	n := news{Unseen: u}
+	for range min(u.Count, max) {
+		n.Minis = append(n.Minis, u.Kind)
+	}
+	n.More = u.Count - len(n.Minis)
+	return n
+}
+
+// awardNews awards the groups' due badges and returns the user's news per group.
+func (s *Server) awardNews(u store.User, groups []int64, max int) (map[int64]news, error) {
+	for _, g := range groups {
+		if err := s.store.AwardBadges(g); err != nil {
+			return nil, err
+		}
+	}
+	unseen, err := s.store.Unseen(u.ID)
+	if err != nil {
+		return nil, err
+	}
+	out := map[int64]news{}
+	for g, n := range unseen {
+		out[g] = newsOf(n, max)
+	}
+	return out, nil
+}
+
 // shelf is one slot on a member's wall: a kind and how often they earned it.
 type shelf struct {
 	Kind string
