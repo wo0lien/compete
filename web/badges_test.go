@@ -1,15 +1,18 @@
 package web
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/wo0lien/compete/games"
 	"github.com/wo0lien/compete/store"
+	_ "modernc.org/sqlite"
 )
 
 // badgeGroup: alice, bob and carol joined group 1 (tusmo) three days before
@@ -131,7 +134,7 @@ func TestShareLoggedOutOG(t *testing.T) {
 		t.Fatalf("share = %d, want 200 without login", resp.StatusCode)
 	}
 	for _, want := range []string{
-		`<meta property="og:title" content="alice a gagné « À vaincre sans péril, on triomphe sans gloire »">`,
+		`<meta property="og:title" content="alice a gagné « À vaincre sans péril… »">`,
 		`<meta property="og:description" content="Seul·e à jouer le mar. 6 oct. dans Les Potes. Médaille d&#39;or, tribunes vides.">`,
 		`<meta property="og:image" content="` + ts.URL + `/static/badges/lonely-og.png">`,
 		`<meta property="og:url" content="` + ts.URL + `/b/` + token + `">`,
@@ -166,5 +169,42 @@ func TestShareUnknownToken(t *testing.T) {
 	ts, _, _, _ := badgeGroup(t)
 	if resp, _ := get(t, newClient(t), ts.URL+"/b/nope"); resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("unknown token = %d, want 404", resp.StatusCode)
+	}
+}
+
+// A broken badge evaluation is logged, never a 500 on Home or Today.
+func TestBadgeErrorKeepsPagesUp(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "test.db")
+	st, err := store.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st.Now = func() time.Time { return time.Date(2026, 10, 6, 12, 0, 0, 0, time.UTC) }
+	ts := httptest.NewServer(New(st, false, false))
+	t.Cleanup(func() { ts.Close(); st.Close() })
+	alice := newClient(t)
+	signup(t, ts, alice, "alice")
+	post(t, alice, ts.URL+"/groups", url.Values{"name": {"Les Potes"}, "game": {"tusmo"}})
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec("UPDATE groups SET badges_through = NULL"); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{"/", "/g/1"} {
+		if resp, _ := get(t, alice, ts.URL+p); resp.StatusCode != http.StatusOK {
+			t.Errorf("%s = %d with a broken badge mark, want 200", p, resp.StatusCode)
+		}
+	}
+}
+
+// The preview title uses the short quote: chat apps cut long titles.
+func TestShareOGTitleShort(t *testing.T) {
+	ts, st, _, _ := badgeGroup(t)
+	_, body := get(t, newClient(t), ts.URL+"/b/"+shareToken(t, st))
+	if !strings.Contains(body, `<meta property="og:title" content="alice earned « À vaincre sans péril… »">`) {
+		t.Error("og:title should use the short quote")
 	}
 }

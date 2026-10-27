@@ -3,6 +3,7 @@ package web
 import (
 	"cmp"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -72,7 +73,7 @@ func (s *Server) sharePage(w http.ResponseWriter, r *http.Request) {
 		data["Member"] = err == nil
 	}
 	lang, base := cmp.Or(b.Lang, langs[0].String()), s.baseURL(r)
-	title := tr(lang, "badge."+b.Kind+".title")
+	title := tr(lang, "badge."+b.Kind+".short") // chat apps cut long titles
 	data["OG"] = map[string]string{
 		"Title":       tr(lang, "badges.og_title", "Name", b.Username, "Title", title),
 		"Description": tr(lang, "badge."+b.Kind+".quip", "Group", b.GroupName, "Day", shortDate(lang, b.Day)),
@@ -99,22 +100,24 @@ func newsOf(u store.Unseen, max int) news {
 	return n
 }
 
-// awardNews awards the groups' due badges and returns the user's news per group.
-func (s *Server) awardNews(u store.User, groups []int64, max int) (map[int64]news, error) {
+// awardNews awards the groups' due badges and returns the user's news per
+// group. Badges are a bonus: a failure is logged and the page renders without
+// them.
+func (s *Server) awardNews(u store.User, groups []int64, max int) map[int64]news {
 	for _, g := range groups {
 		if err := s.store.AwardBadges(g); err != nil {
-			return nil, err
+			log.Printf("badges: group %d: %v", g, err)
 		}
 	}
 	unseen, err := s.store.Unseen(u.ID)
 	if err != nil {
-		return nil, err
+		log.Printf("badges: unseen for user %d: %v", u.ID, err)
 	}
 	out := map[int64]news{}
 	for g, n := range unseen {
 		out[g] = newsOf(n, max)
 	}
-	return out, nil
+	return out
 }
 
 // shelf is one slot on a member's wall: a kind and how often they earned it.
