@@ -1,10 +1,6 @@
 {{define "content"}}
 <h1>{{.Group.Name}}</h1>
-<nav class="tabs">
-  <a href="/g/{{.Group.ID}}">{{t "common.today"}}</a>
-  <a href="/g/{{.Group.ID}}/leaderboard">{{t "common.leaderboard"}}</a>
-  <a href="/g/{{.Group.ID}}/settings" aria-current="page">{{t "common.settings"}}</a>
-</nav>
+{{template "tabs" .}}
 <section class="panel">
   <h2>{{t "settings.invite"}}</h2>
   <p>{{t "settings.invite_text"}}</p>

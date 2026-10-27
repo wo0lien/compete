@@ -153,6 +153,7 @@ func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request, u store.Us
 		}
 	}
 	s.render(w, r, status, "settings.html", map[string]any{
+		"Tab":   "settings",
 		"Group": g, "Members": members, "Me": u.ID,
 		"InviteURL": base + "/join/" + g.InviteCode, "Picks": picks(ticked), "GamesError": gamesErr, "SeasonError": seasonErr,
 		"SeasonDays": days, "SeasonLengths": []int{3, 7, 14},

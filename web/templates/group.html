@@ -1,10 +1,6 @@
 {{define "content"}}
 <h1>{{.Group.Name}}</h1>
-<nav class="tabs">
-  <a href="/g/{{.Group.ID}}" aria-current="page">{{t "common.today"}}</a>
-  <a href="/g/{{.Group.ID}}/leaderboard">{{t "common.leaderboard"}}</a>
-  <a href="/g/{{.Group.ID}}/settings">{{t "common.settings"}}</a>
-</nav>
+{{template "tabs" .}}
 {{template "race" .Race}}
 {{if .AllPlayed}}<details class="paste-later"><summary><span class="done"><span class="tick" aria-hidden="true">✓</span> {{t "common.all_played"}}</span> <span class="again">{{t "common.paste_another"}}</span></summary>{{end}}
 <form method="post" action="/results" class="paste">

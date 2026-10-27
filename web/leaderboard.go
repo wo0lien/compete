@@ -72,6 +72,7 @@ func (s *Server) leaderboard(w http.ResponseWriter, r *http.Request, u store.Use
 		stats = slices.DeleteFunc(stats, func(gs store.GameStats) bool { return !slices.Contains(ids, gs.Game) })
 	}
 	s.render(w, r, http.StatusOK, "leaderboard.html", map[string]any{
+		"Tab":   "leaderboard",
 		"Group": g, "Race": race, "Stats": stats, "Tags": games.AllTags(), "Tag": tag,
 	})
 }

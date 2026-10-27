@@ -39,7 +39,7 @@ func (s *Server) groupPage(w http.ResponseWriter, r *http.Request, u store.User)
 		s.oops(w, r, err)
 		return
 	}
-	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Cards": cs, "Race": race, "AllPlayed": allPlayed})
+	s.render(w, r, http.StatusOK, "group.html", map[string]any{"Group": g, "Tab": "today", "Cards": cs, "Race": race, "AllPlayed": allPlayed})
 }
 
 // submit parses a pasted share text and stores its results for the current user.
