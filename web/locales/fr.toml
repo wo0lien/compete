@@ -12,9 +12,6 @@ cancel = "Annuler"
 changelog = "Nouveautés"
 paste = "Coller"
 clear = "Effacer"
-today = "Aujourd'hui"
-leaderboard = "Classement"
-settings = "Réglages"
 submit = "Envoyer"
 save = "Enregistrer"
 password = "Mot de passe"
@@ -306,3 +303,24 @@ open_account = "Ouvrir mon compte"
 games = "Jeux"
 new = "Nouveau groupe"
 name = "Nom du groupe"
+
+[badge.lonely]
+title = "À vaincre sans péril, on triomphe sans gloire"
+short = "À vaincre sans péril…"
+quip = "Seul·e à jouer le {{.Day}} dans {{.Group}}. Médaille d'or, tribunes vides."
+
+[badges]
+weekdays = "dim. lun. mar. mer. jeu. ven. sam."
+count_one = "1 badge"
+count_many = "{{.Count}} badges"
+none = "pas encore de badge"
+yours = "Tes badges"
+yours_hint = "Du plus récent au plus ancien · partage-en un pour frimer"
+yours_empty = "Aucun pour l'instant. Sois le ou la seul·e à jouer un jour…"
+
+# group page tabs: four share a phone-width row, so labels stay short
+[tabs]
+today = "Jour"
+leaderboard = "Scores"
+badges = "Badges"
+settings = "Réglages"
