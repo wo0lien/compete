@@ -170,7 +170,7 @@ func TestAwardTwiceIsIdempotent(t *testing.T) {
 }
 
 func TestAwardNoBackfill(t *testing.T) {
-	c := oldCrew(t) // members in by 2026-10-05: only badges_through keeps that day out
+	c := oldCrew(t)                                      // members in by 2026-10-05: only badges_through keeps that day out
 	c.add(t, c.alice, res("tusmo", "", 69, new(3), nil)) // day before the group existed
 	c.s.Now = func() time.Time { return day(1) }
 	award(t, c)
