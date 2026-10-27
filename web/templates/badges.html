@@ -1,0 +1,32 @@
+{{define "content"}}
+<h1>{{.Group.Name}}</h1>
+{{template "tabs" .}}
+{{range .Wall}}
+<section class="panel">
+  <div class="wall-who">{{template "pawn" .Pawn}}<b>{{.Username}}</b><span class="muted">{{if eq .Total 0}}{{t "badges.none"}}{{else if eq .Total 1}}{{t "badges.count_one"}}{{else}}{{t "badges.count_many" "Count" .Total}}{{end}}</span></div>
+  <div class="shelf">
+    {{range .Shelf}}<span class="slot">
+      <span class="medal{{if not .N}} locked{{end}}"><img src="{{badgeImg .Kind}}" alt=""></span>
+      {{if .N}}<span class="count">×{{.N}}</span>{{end}}
+      <span>{{t (print "badge." .Kind ".title")}}</span>
+    </span>{{end}}
+  </div>
+</section>
+{{end}}
+<section class="panel">
+  <h2>{{t "badges.yours"}}</h2>
+  {{with .Mine}}
+  <p class="muted small">{{t "badges.yours_hint"}}</p>
+  <ul class="hist">
+    {{range .}}{{$url := print $.Base "/b/" .Token}}<li>
+      {{template "medal" .Kind}}
+      <div class="grow"><a href="/b/{{.Token}}"><b>{{t (print "badge." .Kind ".title")}}</b></a><time datetime="{{.Day}}">{{date .Day}}</time></div>
+      <button type="button" class="pill" data-share="{{$url}}" hidden>{{t "settings.share_link"}}</button>
+      <button type="button" class="pill" data-copy="{{$url}}" data-copied="{{t "settings.copied"}}" hidden>{{t "settings.copy"}}</button>
+    </li>{{end}}
+  </ul>
+  {{else}}
+  <p class="muted">{{t "badges.yours_empty"}}</p>
+  {{end}}
+</section>
+{{end}}

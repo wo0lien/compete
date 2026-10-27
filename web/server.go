@@ -52,6 +52,7 @@ var funcs = template.FuncMap{
 	"gameURL":  func(id string) string { g, _ := games.ByID(id); return g.URL },
 	"asset":    assetURL,
 	"squares":  squares,
+	"badgeImg": func(kind string) string { return assetURL(kindOf(kind).Image) },
 	// Per-request functions: stubs for parsing, bound to the request's
 	// language in render.
 	"t":            func(string, ...any) string { return "" },
@@ -61,6 +62,7 @@ var funcs = template.FuncMap{
 	"lang":         func() string { return "" },
 	"here":         func() string { return "" },
 	"version":      func() string { return "" },
+	"date":         func(string) string { return "" },
 }
 
 func New(st *store.Store, secure, trustProxy bool) *Server {
@@ -145,6 +147,8 @@ func (s *Server) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /share", s.auth(s.share))
 	mux.HandleFunc("GET /g/{id}/leaderboard", s.auth(s.leaderboard))
 	mux.HandleFunc("GET /g/{id}/history", s.auth(s.history))
+	mux.HandleFunc("GET /g/{id}/badges", s.auth(s.badgesPage))
+	mux.HandleFunc("GET /b/{token}", s.sharePage)
 	mux.HandleFunc("GET /g/{id}/board", s.auth(s.onePuzzle))
 	mux.HandleFunc("GET /account", s.auth(s.account))
 	mux.HandleFunc("POST /push/subscribe", s.auth(s.pushSubscribe))
@@ -205,6 +209,7 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, page
 		"lang":         func() string { return lang },
 		"here":         func() string { return here },
 		"version":      func() string { return cmp.Or(s.Version, "dev") },
+		"date":         func(day string) string { return shortDate(lang, day) },
 	})
 	var buf bytes.Buffer
 	frag, _ := data["Fragment"].(string) // a named piece of the page instead of the whole page
@@ -251,6 +256,11 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		s.oops(w, r, err)
 		return
 	}
+	ids := make([]int64, len(groups))
+	for i, g := range groups {
+		ids[i] = g.ID
+	}
+	nw := s.awardNews(u, ids, 2)
 	// nothing left today (and not a new member): the paste box folds away
-	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "ToPlay": toPlay, "AllPlayed": played && len(toPlay) == 0})
+	s.render(w, r, http.StatusOK, "home.html", map[string]any{"Groups": groups, "News": nw, "ToPlay": toPlay, "AllPlayed": played && len(toPlay) == 0})
 }

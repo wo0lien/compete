@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/wo0lien/compete/games"
@@ -78,14 +79,20 @@ func (s *Store) CreateGroup(ownerID int64, name string, gameIDs []string) (Group
 		return Group{}, err
 	}
 	g := Group{Name: name, InviteCode: newInviteCode(), Role: "owner"}
-	res, err := tx.Exec("INSERT INTO groups(name, invite_code) VALUES (?, ?)", g.Name, g.InviteCode)
+	// badges are evaluated from the group's first day on, never before
+	first, err := time.Parse(time.DateOnly, newestDay(gameIDs, s.Now()))
+	if err != nil {
+		return Group{}, err
+	}
+	res, err := tx.Exec("INSERT INTO groups(name, invite_code, badges_through) VALUES (?, ?, ?)",
+		g.Name, g.InviteCode, first.AddDate(0, 0, -1).Format(time.DateOnly))
 	if err != nil {
 		return Group{}, err
 	}
 	if g.ID, err = res.LastInsertId(); err != nil {
 		return Group{}, err
 	}
-	if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role, joined_at) VALUES (?, ?, 'owner', ?)", g.ID, ownerID, s.Now().Unix()); err != nil {
+	if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role, joined_at, badges_seen_at) VALUES (?, ?, 'owner', ?, ?)", g.ID, ownerID, s.Now().Unix(), s.Now().Unix()); err != nil {
 		return Group{}, err
 	}
 	if err := insertGames(tx, g.ID, gameIDs); err != nil {
@@ -198,7 +205,7 @@ func (s *Store) JoinByCode(userID int64, code string) (Group, error) {
 		if err := checkGroupCap(tx, userID); err != nil {
 			return Group{}, err
 		}
-		if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role, joined_at) VALUES (?, ?, 'member', ?)", g.ID, userID, s.Now().Unix()); err != nil {
+		if _, err := tx.Exec("INSERT INTO memberships(group_id, user_id, role, joined_at, badges_seen_at) VALUES (?, ?, 'member', ?, ?)", g.ID, userID, s.Now().Unix(), s.Now().Unix()); err != nil {
 			return Group{}, err
 		}
 	}

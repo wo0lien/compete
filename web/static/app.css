@@ -103,7 +103,7 @@ label.game-row { cursor: pointer; } /* the picker; members' read-only rows are n
 
 .tabs { display: flex; gap: 8px; }
 .tabs a { flex: 1; min-width: 0; padding: 12px 2px; border-radius: 12px; background: #fff; box-shadow: 0 4px 0 var(--sky-dark); text-align: center; text-decoration: none; font-weight: 800; }
-@media (max-width: 340px) { .tabs { gap: 6px; } .tabs a { font-size: 15px; } }
+@media (max-width: 400px) { .tabs { gap: 6px; } .tabs a { font-size: 15px; } }
 .tabs a[aria-current="page"] { background: var(--sun); box-shadow: 0 4px 0 var(--sun-dark); }
 /* one row that scrolls sideways on a phone; the padding keeps the chips' tap areas inside the scroll box */
 .filters { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; margin: -4px -2px 0; scrollbar-width: none; }
@@ -210,3 +210,49 @@ th:not(:first-child), td:not(:first-child) { text-align: right; }
 .past li > :last-child { margin-left: auto; }
 .winner { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; }
 .winner .pawn { width: 20px; height: 20px; }
+
+/* badges: round meme medallions with a sun ring, like a game token */
+.medal { position: relative; flex: none; display: block; width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 2px solid var(--ink); box-shadow: 0 0 0 3px var(--sun), 0 0 0 5px var(--ink), 0 4px 0 3px var(--ink); background: var(--sky-pale); }
+.medal img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.medal.locked { border-style: dashed; box-shadow: 0 0 0 3px var(--line); opacity: .5; }
+.wall-who { display: flex; align-items: center; gap: 8px; }
+.wall-who b { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: 18px; }
+.wall-who .muted { margin-left: auto; font-size: 13px; }
+.shelf { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px; }
+.slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 76px; text-align: center; font-size: 12px; font-weight: 800; line-height: 1.15; }
+.count { position: absolute; top: 32px; right: 4px; padding: 0 7px; border-radius: 999px; background: var(--coral); color: #fff; box-shadow: 0 2px 0 var(--coral-dark); font-size: 13px; font-weight: 800; }
+/* your badges: a list that scrolls inside its panel */
+.hist { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow-y: auto; }
+.hist li { display: flex; align-items: center; gap: 12px; padding: 10px 2px; border-top: 2px dashed var(--line); }
+.hist li:first-child { border-top: 0; }
+.hist .medal { width: 40px; height: 40px; box-shadow: 0 0 0 3px var(--sun), 0 0 0 4px var(--ink); }
+.hist .grow { flex: 1; min-width: 0; }
+.hist .grow a { text-decoration: none; }
+.hist time { display: block; font-size: 13px; opacity: .7; }
+.pill { flex: none; min-height: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--sky-pale); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+/* new badges: one sun row on Today, a pill on Home's group rows */
+.minis { display: flex; flex: none; }
+.minis .medal { width: 36px; height: 36px; box-shadow: 0 0 0 2px #fff; }
+.minis .medal + .medal { margin-left: -14px; }
+.medal.more { display: grid; place-items: center; background: #fff; font-size: 13px; font-weight: 800; }
+.news-row { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 12px; border-radius: 16px; background: var(--sun); box-shadow: 0 5px 0 var(--sun-dark); text-decoration: none; }
+.news-row .txt { flex: 1; min-width: 0; line-height: 1.2; }
+.news-row .txt b { display: block; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: 17px; }
+.news-row .txt span { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.go { flex: none; font-size: 24px; font-weight: 800; }
+/* Home's groups: whole rows to tap, not underlined links */
+.group-rows { list-style: none; margin: 0 -14px; padding: 0; }
+.group-rows li + li { border-top: 2px dashed var(--line); }
+.group-rows li.muted { padding: 8px 14px; }
+.group-row { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 10px 8px 14px; text-decoration: none; }
+.group-row .name { flex: 1; min-width: 0; font-family: "Lilita One", system-ui, sans-serif; font-size: 20px; overflow-wrap: anywhere; }
+.group-row .go { opacity: .6; }
+.news-pill { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 999px; background: var(--sun); box-shadow: 0 2px 0 var(--sun-dark); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.news-pill .medal { width: 28px; height: 28px; }
+.news-pill .medal + .medal { margin-left: -12px; }
+/* the share page: one big medallion card */
+.brag { align-items: center; text-align: center; gap: 12px; padding: 24px 18px 20px; }
+.medal.big { width: 130px; height: 130px; margin: 10px 0 18px; border-width: 4px; box-shadow: 0 0 0 7px var(--sun), 0 0 0 10px var(--ink), 0 8px 0 8px var(--ink); }
+.brag h1 { font-size: 28px; line-height: 1.15; }
+.brag .quote { margin-top: -6px; font-style: italic; }
+.brag .who { display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; }

@@ -11,6 +11,7 @@
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 <script src="{{asset "htmx.min.js"}}" defer></script>
 <script src="{{asset "app.js"}}" defer></script>
+{{block "head" .}}{{end}}
 </head>
 <body hx-boost:inherited="true">
 <header class="top">

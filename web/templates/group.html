@@ -1,10 +1,12 @@
 {{define "content"}}
 <h1>{{.Group.Name}}</h1>
-<nav class="tabs">
-  <a href="/g/{{.Group.ID}}" aria-current="page">{{t "common.today"}}</a>
-  <a href="/g/{{.Group.ID}}/leaderboard">{{t "common.leaderboard"}}</a>
-  <a href="/g/{{.Group.ID}}/settings">{{t "common.settings"}}</a>
-</nav>
+{{template "tabs" .}}
+{{with .News}}{{if .Count}}<a class="news-row" href="/g/{{$.Group.ID}}/badges">
+  <span class="minis">{{range .Minis}}{{template "medal" .}}{{end}}{{if .More}}<span class="medal more">+{{.More}}</span>{{end}}</span>
+  <span class="txt"><b>{{if eq .Count 1}}{{t "badges.new_one"}}{{else}}{{t "badges.new_many" "Count" .Count}}{{end}}</b>
+  <span>{{if eq .Count 1}}{{t (print "badge." .Kind ".title")}}{{else}}{{t "badges.since" "Day" (date .Oldest)}}{{end}}</span></span>
+  <span class="go" aria-hidden="true">›</span>
+</a>{{end}}{{end}}
 {{template "race" .Race}}
 {{if .AllPlayed}}<details class="paste-later"><summary><span class="done"><span class="tick" aria-hidden="true">✓</span> {{t "common.all_played"}}</span> <span class="again">{{t "common.paste_another"}}</span></summary>{{end}}
 <form method="post" action="/results" class="paste">

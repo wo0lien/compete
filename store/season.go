@@ -218,86 +218,17 @@ func (s *Store) startSeason(groupID int64, start string, n int) error {
 // (from the start if they were in by then). A puzzle counts once closed, or earlier
 // when every member it counts has played.
 func (s *Store) counted(groupID int64, start string, now time.Time) ([]scored, error) {
-	// A puzzle of day start opens at the earliest at UTC+14, the day before in
-	// UTC: results pasted earlier belong to older puzzles.
-	from, err := time.Parse(time.DateOnly, start)
+	ps, joined, err := s.groupPlays(groupID, start)
 	if err != nil {
-		return nil, err
-	}
-
-	joined := map[int64]string{} // member → day they joined
-	mrows, err := s.db.Query("SELECT user_id, joined_at FROM memberships WHERE group_id = ?", groupID)
-	if err != nil {
-		return nil, err
-	}
-	for mrows.Next() {
-		var uid, at int64
-		if err := mrows.Scan(&uid, &at); err != nil {
-			mrows.Close()
-			return nil, err
-		}
-		joined[uid] = time.Unix(at, 0).UTC().Format(time.DateOnly)
-	}
-	mrows.Close()
-	if err := mrows.Err(); err != nil {
-		return nil, err
-	}
-
-	rows, err := s.db.Query(`
-		SELECT r.game, r.variant, r.puzzle_id, r.user_id, r.score, r.tiebreak, r.submitted_at
-		FROM results r
-		JOIN memberships m ON m.user_id = r.user_id AND m.group_id = ?1
-		JOIN group_games gg ON gg.game = r.game AND gg.group_id = ?1
-		WHERE r.submitted_at >= ?2`, groupID, from.AddDate(0, 0, -1).Unix())
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	type puzzle struct {
-		game string
-		id   int
-	}
-	type entry struct {
-		user            int64
-		score, tiebreak *int
-	}
-	plays := map[puzzle][]entry{}
-	var order []puzzle
-	for rows.Next() {
-		var p puzzle
-		var variant string
-		var e entry
-		var at int64
-		if err := rows.Scan(&p.game, &variant, &p.id, &e.user, &e.score, &e.tiebreak, &at); err != nil {
-			return nil, err
-		}
-		g, _ := games.ByID(p.game)
-		if variant != g.MainVariant {
-			continue
-		}
-		if today, ok := g.Today(variant, time.Unix(at, 0)); !ok || today > p.id {
-			continue // pasted after the puzzle closed, once its board was out
-		}
-		if plays[p] == nil {
-			order = append(order, p)
-		}
-		plays[p] = append(plays[p], e)
-	}
-	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 	var out []scored
-	for _, p := range order {
+	for _, p := range ps {
 		g, _ := games.ByID(p.game)
-		d, ok := g.Day(g.MainVariant, p.id)
-		day := d.Format(time.DateOnly)
-		if !ok || day < start {
-			continue
-		}
 		ranks := map[int64]int{}
-		for _, e := range plays[p] {
+		for _, e := range p.entries {
 			rk := 1
-			for _, o := range plays[p] {
+			for _, o := range p.entries {
 				if better(o.score, o.tiebreak, e.score, e.tiebreak) {
 					rk++
 				}
@@ -308,16 +239,109 @@ func (s *Store) counted(groupID int64, start string, now time.Time) ([]scored, e
 		for u, j := range joined {
 			// ponytail: a join on the start day itself still counts that day, so it can
 			// take early points back; track early-counted puzzles if that ever matters.
-			if _, played := ranks[u]; !played && (j < day || j <= start) {
+			if _, played := ranks[u]; !played && (j < p.day || j <= start) {
 				members++
 			}
 		}
 		if today, _ := g.Today(g.MainVariant, now); p.id >= today && len(ranks) < members {
 			continue // still open and someone has yet to play: no spoilers
 		}
-		out = append(out, scored{day, points(ranks, members)})
+		out = append(out, scored{p.day, points(ranks, members)})
 	}
 	return out, nil
+}
+
+// entry is one member's result on a puzzle.
+type entry struct {
+	user            int64
+	score, tiebreak *int
+}
+
+// puzzlePlays is one main-variant puzzle of a group game and who played it
+// in time (pasted before it closed), current members only.
+type puzzlePlays struct {
+	game    string
+	id      int
+	day     string // Game.Day, YYYY-MM-DD
+	entries []entry
+}
+
+// groupPlays loads the plays of the group's puzzles whose day is on or after
+// from, in first-seen order, and the day each current member joined (UTC).
+func (s *Store) groupPlays(groupID int64, from string) ([]puzzlePlays, map[int64]string, error) {
+	// A puzzle of day from opens at the earliest at UTC+14, the day before in
+	// UTC: results pasted earlier belong to older puzzles.
+	f, err := time.Parse(time.DateOnly, from)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	joined := map[int64]string{} // member → day they joined
+	mrows, err := s.db.Query("SELECT user_id, joined_at FROM memberships WHERE group_id = ?", groupID)
+	if err != nil {
+		return nil, nil, err
+	}
+	for mrows.Next() {
+		var uid, at int64
+		if err := mrows.Scan(&uid, &at); err != nil {
+			mrows.Close()
+			return nil, nil, err
+		}
+		joined[uid] = time.Unix(at, 0).UTC().Format(time.DateOnly)
+	}
+	mrows.Close()
+	if err := mrows.Err(); err != nil {
+		return nil, nil, err
+	}
+
+	rows, err := s.db.Query(`
+		SELECT r.game, r.variant, r.puzzle_id, r.user_id, r.score, r.tiebreak, r.submitted_at
+		FROM results r
+		JOIN memberships m ON m.user_id = r.user_id AND m.group_id = ?1
+		JOIN group_games gg ON gg.game = r.game AND gg.group_id = ?1
+		WHERE r.submitted_at >= ?2`, groupID, f.AddDate(0, 0, -1).Unix())
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+	type puzzle struct {
+		game string
+		id   int
+	}
+	index := map[puzzle]int{}
+	var out []puzzlePlays
+	for rows.Next() {
+		var p puzzle
+		var variant string
+		var e entry
+		var at int64
+		if err := rows.Scan(&p.game, &variant, &p.id, &e.user, &e.score, &e.tiebreak, &at); err != nil {
+			return nil, nil, err
+		}
+		g, _ := games.ByID(p.game)
+		if variant != g.MainVariant {
+			continue
+		}
+		if today, ok := g.Today(variant, time.Unix(at, 0)); !ok || today > p.id {
+			continue // pasted after the puzzle closed, once its board was out
+		}
+		i, seen := index[p]
+		if !seen {
+			d, ok := g.Day(g.MainVariant, p.id)
+			day := d.Format(time.DateOnly)
+			if !ok || day < from {
+				index[p] = -1
+				continue
+			}
+			i = len(out)
+			index[p] = i
+			out = append(out, puzzlePlays{game: p.game, id: p.id, day: day})
+		}
+		if i >= 0 {
+			out[i].entries = append(out[i].entries, e)
+		}
+	}
+	return out, joined, rows.Err()
 }
 
 // better: result a ranks above b, in the boards' order (fails last, then

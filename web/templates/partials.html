@@ -1,6 +1,13 @@
 {{/* meeple: the pawn outline in a 24×24 box; the enclosing <g> or <svg> sets fill, stroke and transform */}}
 {{define "meeple"}}<path d="M12 2a3.2 3.2 0 0 1 3.2 3.2c0 1.1-.5 2-1.3 2.6 2.5.4 7.1 1.5 7.1 3.4 0 1.2-1.7 1.6-3.7 1.4l2.6 8.6c.2.6-.2 1.2-.9 1.2h-4.3L12 17.6 9.3 22.4H5c-.6 0-1.1-.6-.9-1.2l2.6-8.6c-2 .2-3.7-.2-3.7-1.4 0-1.9 4.6-3 7.1-3.4-.8-.6-1.3-1.5-1.3-2.6A3.2 3.2 0 0 1 12 2z"></path>{{end}}
 {{define "pawn"}}<svg class="pawn" viewBox="0 0 24 24" aria-hidden="true" fill="{{.}}">{{template "meeple"}}</svg>{{end}}
+{{define "tabs"}}<nav class="tabs">
+  <a href="/g/{{.Group.ID}}"{{if eq .Tab "today"}} aria-current="page"{{end}}>{{t "tabs.today"}}</a>
+  <a href="/g/{{.Group.ID}}/leaderboard"{{if eq .Tab "leaderboard"}} aria-current="page"{{end}}>{{t "tabs.leaderboard"}}</a>
+  <a href="/g/{{.Group.ID}}/badges"{{if eq .Tab "badges"}} aria-current="page"{{end}}>{{t "tabs.badges"}}</a>
+  <a href="/g/{{.Group.ID}}/settings"{{if eq .Tab "settings"}} aria-current="page"{{end}}>{{t "tabs.settings"}}</a>
+</nav>{{end}}
+{{define "medal"}}<span class="medal"><img src="{{badgeImg .}}" alt=""></span>{{end}}
 {{define "board"}}
 <section class="panel flush">
   <div class="panel-head">

@@ -1,0 +1,25 @@
+{{define "head"}}{{with .OG}}
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{.Title}}">
+<meta property="og:description" content="{{.Description}}">
+<meta property="og:image" content="{{.Image}}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="{{.URL}}">
+<meta name="twitter:card" content="summary_large_image">
+{{end}}{{end}}
+{{define "content"}}{{$b := .Badge}}
+<section class="panel brag">
+  <span class="medal big"><img src="{{badgeImg $b.Kind}}" alt="{{t "badges.alt_lonely"}}"></span>
+  <h1>{{t (print "badge." $b.Kind ".title")}}</h1>
+  <p class="quote">{{t (print "badge." $b.Kind ".quote")}}</p>
+  <p class="who">{{template "pawn" $b.Pawn}}{{$b.Username}} · {{$b.GroupName}} · {{date $b.Day}}</p>
+  <p>{{t (print "badge." $b.Kind ".quip") "Group" $b.GroupName "Day" (date $b.Day)}}</p>
+</section>
+{{if .Member}}<a class="btn go wide" href="/g/{{$b.GroupID}}/badges">{{t "common.back_to" "Name" $b.GroupName}}</a>
+{{else if .User}}<a class="btn go wide" href="/">{{t "common.home"}}</a>
+{{else}}<section class="panel center">
+  <p>{{t "home.pitch"}}</p>
+  <div class="actions"><a class="btn go" href="/login?next={{.Next}}">{{t "common.login"}}</a> <a class="btn" href="/signup">{{t "common.signup"}}</a></div>
+</section>{{end}}
+{{end}}
